@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# build output
+dist/
+backend/dist/
+frontend/dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# prisma
+backend/prisma/*.db
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# docker volume data (if mounted locally)
+.docker-data/

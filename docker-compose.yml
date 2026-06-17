@@ -1,0 +1,38 @@
+# MySQL + Mailpit for local development.
+#   docker compose up -d
+# MySQL  → localhost:3306
+# Mailpit → SMTP localhost:1025, web UI http://localhost:8025
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: pollendar-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-pollendar}
+      MYSQL_USER: ${MYSQL_USER:-pollendar}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pollendar}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: pollendar-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # web UI
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  mysql_data:
