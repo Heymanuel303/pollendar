@@ -1,16 +1,29 @@
 # backend (NestJS + Prisma)
 
-Generated in **Phase 0** — see [`../docs/PLAN.md`](../docs/PLAN.md).
+Pollendar's API server — NestJS 11 + Prisma 6 against MySQL 8.4. Scaffolded in
+**Phase 0/1** — see [`../docs/PLAN.md`](../docs/PLAN.md) for the roadmap and
+[`../docs/DESIGN.md`](../docs/DESIGN.md) for the architecture, 3NF schema, and module layout.
 
-This folder is intentionally empty until scaffolding. Phase 0 runs:
+## Local development
+
+Infra (MySQL + Mailpit) comes from the repo-root `docker-compose.yml`, and config is read
+from the **repo-root `.env`** via `@nestjs/config` (validated on boot — the app fails fast on
+a missing/invalid required var).
 
 ```bash
-npx @nestjs/cli@latest new backend --package-manager npm --strict
+# from repo root: cp .env.example .env && docker compose up -d
 cd backend
-npm install @nestjs/config @nestjs/jwt @nestjs/throttler prisma @prisma/client \
-  class-validator class-transformer cookie-parser nodemailer
-npx prisma init --datasource-provider mysql
+npx prisma migrate dev     # apply migrations (Phase 1+)
+npm run start:dev          # http://localhost:3000/api
 ```
 
-Module layout and the Prisma schema are defined in
-[`../docs/DESIGN.md`](../docs/DESIGN.md).
+- **Emails** (magic links, results) land in Mailpit at http://localhost:8025 in dev.
+- **Inspect data:** `npx prisma studio`.
+- **Reset DB:** `npx prisma migrate reset` (re-runs migrations + seed).
+
+## Tests
+
+```bash
+npm test          # unit specs (Jest)
+npm run test:e2e  # end-to-end specs
+```
