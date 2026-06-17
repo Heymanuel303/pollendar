@@ -2,7 +2,7 @@
 plan: scaffold-db
 title: Scaffold & Database Foundation
 created: 2026-06-17
-status: in-progress
+status: done
 layers_explored: []
 phases: 4
 ---
