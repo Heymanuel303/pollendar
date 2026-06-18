@@ -73,9 +73,9 @@ describe('validate (env)', () => {
   });
 
   it('rejects a non-numeric API_PORT', () => {
-    expect(() => validate({ ...completeEnv(), API_PORT: 'not-a-port' })).toThrow(
-      /API_PORT/,
-    );
+    expect(() =>
+      validate({ ...completeEnv(), API_PORT: 'not-a-port' }),
+    ).toThrow(/API_PORT/);
   });
 
   it('rejects an out-of-range API_PORT', () => {

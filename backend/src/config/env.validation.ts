@@ -142,7 +142,10 @@ export function validate(
   if (errors.length > 0) {
     throw new Error(
       `Invalid environment configuration:\n${errors
-        .map((e) => `  - ${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`)
+        .map(
+          (e) =>
+            `  - ${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`,
+        )
         .join('\n')}`,
     );
   }

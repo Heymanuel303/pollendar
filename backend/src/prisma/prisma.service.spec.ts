@@ -31,7 +31,11 @@ describe('PrismaService (integration)', () => {
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env'], validate }),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: ['../.env'],
+          validate,
+        }),
         PrismaModule,
       ],
     }).compile();
@@ -56,8 +60,9 @@ describe('PrismaService (integration)', () => {
   });
 
   it('connects and finds all 10 application tables', async () => {
-    const rows =
-      await prisma.$queryRaw<Array<Record<string, string>>>`SHOW TABLES`;
+    const rows = await prisma.$queryRaw<
+      Array<Record<string, string>>
+    >`SHOW TABLES`;
     const names = rows.map((row) => Object.values(row)[0]);
 
     for (const table of EXPECTED_TABLES) {

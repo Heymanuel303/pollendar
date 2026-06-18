@@ -18,7 +18,11 @@ describe('seed (integration)', () => {
   beforeAll(async () => {
     moduleRef = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../.env'], validate }),
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: ['../.env'],
+          validate,
+        }),
         PrismaModule,
       ],
     }).compile();
@@ -86,7 +90,9 @@ describe('seed (integration)', () => {
       expect(p.responses).toHaveLength(4);
     }
     // Honors @@unique([participantId, pollSlotId]): every pair is distinct.
-    const pairs = new Set(responses.map((r) => `${r.participantId}-${r.pollSlotId}`));
+    const pairs = new Set(
+      responses.map((r) => `${r.participantId}-${r.pollSlotId}`),
+    );
     expect(pairs.size).toBe(12);
   });
 });
