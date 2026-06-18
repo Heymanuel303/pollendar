@@ -52,8 +52,8 @@ Wire the full app together end-to-end with a Playwright happy-path test (sign in
 - Manual: in DevTools → Application → Cookies, confirm the access/refresh cookies are `HttpOnly`/`SameSite=Lax` after verify, and that an authed `GET /api/auth/me` succeeds cross-origin (proves CORS `credentials: true` works).
 
 ## Acceptance
-- [ ] `backend/src/main.ts` calls `app.enableCors({ origin: <CORS_ORIGINS array>, credentials: true })`; a credentialed `fetch` from the `:5173` SPA to `:3000/api` succeeds and the session cookie persists.
-- [ ] `frontend/.env.example` is committed with `VITE_API_BASE_URL` + `VITE_APP_URL`; the HTTP client and share-link util read them (no hard-coded `localhost`/`/api`), and `import.meta.env` typechecks under strict.
-- [ ] `frontend/e2e/happy-path.spec.ts` passes: sign in (Mailpit magic link) → create → share → vote → best slot updates/blooms → complete → completion email asserted in Mailpit.
-- [ ] `npm run build` produces a clean production bundle (`vue-tsc` clean) that bakes in the `VITE_` env values.
-- [ ] `frontend/README.md` documents the run/build/e2e commands and the prod `COOKIE_SECURE`/`COOKIE_DOMAIN`/`CORS_ORIGINS` + `.env.production` requirements.
+- [x] `backend/src/main.ts` calls `app.enableCors({ origin: <CORS_ORIGINS array>, credentials: true })`; a credentialed `fetch` from the `:5173` SPA to `:3000/api` succeeds and the session cookie persists.
+- [x] `frontend/.env.example` is committed with `VITE_API_BASE_URL` + `VITE_APP_URL`; the HTTP client and share-link util read them (no hard-coded `localhost`/`/api`), and `import.meta.env` typechecks under strict.
+- [x] `frontend/e2e/happy-path.spec.ts` passes: sign in (Mailpit magic link) → create → share → vote → best slot updates/blooms → complete → completion email asserted in Mailpit.
+- [x] `npm run build` produces a clean production bundle (`vue-tsc` clean) that bakes in the `VITE_` env values.
+- [x] `frontend/README.md` documents the run/build/e2e commands and the prod `COOKIE_SECURE`/`COOKIE_DOMAIN`/`CORS_ORIGINS` + `.env.production` requirements.

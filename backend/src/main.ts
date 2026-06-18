@@ -28,6 +28,17 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
+
+  // Allow the credentialed SPA to call the API cross-origin. `credentials: true` plus an explicit
+  // origin list (never `*`) is required so the browser keeps the httpOnly auth cookie set by
+  // /auth/verify and sends it back on every `credentials: "include"` request. CORS_ORIGINS is a
+  // comma-separated allow-list (e.g. `http://localhost:5173`); whitespace around entries is trimmed.
+  const corsOrigins = (configService.get<string>('CORS_ORIGINS') ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin !== '');
+  app.enableCors({ origin: corsOrigins, credentials: true });
+
   const port = configService.get<number>('API_PORT') ?? 3000;
   await app.listen(port);
 }
