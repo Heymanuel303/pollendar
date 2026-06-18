@@ -2,7 +2,7 @@
 
 **Slug:** `completion-notifications` (folder: `docs/plans/2026-06-18-completion-notifications/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Close the poll loop: a creator completes a poll by picking the final slot, only participants
@@ -36,14 +36,14 @@ and a copy-paste invite message with the public share link is available.
 - [ ] Completing a poll emails only participants with a non-null email — one each, in Mailpit.
 - [ ] A poll with zero participant emails sends zero emails.
 - [ ] Re-completing does not double-send (no new Mailpit messages, no extra `email_log` rows).
-- [ ] `GET /polls/:id/invite-message` renders the copy-paste message with the share link.
-- [ ] Both endpoints sit behind `PollOwnershipGuard` (404, no existence leak).
+- [x] `GET /polls/:id/invite-message` renders the copy-paste message with the share link.
+- [x] Both endpoints sit behind `PollOwnershipGuard` (404, no existence leak).
 
 ## Phases
 1. [01-notifications-module](01-notifications-module.md) — `NotificationsModule`/`Service`
    with idempotent `email_log` fan-out + `MailService.sendPollCompleted`. · _solo_ ✓
 2. [02-complete-and-invite-endpoints](02-complete-and-invite-endpoints.md) — owner-guarded
-   `POST :id/complete` (validate slot → transition → notify) + `GET :id/invite-message`. · _solo_
+   `POST :id/complete` (validate slot → transition → notify) + `GET :id/invite-message`. · _solo_ ✓
 
 ## Open questions
 - **Reconcile the NotificationsService signature across the two phases before executing.**

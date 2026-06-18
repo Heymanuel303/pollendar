@@ -15,6 +15,8 @@ describe('PollsController', () => {
   const findOneForUser = jest.fn();
   const update = jest.fn();
   const remove = jest.fn();
+  const complete = jest.fn();
+  const buildInviteMessage = jest.fn();
 
   const config: Partial<ConfigService> = {
     getOrThrow: jest.fn((key: string) => {
@@ -31,16 +33,30 @@ describe('PollsController', () => {
   };
 
   beforeEach(async () => {
-    [create, findAllForUser, findOneForUser, update, remove].forEach((m) =>
-      m.mockReset(),
-    );
+    [
+      create,
+      findAllForUser,
+      findOneForUser,
+      update,
+      remove,
+      complete,
+      buildInviteMessage,
+    ].forEach((m) => m.mockReset());
 
     const moduleRef = await Test.createTestingModule({
       controllers: [PollsController],
       providers: [
         {
           provide: PollsService,
-          useValue: { create, findAllForUser, findOneForUser, update, remove },
+          useValue: {
+            create,
+            findAllForUser,
+            findOneForUser,
+            update,
+            remove,
+            complete,
+            buildInviteMessage,
+          },
         },
         { provide: ConfigService, useValue: config },
       ],
@@ -114,6 +130,39 @@ describe('PollsController', () => {
       // update() is sync (returns the service promise), so parseId throws synchronously.
       expect(() => controller.update('nope', {})).toThrow(NotFoundException);
       expect(update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('complete', () => {
+    it('forwards parsed BigInt poll + slot ids to service.complete', async () => {
+      const completed = { id: 3n, status: 'completed' };
+      complete.mockResolvedValue(completed);
+
+      await expect(
+        controller.complete('3', { finalSlotId: '9' }),
+      ).resolves.toBe(completed);
+      expect(complete).toHaveBeenCalledWith(3n, 9n);
+    });
+
+    it('throws 404 for a non-numeric poll id (no existence leak)', () => {
+      expect(() => controller.complete('nope', { finalSlotId: '9' })).toThrow(
+        NotFoundException,
+      );
+      expect(complete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('inviteMessage', () => {
+    it('parses the path id and returns the service result', () => {
+      const message = { message: 'Join', shareUrl: 'https://app.example/p/x' };
+      buildInviteMessage.mockReturnValue(message);
+      expect(controller.inviteMessage('3')).toBe(message);
+      expect(buildInviteMessage).toHaveBeenCalledWith(3n);
+    });
+
+    it('throws 404 for a non-numeric id (no existence leak)', () => {
+      expect(() => controller.inviteMessage('nope')).toThrow(NotFoundException);
+      expect(buildInviteMessage).not.toHaveBeenCalled();
     });
   });
 

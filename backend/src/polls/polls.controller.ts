@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CompletePollDto } from './dto/complete-poll.dto';
 import { CreatePollDto } from './dto/create-poll.dto';
 import { UpdatePollDto } from './dto/update-poll.dto';
 import { PollOwnershipGuard } from './poll-ownership.guard';
@@ -68,6 +69,23 @@ export class PollsController {
   @UseGuards(PollOwnershipGuard)
   update(@Param('id') id: string, @Body() dto: UpdatePollDto) {
     return this.polls.update(this.parseId(id), dto);
+  }
+
+  /**
+   * Finalize an owned poll: validate the chosen slot, transition to `completed`, and trigger
+   * completion emails. A slot from another poll is a 400; re-completing is an idempotent no-op.
+   */
+  @Post(':id/complete')
+  @UseGuards(PollOwnershipGuard)
+  complete(@Param('id') id: string, @Body() dto: CompletePollDto) {
+    return this.polls.complete(this.parseId(id), this.parseId(dto.finalSlotId));
+  }
+
+  /** Copy-paste invite message with the public share link for an owned poll. */
+  @Get(':id/invite-message')
+  @UseGuards(PollOwnershipGuard)
+  inviteMessage(@Param('id') id: string) {
+    return this.polls.buildInviteMessage(this.parseId(id));
   }
 
   /** Delete an owned poll (cascade); 204 No Content. */

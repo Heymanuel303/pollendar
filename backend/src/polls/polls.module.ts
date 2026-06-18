@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { PollOwnershipGuard } from './poll-ownership.guard';
 import { PollsController } from './polls.controller';
 import { PollsService } from './polls.service';
@@ -11,6 +12,7 @@ import { PollsService } from './polls.service';
 // dependency resolves — AuthModule does not export the guard.
 @Module({
   imports: [
+    NotificationsModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

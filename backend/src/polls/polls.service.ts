@@ -4,7 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Prisma, PollStatus } from '@prisma/client';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreatePollDateDto,
@@ -12,7 +14,7 @@ import {
   CreatePollSlotDto,
 } from './dto/create-poll.dto';
 import { UpdatePollDto } from './dto/update-poll.dto';
-import { generatePublicToken } from './public-token.util';
+import { buildShareUrl, generatePublicToken } from './public-token.util';
 
 /** How many times to regenerate a colliding public_token before giving up. */
 const MAX_TOKEN_ATTEMPTS = 3;
@@ -37,7 +39,11 @@ function slotKey(slot: CreatePollSlotDto): string {
  */
 @Injectable()
 export class PollsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly config: ConfigService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   /**
    * Create a poll with its nested dates + slots in a single transaction. Slot uniqueness per date
@@ -174,6 +180,74 @@ export class PollsService {
       }
       throw err;
     }
+  }
+
+  /**
+   * Finalize a poll: validate `finalSlotId` belongs to it, transition `open → completed`
+   * (setting finalSlotId + completedAt) atomically, then fan out completion emails. Idempotent —
+   * an already-completed poll returns unchanged and does not re-notify.
+   */
+  async complete(pollId: bigint, finalSlotId: bigint) {
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Defensive: PollOwnershipGuard already loaded + ownership-checked the poll.
+      const poll = await tx.poll.findUnique({ where: { id: pollId } });
+      if (!poll) {
+        throw new NotFoundException('Poll not found');
+      }
+
+      // The slot must belong to this poll (joined through its date), else 400.
+      const slot = await tx.pollSlot.findUnique({
+        where: { id: finalSlotId },
+        include: { date: true },
+      });
+      if (!slot || slot.date.pollId !== pollId) {
+        throw new BadRequestException(
+          'finalSlotId does not belong to this poll',
+        );
+      }
+
+      if (poll.status === PollStatus.completed) {
+        return { poll, transitioned: false }; // idempotent: no re-update, no re-notify
+      }
+
+      const updated = await tx.poll.update({
+        where: { id: pollId },
+        data: {
+          status: PollStatus.completed,
+          finalSlotId,
+          completedAt: new Date(),
+        },
+      });
+      return { poll: updated, transitioned: true };
+    });
+
+    // Notify only on a fresh transition; the service is itself idempotent via email_log, but
+    // re-completing should never fan out again.
+    if (result.transitioned) {
+      await this.notifications.notifyPollCompleted(pollId);
+    }
+    return result.poll;
+  }
+
+  /**
+   * Copy-paste invite text embedding the poll title and its public share URL
+   * (`{APP_URL}/p/{publicToken}`). Read-only; 404 if the poll is gone.
+   */
+  async buildInviteMessage(
+    pollId: bigint,
+  ): Promise<{ message: string; shareUrl: string }> {
+    const poll = await this.prisma.poll.findUnique({ where: { id: pollId } });
+    if (!poll) {
+      throw new NotFoundException('Poll not found');
+    }
+    const shareUrl = buildShareUrl(
+      this.config.getOrThrow<string>('APP_URL'),
+      poll.publicToken,
+    );
+    return {
+      message: `You're invited to vote on "${poll.title}". Pick your availability here: ${shareUrl}`,
+      shareUrl,
+    };
   }
 
   /** Reject empty dates / per-date slots and duplicate `(startTime,endTime,isAllDay)` slots. */

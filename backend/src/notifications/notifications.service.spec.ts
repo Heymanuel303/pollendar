@@ -14,6 +14,8 @@ const SLOT_LABEL = 'Mon Jun 22, 10:00';
 
 // Explicit generics so `.mock.calls[0][0]` is typed, matching the spec conventions elsewhere.
 const findMany = jest.fn<Promise<Participant[]>, [unknown]>();
+const pollFindUnique = jest.fn<Promise<unknown>, [unknown]>();
+const pollSlotFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const emailLogFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const emailLogCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const emailLogUpdate = jest.fn<Promise<unknown>, [unknown]>();
@@ -29,6 +31,8 @@ const tx = {
 
 const prisma: Partial<PrismaService> = {
   participant: { findMany } as never,
+  poll: { findUnique: pollFindUnique } as never,
+  pollSlot: { findUnique: pollSlotFindUnique } as never,
   emailLog: { update: emailLogUpdate } as never,
   $transaction: jest.fn((arg: unknown) =>
     typeof arg === 'function'
@@ -58,6 +62,8 @@ describe('NotificationsService', () => {
 
   beforeEach(async () => {
     findMany.mockReset();
+    pollFindUnique.mockReset();
+    pollSlotFindUnique.mockReset();
     emailLogFindUnique.mockReset();
     emailLogCreate.mockReset();
     emailLogUpdate.mockReset();
@@ -176,5 +182,61 @@ describe('NotificationsService', () => {
       (emailLogCreate.mock.calls[0][0] as { data: { type: EmailType } }).data
         .type,
     ).toBe(EmailType.poll_completed);
+  });
+
+  describe('notifyPollCompleted', () => {
+    it('loads the poll + final slot and delegates with the rendered slot label', async () => {
+      pollFindUnique.mockResolvedValue({
+        id: POLL_ID,
+        title: POLL_TITLE,
+        publicToken: PUBLIC_TOKEN,
+        finalSlotId: 9n,
+      });
+      pollSlotFindUnique.mockResolvedValue({
+        id: 9n,
+        startTime: null,
+        endTime: null,
+        isAllDay: false,
+        label: 'Lunch',
+        date: { eventDate: new Date('2026-06-22T00:00:00Z') },
+      });
+      const delegate = jest
+        .spyOn(service, 'sendPollCompletedEmails')
+        .mockResolvedValue(undefined);
+
+      await service.notifyPollCompleted(POLL_ID);
+
+      expect(delegate).toHaveBeenCalledWith(
+        POLL_ID,
+        POLL_TITLE,
+        PUBLIC_TOKEN,
+        '2026-06-22 — Lunch',
+      );
+    });
+
+    it('is a no-op when the poll is missing', async () => {
+      pollFindUnique.mockResolvedValue(null);
+      const delegate = jest.spyOn(service, 'sendPollCompletedEmails');
+
+      await service.notifyPollCompleted(POLL_ID);
+
+      expect(delegate).not.toHaveBeenCalled();
+      expect(pollSlotFindUnique).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op when the poll has no final slot', async () => {
+      pollFindUnique.mockResolvedValue({
+        id: POLL_ID,
+        title: POLL_TITLE,
+        publicToken: PUBLIC_TOKEN,
+        finalSlotId: null,
+      });
+      const delegate = jest.spyOn(service, 'sendPollCompletedEmails');
+
+      await service.notifyPollCompleted(POLL_ID);
+
+      expect(delegate).not.toHaveBeenCalled();
+      expect(pollSlotFindUnique).not.toHaveBeenCalled();
+    });
   });
 });

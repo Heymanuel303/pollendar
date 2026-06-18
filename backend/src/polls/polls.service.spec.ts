@@ -1,6 +1,12 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 import { Test } from '@nestjs/testing';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePollDto } from './dto/create-poll.dto';
 import { UpdatePollDto } from './dto/update-poll.dto';
@@ -18,11 +24,14 @@ const pollUpdate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const pollDelete = jest.fn();
 const pollDateDeleteMany = jest.fn();
 const pollDateCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
+const pollSlotFindUnique = jest.fn();
+const notifyPollCompleted = jest.fn<Promise<void>, [bigint]>();
 
 /** The interactive-tx handle handed to the `$transaction(fn)` callback. */
 const tx = {
   poll: { create: pollCreate, update: pollUpdate, findUnique: pollFindUnique },
   pollDate: { deleteMany: pollDateDeleteMany, create: pollDateCreate },
+  pollSlot: { findUnique: pollSlotFindUnique },
 };
 
 const prisma: Partial<PrismaService> = {
@@ -38,11 +47,19 @@ const prisma: Partial<PrismaService> = {
     deleteMany: pollDateDeleteMany,
     create: pollDateCreate,
   } as never,
+  pollSlot: { findUnique: pollSlotFindUnique } as never,
   $transaction: jest.fn((arg: unknown) =>
     typeof arg === 'function'
       ? (arg as (tx: unknown) => unknown)(tx)
       : Promise.all(arg as unknown[]),
   ) as never,
+};
+
+const config: Partial<ConfigService> = {
+  getOrThrow: jest.fn((key: string) => {
+    const values: Record<string, string> = { APP_URL: 'https://app.example' };
+    return values[key];
+  }) as never,
 };
 
 const notFound = () =>
@@ -81,15 +98,26 @@ describe('PollsService', () => {
       pollDelete,
       pollDateDeleteMany,
       pollDateCreate,
+      pollSlotFindUnique,
+      notifyPollCompleted,
     ].forEach((m) => m.mockReset());
     pollCreate.mockResolvedValue({ id: 5n });
     pollUpdate.mockResolvedValue({ id: 5n });
     pollDelete.mockResolvedValue({ id: 5n });
     pollDateDeleteMany.mockResolvedValue({ count: 0 });
     pollDateCreate.mockResolvedValue({ id: 1n });
+    notifyPollCompleted.mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
-      providers: [PollsService, { provide: PrismaService, useValue: prisma }],
+      providers: [
+        PollsService,
+        { provide: PrismaService, useValue: prisma },
+        { provide: ConfigService, useValue: config },
+        {
+          provide: NotificationsService,
+          useValue: { notifyPollCompleted },
+        },
+      ],
     }).compile();
     service = moduleRef.get(PollsService);
   });
@@ -298,6 +326,78 @@ describe('PollsService', () => {
     it('translates a Prisma P2025 (record not found) into a 404', async () => {
       pollDelete.mockRejectedValue(notFound());
       await expect(service.remove(999n)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('complete', () => {
+    it('transitions an open poll to completed and fans out notifications', async () => {
+      pollFindUnique.mockResolvedValue({ id: 5n, status: 'open' });
+      pollSlotFindUnique.mockResolvedValue({ id: 9n, date: { pollId: 5n } });
+      pollUpdate.mockResolvedValue({
+        id: 5n,
+        status: 'completed',
+        finalSlotId: 9n,
+      });
+
+      const result = await service.complete(5n, 9n);
+
+      const patch = (
+        pollUpdate.mock.calls[0][0] as {
+          data: { status: string; finalSlotId: bigint; completedAt: Date };
+        }
+      ).data;
+      expect(patch.status).toBe('completed');
+      expect(patch.finalSlotId).toBe(9n);
+      expect(patch.completedAt).toBeInstanceOf(Date);
+      expect(notifyPollCompleted).toHaveBeenCalledWith(5n);
+      expect(result).toEqual({ id: 5n, status: 'completed', finalSlotId: 9n });
+    });
+
+    it('rejects a slot from another poll with 400 and does not update', async () => {
+      pollFindUnique.mockResolvedValue({ id: 5n, status: 'open' });
+      pollSlotFindUnique.mockResolvedValue({ id: 9n, date: { pollId: 99n } });
+
+      await expect(service.complete(5n, 9n)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(pollUpdate).not.toHaveBeenCalled();
+      expect(notifyPollCompleted).not.toHaveBeenCalled();
+    });
+
+    it('is idempotent: an already-completed poll is not re-updated or re-notified', async () => {
+      pollFindUnique.mockResolvedValue({ id: 5n, status: 'completed' });
+      pollSlotFindUnique.mockResolvedValue({ id: 9n, date: { pollId: 5n } });
+
+      const result = await service.complete(5n, 9n);
+
+      expect(result).toEqual({ id: 5n, status: 'completed' });
+      expect(pollUpdate).not.toHaveBeenCalled();
+      expect(notifyPollCompleted).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('buildInviteMessage', () => {
+    it('returns a message containing the share URL built from APP_URL', async () => {
+      pollFindUnique.mockResolvedValue({
+        id: 5n,
+        title: 'Team sync',
+        publicToken: 'abcdefghijklmnopqrstuv',
+      });
+
+      const result = await service.buildInviteMessage(5n);
+
+      expect(result.shareUrl).toBe(
+        'https://app.example/p/abcdefghijklmnopqrstuv',
+      );
+      expect(result.message).toContain('Team sync');
+      expect(result.message).toContain(result.shareUrl);
+    });
+
+    it('throws 404 when the poll is missing', async () => {
+      pollFindUnique.mockResolvedValue(null);
+      await expect(service.buildInviteMessage(999n)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

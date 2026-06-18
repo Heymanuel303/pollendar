@@ -9,6 +9,37 @@ import { PrismaService } from '../prisma/prisma.service';
 /** VarChar(500) ceiling for EmailLog.error — truncate any captured message to fit. */
 const ERROR_MAX_LEN = 500;
 
+/** "HH:mm" from a 1970-anchored @db.Time Date; '' when absent. */
+function timeLabel(time: Date | null): string {
+  return time ? time.toISOString().slice(11, 16) : '';
+}
+
+/**
+ * Human-readable label for a finalized slot: prefers its explicit `label`, else renders the
+ * date with a time range (or "all day"). Used as the final-slot line in the completion email.
+ */
+function renderSlotLabel(slot: {
+  startTime: Date | null;
+  endTime: Date | null;
+  isAllDay: boolean;
+  label: string | null;
+  date: { eventDate: Date };
+}): string {
+  const day = slot.date.eventDate.toISOString().slice(0, 10);
+  if (slot.label) {
+    return `${day} — ${slot.label}`;
+  }
+  if (slot.isAllDay) {
+    return `${day} (all day)`;
+  }
+  const start = timeLabel(slot.startTime);
+  const end = timeLabel(slot.endTime);
+  if (start && end) {
+    return `${day} ${start}–${end}`;
+  }
+  return start ? `${day} ${start}` : day;
+}
+
 /**
  * Fans out poll-completion emails to participants who left an address, recording one
  * idempotent `email_log` row per participant keyed by UNIQUE(poll_id, participant_id, type).
@@ -23,6 +54,39 @@ export class NotificationsService {
     private readonly mail: MailService,
     private readonly config: ConfigService,
   ) {}
+
+  /**
+   * Self-contained completion fan-out keyed by `pollId`: loads the poll, renders its finalized
+   * slot label, and delegates to {@link sendPollCompletedEmails}. A no-op (logged) when the poll
+   * is missing or has no final slot — safe to call unconditionally after a complete transaction.
+   */
+  async notifyPollCompleted(pollId: bigint): Promise<void> {
+    const poll = await this.prisma.poll.findUnique({ where: { id: pollId } });
+    if (!poll || poll.finalSlotId === null) {
+      this.logger.log(
+        `Poll ${pollId} missing or not finalized; sending nothing`,
+      );
+      return;
+    }
+
+    const slot = await this.prisma.pollSlot.findUnique({
+      where: { id: poll.finalSlotId },
+      include: { date: true },
+    });
+    if (!slot) {
+      this.logger.warn(
+        `Poll ${pollId} final slot ${poll.finalSlotId} not found; sending nothing`,
+      );
+      return;
+    }
+
+    await this.sendPollCompletedEmails(
+      pollId,
+      poll.title,
+      poll.publicToken,
+      renderSlotLabel(slot),
+    );
+  }
 
   async sendPollCompletedEmails(
     pollId: bigint,
