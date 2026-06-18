@@ -24,6 +24,19 @@ const completeEnv = (): Record<string, string> => ({
   THROTTLE_LIMIT: '10',
 });
 
+/** A complete, valid production env sending via Resend SMTP (auth + TLS on 465). */
+const prodEnv = (): Record<string, string> => ({
+  ...completeEnv(),
+  NODE_ENV: 'production',
+  COOKIE_SECURE: 'true',
+  SMTP_HOST: 'smtp.resend.com',
+  SMTP_PORT: '465',
+  SMTP_SECURE: 'true',
+  SMTP_USER: 'resend',
+  SMTP_PASSWORD: 're_test_key',
+  MAIL_FROM: 'Pollendar <pollendar@heymanuel.ch>',
+});
+
 describe('validate (env)', () => {
   it('accepts a complete, valid env', () => {
     expect(() => validate(completeEnv())).not.toThrow();
@@ -86,5 +99,36 @@ describe('validate (env)', () => {
 
   it('allows empty SMTP credentials (Mailpit needs no auth)', () => {
     expect(() => validate(completeEnv())).not.toThrow();
+  });
+
+  describe('production SMTP hardening', () => {
+    it('accepts a complete Resend production env', () => {
+      expect(() => validate(prodEnv())).not.toThrow();
+    });
+
+    it('rejects production with an empty SMTP_USER', () => {
+      expect(() => validate({ ...prodEnv(), SMTP_USER: '' })).toThrow(
+        /SMTP_USER/,
+      );
+    });
+
+    it('rejects production with an empty SMTP_PASSWORD', () => {
+      expect(() => validate({ ...prodEnv(), SMTP_PASSWORD: '' })).toThrow(
+        /SMTP_PASSWORD/,
+      );
+    });
+
+    it('rejects production with SMTP_SECURE=false', () => {
+      expect(() => validate({ ...prodEnv(), SMTP_SECURE: 'false' })).toThrow(
+        /SMTP_SECURE/,
+      );
+    });
+
+    it('coerces the validated Resend production env', () => {
+      const config = validate(prodEnv());
+      expect(config.NODE_ENV).toBe(Environment.Production);
+      expect(config.SMTP_SECURE).toBe(true);
+      expect(config.SMTP_USER).toBe('resend');
+    });
   });
 });

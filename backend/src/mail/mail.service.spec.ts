@@ -18,11 +18,13 @@ describe('MailService', () => {
 
   const buildConfig = (
     overrides: Record<string, unknown> = {},
+    requiredOverrides: Record<string, string> = {},
   ): Partial<ConfigService> => {
     const required: Record<string, string> = {
       SMTP_HOST: 'localhost',
       SMTP_PORT: '1025',
       MAIL_FROM: 'Pollendar <no-reply@pollendar.local>',
+      ...requiredOverrides,
     };
     const optional: Record<string, unknown> = {
       SMTP_SECURE: false,
@@ -120,6 +122,43 @@ describe('MailService', () => {
         secure: false,
         auth: { user: 'mailuser', pass: 'secret' },
       });
+    });
+  });
+
+  describe('with Resend SMTP credentials', () => {
+    const resendConfig = (): Partial<ConfigService> =>
+      buildConfig(
+        {
+          SMTP_SECURE: true,
+          SMTP_USER: 'resend',
+          SMTP_PASSWORD: 're_test_key',
+        },
+        {
+          SMTP_HOST: 'smtp.resend.com',
+          SMTP_PORT: '465',
+          MAIL_FROM: 'Pollendar <pollendar@heymanuel.ch>',
+        },
+      );
+
+    it('creates a secure, authenticated transporter on port 465', async () => {
+      (nodemailer.createTransport as jest.Mock).mockClear();
+      await compile(resendConfig());
+
+      expect(nodemailer.createTransport).toHaveBeenCalledWith({
+        host: 'smtp.resend.com',
+        port: 465,
+        secure: true,
+        auth: { user: 'resend', pass: 're_test_key' },
+      });
+    });
+
+    it('sends from the verified Resend domain From address', async () => {
+      const resendService = await compile(resendConfig());
+      await resendService.sendMagicLink('x@y.z', 'http://link');
+
+      expect(sendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ from: 'Pollendar <pollendar@heymanuel.ch>' }),
+      );
     });
   });
 });

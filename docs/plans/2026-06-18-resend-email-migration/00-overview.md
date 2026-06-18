@@ -2,7 +2,7 @@
 
 **Slug:** `resend-email-migration` (folder: `docs/plans/2026-06-18-resend-email-migration/`)
 **Created:** 2026-06-18
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Migrate Pollendar's **production** outbound email (magic-link sign-in + poll-completed notices) from the local docker-compose **Mailpit** SMTP sink to **Resend**, sending from `Pollendar <pollendar@heymanuel.ch>` (the owner controls `heymanuel.ch`). Local dev and the e2e suites keep using Mailpit — the prod-vs-dev switch is purely env-driven, with **no change to `MailService` logic or its public API**.
@@ -40,7 +40,7 @@ Migrate Pollendar's **production** outbound email (magic-link sign-in + poll-com
 
 ## Phases
 1. [01-resend-domain-verification](01-resend-domain-verification.md) — Resend account + `heymanuel.ch` DNS verification (SPF/DKIM/DMARC) + sending API key, captured as a runbook · _solo_
-2. [02-backend-smtp-config](02-backend-smtp-config.md) — production-scoped env validation + `.env.example` Resend block + Resend transport spec (no MailService change) · _solo_
+2. [02-backend-smtp-config](02-backend-smtp-config.md) — production-scoped env validation + `.env.example` Resend block + Resend transport spec (no MailService change) · _solo_ ✓
 3. [03-deploy-wiring-and-docs](03-deploy-wiring-and-docs.md) — DEPLOY.md/README/compose docs for the split + secret-manager wiring + real end-to-end send verification · _solo_
 
 ## Notes & open questions

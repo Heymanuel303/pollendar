@@ -3,6 +3,7 @@
 **Plan:** [resend-email-migration](00-overview.md)
 **Depends on:** [01-resend-domain-verification.md](01-resend-domain-verification.md)
 **Execution:** solo
+**Status:** completed
 
 ## Context
 Pollendar's outbound mail (magic-link + poll-completed) goes through the existing nodemailer-based `MailService`, which is entirely env-driven. The migration's goal is to send production mail via Resend SMTP from `Pollendar <pollendar@heymanuel.ch>` while keeping Mailpit for local dev and the e2e suite — production vs dev is purely a matter of which env values are supplied. This phase hardens env handling and docs/examples so a prod deploy points at `smtp.resend.com` with auth + TLS, without touching `MailService`'s logic or public API.
@@ -63,9 +64,9 @@ Make the backend send via Resend SMTP in production through the existing `MailSe
 - Manual sanity (no real send): with prod-style env, the app boot would fail fast if SMTP auth/secure are missing — covered by the env.validation prod tests rather than a live boot.
 
 ## Acceptance
-- [ ] `env.validation` requires non-empty `SMTP_USER` + `SMTP_PASSWORD` and `SMTP_SECURE=true` in production, and still accepts auth-less `SMTP_SECURE=false` in development (proven by `env.validation.spec.ts`).
-- [ ] `mail.service.spec.ts` has a Resend suite asserting `createTransport({ host: 'smtp.resend.com', port: 465, secure: true, auth: { user: 'resend', pass: ... } })`, and the existing Mailpit cases still pass.
-- [ ] `.env.example` keeps the active dev Mailpit block and adds a commented-out Resend production block with `MAIL_FROM="Pollendar <pollendar@heymanuel.ch>"`; no `RESEND_API_KEY` var is introduced.
-- [ ] `MailService` source/public API, `mail.module.ts`, `auth.service.ts`, `notifications.service.ts`, and `backend/test/setup-e2e.ts` are unchanged.
-- [ ] `docs/DEPLOY.md`, `docker-compose.yml`, and the READMEs are untouched (owned by Phase 3).
-- [ ] `npm run lint`, `npm test`, and `npm run build` (in `backend/`) all pass; changes left uncommitted (no push, no PR).
+- [x] `env.validation` requires non-empty `SMTP_USER` + `SMTP_PASSWORD` and `SMTP_SECURE=true` in production, and still accepts auth-less `SMTP_SECURE=false` in development (proven by `env.validation.spec.ts`).
+- [x] `mail.service.spec.ts` has a Resend suite asserting `createTransport({ host: 'smtp.resend.com', port: 465, secure: true, auth: { user: 'resend', pass: ... } })`, and the existing Mailpit cases still pass.
+- [x] `.env.example` keeps the active dev Mailpit block and adds a commented-out Resend production block with `MAIL_FROM="Pollendar <pollendar@heymanuel.ch>"`; no `RESEND_API_KEY` var is introduced.
+- [x] `MailService` source/public API, `mail.module.ts`, `auth.service.ts`, `notifications.service.ts`, and `backend/test/setup-e2e.ts` are unchanged.
+- [x] `docs/DEPLOY.md`, `docker-compose.yml`, and the READMEs are untouched (owned by Phase 3).
+- [x] `npm run lint`, `npm test`, and `npm run build` (in `backend/`) all pass; changes left uncommitted (no push, no PR).

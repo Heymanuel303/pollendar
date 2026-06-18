@@ -152,5 +152,35 @@ export function validate(
     );
   }
 
+  // Production hardening: real outbound mail goes through Resend SMTP, which
+  // requires auth + TLS. Mailpit (dev) and the e2e stub need none of this, and
+  // Jest may boot with NODE_ENV=test against the auth-less dev SMTP env, so this
+  // guard is scoped to production only — dev/test keep booting on port 1025.
+  if (validatedConfig.NODE_ENV === Environment.Production) {
+    const prodErrors: string[] = [];
+    if (!validatedConfig.SMTP_USER?.trim()) {
+      prodErrors.push(
+        'SMTP_USER: required outside development (Resend SMTP needs auth)',
+      );
+    }
+    if (!validatedConfig.SMTP_PASSWORD?.trim()) {
+      prodErrors.push(
+        'SMTP_PASSWORD: required outside development (Resend SMTP API key)',
+      );
+    }
+    if (validatedConfig.SMTP_SECURE !== true) {
+      prodErrors.push(
+        'SMTP_SECURE: must be true outside development (Resend SMTP uses TLS on port 465)',
+      );
+    }
+    if (prodErrors.length > 0) {
+      throw new Error(
+        `Invalid environment configuration:\n${prodErrors
+          .map((e) => `  - ${e}`)
+          .join('\n')}`,
+      );
+    }
+  }
+
   return validatedConfig;
 }
