@@ -51,6 +51,6 @@ Add `POST /api/public/polls/:token/responses` that creates a participant and the
   - POST to an unknown token → `404`.
 
 ## Acceptance
-- [ ] `POST /api/public/polls/:token/responses` creates a participant + one response per slot in a single transaction and returns `{ publicToken }` with status `201`, leaking no `id`/`email`/`userId`.
-- [ ] Duplicate email on the same poll returns `409`; a duplicate response on the same slot returns `409`; unknown token returns `404`; invalid body returns `400`.
-- [ ] `npm run lint` and `npm test -- public.service` pass.
+- [x] `POST /api/public/polls/:token/responses` creates a participant + one response per slot in a single transaction and returns `{ publicToken }` with status `201`, leaking no `id`/`email`/`userId`.
+- [x] Duplicate email on the same poll returns `409`; a duplicate response on the same slot returns `409`; unknown token returns `404`; invalid body returns `400`.
+- [x] `npm run lint` and `npm test -- public.service` pass.

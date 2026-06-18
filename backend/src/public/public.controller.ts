@@ -1,5 +1,6 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PublicService } from './public.service';
+import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 /**
  * Anonymous public poll endpoints under `/api/public`. No `@UseGuards` — these are reachable via the
@@ -14,5 +15,11 @@ export class PublicController {
   @Get('polls/:token')
   getPoll(@Param('token') token: string) {
     return this.public_.findByPublicToken(token);
+  }
+
+  /** Submit availability anonymously; returns the new participant's `{ publicToken }` (201). */
+  @Post('polls/:token/responses')
+  submit(@Param('token') token: string, @Body() dto: SubmitResponsesDto) {
+    return this.public_.submitResponses(token, dto);
   }
 }
