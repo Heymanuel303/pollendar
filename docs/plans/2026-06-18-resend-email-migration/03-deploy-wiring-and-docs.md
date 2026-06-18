@@ -57,10 +57,10 @@ Document and wire the Resend SMTP production env (secrets injected at container 
 - **Manual check (real Resend send — requires user-completed Resend domain verification + `re_...` API key):** with a temporary env set to the production Resend values (`SMTP_HOST=smtp.resend.com`, `SMTP_PORT=465`, `SMTP_SECURE=true`, `SMTP_USER=resend`, `SMTP_PASSWORD=<re_... key>`, `MAIL_FROM="Pollendar <pollendar@heymanuel.ch>"`) — never committed — boot the backend and POST `/api/auth/magic-link` with a real recipient email, then confirm the message arrives in that real inbox From `Pollendar <pollendar@heymanuel.ch>` and shows as **Delivered** in the Resend dashboard logs.
 
 ## Acceptance
-- [ ] `docs/DEPLOY.md` documents Resend SMTP (`smtp.resend.com`, `SMTP_USER=resend`, `SMTP_PASSWORD`=Resend API key, `SMTP_SECURE`/port pairing, `MAIL_FROM="Pollendar <pollendar@heymanuel.ch>"`) with `SMTP_USER`/`SMTP_PASSWORD` marked REQUIRED (no "optional*"), plus a one-time Resend domain/DNS setup runbook and a real-send verification runbook.
-- [ ] `.env.example` (added in Phase 2) shows the dev/Mailpit values active and a commented production (Resend) block with placeholder secrets only (no real `re_...` key) — verified consistent with the DEPLOY.md env table; not re-edited here unless reconciliation was needed.
-- [ ] `docker-compose.yml` header comment states Mailpit is dev/e2e-only and prod uses Resend via the same `SMTP_*` vars; no service definition changed.
-- [ ] `README.md`, `backend/README.md`, and `frontend/README.md` all reflect the dev=Mailpit / prod=Resend split, and `frontend/README.md` states the e2e suite always uses Mailpit (`http://localhost:8025`).
-- [ ] No files under `backend/src/`, `backend/test/`, or `frontend/e2e/` were edited; `npm test` and `npm run test:e2e` (backend) and the Playwright happy path (frontend, vs Mailpit) all pass unchanged.
+- [x] `docs/DEPLOY.md` documents Resend SMTP (`smtp.resend.com`, `SMTP_USER=resend`, `SMTP_PASSWORD`=Resend API key, `SMTP_SECURE`/port pairing, `MAIL_FROM="Pollendar <pollendar@heymanuel.ch>"`) with `SMTP_USER`/`SMTP_PASSWORD` marked REQUIRED (no "optional*"), plus a one-time Resend domain/DNS setup runbook and a real-send verification runbook.
+- [x] `.env.example` (added in Phase 2) shows the dev/Mailpit values active and a commented production (Resend) block with placeholder secrets only (no real `re_...` key) — verified consistent with the DEPLOY.md env table; not re-edited here unless reconciliation was needed.
+- [x] `docker-compose.yml` header comment states Mailpit is dev/e2e-only and prod uses Resend via the same `SMTP_*` vars; no service definition changed.
+- [x] `README.md`, `backend/README.md`, and `frontend/README.md` all reflect the dev=Mailpit / prod=Resend split, and `frontend/README.md` states the e2e suite always uses Mailpit (`http://localhost:8025`).
+- [x] No files under `backend/src/`, `backend/test/`, or `frontend/e2e/` were edited; `npm test` and `npm run test:e2e` (backend) and the Playwright happy path (frontend, vs Mailpit) all pass unchanged.
 - [ ] A real magic-link email sent from `pollendar@heymanuel.ch` via Resend arrives in a real inbox and is logged as Delivered in the Resend dashboard.
-- [ ] Tree is left dirty (uncommitted); nothing pushed and no PR opened.
+- [x] Tree is left dirty (uncommitted); nothing pushed and no PR opened.

@@ -31,6 +31,7 @@ before scaffolding begins.
 | Styling      | Tailwind CSS v4 (`@tailwindcss/vite`, CSS-first)             |
 | Auth         | Passwordless magic link (email → signed, single-use link)    |
 | Email (dev)  | Mailpit (catch-all SMTP, web UI at http://localhost:8025)    |
+| Email (prod) | Resend SMTP via the same `SMTP_*` vars, From `Pollendar <pollendar@heymanuel.ch>` — env-driven switch, no code change (see [`docs/DEPLOY.md`](docs/DEPLOY.md)) |
 
 ## Layout
 

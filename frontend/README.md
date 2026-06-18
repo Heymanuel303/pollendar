@@ -72,6 +72,9 @@ Notes:
 - The spec uses a unique throwaway email per run (`creator-<ts>@example.test`) to avoid the
   `@@unique([pollId, email])` participant conflict and stay under the magic-link rate limit (5/60s).
 - Mailpit base URL is configurable via `MAILPIT_URL` (default `http://localhost:8025`).
+- The Playwright suite and `e2e/helpers/mailpit.ts` **always** read delivered email from
+  Mailpit at `http://localhost:8025` (override only via `MAILPIT_URL`); they are **never**
+  pointed at Resend. Production Resend config does not affect the e2e suite.
 - The invalid/expired magic-link branch (`/auth/callback` with a stale token → "This link has
   expired or was already used.") is intentionally **not** part of the happy path.
 

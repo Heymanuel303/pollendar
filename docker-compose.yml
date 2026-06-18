@@ -1,7 +1,12 @@
-# MySQL + Mailpit for local development.
+# MySQL + Mailpit for LOCAL DEV and the e2e suite ONLY.
 #   docker compose up -d
 # MySQL  → localhost:3306
-# Mailpit → SMTP localhost:1025, web UI http://localhost:8025
+# Mailpit → SMTP localhost:1025, web UI http://localhost:8025 (dev/e2e email sink)
+#
+# Mailpit is the dev/e2e SMTP sink — it is NOT a production service. In production
+# the same SMTP_* env vars point at Resend (smtp.resend.com); there is no compose
+# service for prod email. See docs/DEPLOY.md ("Resend setup") for the env-driven
+# prod=Resend / dev=Mailpit split (same MailService, no code change).
 services:
   mysql:
     image: mysql:8.4

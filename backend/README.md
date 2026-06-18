@@ -35,3 +35,8 @@ See [`../docs/DEPLOY.md`](../docs/DEPLOY.md) for the full production deploy guid
 image is built from `backend/` (`docker build -t pollendar-api:<tag> ./backend`),
 and on container start the entrypoint runs `prisma migrate deploy` before serving
 the API.
+
+Production outbound email uses **Resend SMTP** — an env-only switch from the dev
+Mailpit relay (same `MailService`, same `SMTP_*` vars, no code change). See
+[`../docs/DEPLOY.md`](../docs/DEPLOY.md) for the Resend env table and the one-time
+domain setup.
