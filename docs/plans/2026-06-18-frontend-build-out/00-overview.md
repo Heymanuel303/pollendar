@@ -53,7 +53,7 @@ PLAN.md **Phase 8 (Hardening)**.
 
 ## Phases
 1. [01-scaffold-and-design-system](01-scaffold-and-design-system.md) — scaffold Vue/Vite/TS/Pinia/router, Tailwind v4 `@theme` tokens + fonts + motif classes, app shell + nav, credentials/BigInt-safe API client, base UI primitives · _solo_ ✓
-2. [02-auth-flow](02-auth-flow.md) — `authStore`, `EmailGate`, Landing, AuthCallback (`?token=` → `/auth/verify`), router guards, `/auth/me` bootstrap · _solo_
+2. [02-auth-flow](02-auth-flow.md) — `authStore`, `EmailGate`, Landing, AuthCallback (`?token=` → `/auth/verify`), router guards, `/auth/me` bootstrap · _solo_ ✓
 3. [03-poll-editor](03-poll-editor.md) — `PollEditor` view + `DateSlotEditor` + `pollStore.create` (title/desc/timezone, nested dates+slots) · _solo_
 4. [04-dashboard](04-dashboard.md) — `pollStore.list`, `Dashboard` view, `PollCard` (open/completed), empty state · _solo_
 5. [05-public-poll-flow](05-public-poll-flow.md) — `PublicPoll` + `AvailabilityToggle` + `publicPollStore` (load/submit/results), participant-token persistence, `PublicThanks` · _solo_

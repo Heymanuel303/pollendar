@@ -68,5 +68,5 @@ Implement creator auth end to end — `authStore` (`user`, `requestLink`, `verif
 - [ ] Requesting a magic link from Landing always shows "Check your inbox" (even for an unknown email) and the dev link arrives in Mailpit.
 - [ ] Visiting `/auth/callback?token=<valid>` verifies, sets the session, and redirects to `/dashboard`; an invalid/expired token shows the expired-link error, never a blank loader.
 - [ ] A hard refresh on an authed route keeps the user signed in (session restored via the `/auth/me` bootstrap); after `logout()` the same route redirects to `/`.
-- [ ] No JWT is ever read by JS — all four auth calls use `credentials:"include"` and the store holds only `{ id, email, displayName }` with `id` typed as `string`.
-- [ ] `npm run build`/type-check and `npm run lint` pass, and the three new spec files are green.
+- [x] No JWT is ever read by JS — all four auth calls use `credentials:"include"` and the store holds only `{ id, email, displayName }` with `id` typed as `string`.
+- [x] `npm run build`/type-check and `npm run lint` pass, and the three new spec files are green.
