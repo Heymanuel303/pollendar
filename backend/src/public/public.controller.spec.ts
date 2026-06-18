@@ -5,12 +5,19 @@ import { PublicService } from './public.service';
 describe('PublicController', () => {
   let controller: PublicController;
   const findByPublicToken = jest.fn();
+  const getParticipantResponses = jest.fn();
 
   beforeEach(async () => {
     findByPublicToken.mockReset();
+    getParticipantResponses.mockReset();
     const moduleRef = await Test.createTestingModule({
       controllers: [PublicController],
-      providers: [{ provide: PublicService, useValue: { findByPublicToken } }],
+      providers: [
+        {
+          provide: PublicService,
+          useValue: { findByPublicToken, getParticipantResponses },
+        },
+      ],
     }).compile();
     controller = moduleRef.get(PublicController);
   });
@@ -25,13 +32,35 @@ describe('PublicController', () => {
     expect(result).toBe(poll);
   });
 
+  it('delegates getParticipantResponses with numeric limit/offset and returns its value', () => {
+    const value = { participants: [], total: 0, hasMore: false };
+    getParticipantResponses.mockReturnValue(value);
+
+    const result = controller.getParticipantResponses('tok', '50', '10');
+
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', 50, 10);
+    expect(result).toBe(value);
+  });
+
+  it('passes undefined for omitted limit/offset', () => {
+    void controller.getParticipantResponses('tok');
+
+    expect(getParticipantResponses).toHaveBeenCalledWith(
+      'tok',
+      undefined,
+      undefined,
+    );
+  });
+
   // `@Throttle({ default: { limit, ttl } })` writes `THROTTLER:LIMIT` + name on the method via
   // Reflect (see @nestjs/throttler throttler.decorator). The only write endpoint on the public
   // surface (`submit`) carries a tighter per-IP limit; the read getters keep the global default.
   describe('throttling', () => {
     const THROTTLER_LIMIT_DEFAULT = 'THROTTLER:LIMITdefault';
 
-    function handlerOf(name: 'submit' | 'getResults' | 'getPoll'): object {
+    function handlerOf(
+      name: 'submit' | 'getResults' | 'getPoll' | 'getParticipantResponses',
+    ): object {
       const descriptor = Object.getOwnPropertyDescriptor(
         PublicController.prototype,
         name,
@@ -53,6 +82,12 @@ describe('PublicController', () => {
       ).toBeUndefined();
       expect(
         Reflect.getMetadata(THROTTLER_LIMIT_DEFAULT, handlerOf('getPoll')),
+      ).toBeUndefined();
+      expect(
+        Reflect.getMetadata(
+          THROTTLER_LIMIT_DEFAULT,
+          handlerOf('getParticipantResponses'),
+        ),
       ).toBeUndefined();
     });
   });

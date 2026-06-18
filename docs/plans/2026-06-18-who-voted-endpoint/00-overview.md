@@ -2,7 +2,7 @@
 
 **Slug:** `who-voted-endpoint` (folder: `docs/plans/2026-06-18-who-voted-endpoint/`)
 **Created:** 2026-06-18
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Surface per-participant responses on the public poll surface. Add a new public `GET /api/public/polls/:token/participants-responses` endpoint returning each participant's display name and per-slot answers (never email), plus the frontend client/types/store wiring to consume it. This is the data dependency for the participant matrix (Plan 4 — `participant-matrix`) and is otherwise fully independent.
@@ -32,7 +32,7 @@ Surface per-participant responses on the public poll surface. Add a new public `
 - [ ] Backend specs + frontend build/lint green
 
 ## Phases
-1. [01-backend-endpoint](01-backend-endpoint.md) — DTO + service + controller route + specs · _workflow_
+1. [01-backend-endpoint](01-backend-endpoint.md) — DTO + service + controller route + specs · _workflow_ ✓
 2. [02-frontend-wiring](02-frontend-wiring.md) — client method + types + store action · _solo_
 
 ## Open questions

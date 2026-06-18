@@ -13,12 +13,14 @@ const pollFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const transaction = jest.fn();
 const queryRaw = jest.fn<Promise<unknown>, [unknown]>();
 const prismaSlotTallyUpsert = jest.fn<Promise<unknown>, [unknown]>();
+const participantCount = jest.fn<Promise<number>, [unknown]>();
 
 const prisma: Partial<PrismaService> = {
   poll: { findUnique: pollFindUnique } as never,
   $transaction: transaction as never,
   $queryRaw: queryRaw as never,
   slotTally: { upsert: prismaSlotTallyUpsert } as never,
+  participant: { count: participantCount } as never,
 };
 
 /** A raw Prisma row including owner/participant fields the sanitizer must strip. */
@@ -61,6 +63,7 @@ describe('PublicService', () => {
     transaction.mockReset();
     queryRaw.mockReset();
     prismaSlotTallyUpsert.mockReset();
+    participantCount.mockReset();
     const moduleRef = await Test.createTestingModule({
       providers: [PublicService, { provide: PrismaService, useValue: prisma }],
     }).compile();
@@ -587,6 +590,212 @@ describe('PublicService', () => {
       expect(result.best?.score).toBe(6);
       expect(typeof result.slots[0].available).toBe('number');
       expect(result.slots[0].available).toBe(3);
+    });
+  });
+
+  describe('getParticipantResponses', () => {
+    /** Serialize like the wire would: bigints → strings via the global interceptor's replacer. */
+    function serialize(value: unknown): string {
+      return JSON.stringify(value, (_k, v: unknown) =>
+        typeof v === 'bigint' ? v.toString() : v,
+      );
+    }
+
+    /** Pull the SQL text out of the `Prisma.sql` fragment captured by the $queryRaw mock. */
+    function capturedSql(): string {
+      const arg = queryRaw.mock.calls[0][0] as Prisma.Sql;
+      return arg.strings.join('');
+    }
+
+    it('throws 404 for an unknown token and does not query rows or count', async () => {
+      pollFindUnique.mockResolvedValue(null);
+
+      await expect(
+        service.getParticipantResponses('bad'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+      expect(queryRaw).not.toHaveBeenCalled();
+      expect(participantCount).not.toHaveBeenCalled();
+    });
+
+    it('folds multiple rows for one participant into a single ordered answer list', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(1);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: 100n,
+          availability: 'available',
+        },
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: 101n,
+          availability: 'maybe',
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.participants).toEqual([
+        {
+          participantId: 1n,
+          displayName: 'Ada',
+          answers: [
+            { pollSlotId: 100n, availability: 'available' },
+            { pollSlotId: 101n, availability: 'maybe' },
+          ],
+        },
+      ]);
+    });
+
+    it('includes a zero-response participant with answers: []', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(1);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 2n,
+          display_name: 'Grace',
+          poll_slot_id: null,
+          availability: null,
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.participants).toEqual([
+        { participantId: 2n, displayName: 'Grace', answers: [] },
+      ]);
+    });
+
+    it('never leaks email in the result, its JSON, or the executed SQL', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(1);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: 100n,
+          availability: 'available',
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.participants[0]).not.toHaveProperty('email');
+      expect(serialize(result).toLowerCase()).not.toContain('email');
+      expect(capturedSql().toLowerCase()).not.toContain('email');
+    });
+
+    it('returns rows identically for a completed/cancelled poll (no status gate)', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n, status: 'completed' });
+      participantCount.mockResolvedValue(1);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: 100n,
+          availability: 'available',
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.participants).toHaveLength(1);
+      expect(result.participants[0].answers).toHaveLength(1);
+    });
+
+    it('derives total/hasMore from the count and defaults take to 100', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(250);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: null,
+          availability: null,
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.total).toBe(250);
+      expect(result.hasMore).toBe(true);
+      // Default LIMIT is 100 when no limit is supplied.
+      const sql = capturedSql();
+      const limitParam = (queryRaw.mock.calls[0][0] as Prisma.Sql).values;
+      expect(limitParam).toContain(100);
+      expect(sql).toContain('LIMIT');
+    });
+
+    it('caps take at 1000 when limit exceeds the cap', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(5);
+      queryRaw.mockResolvedValue([]);
+
+      await service.getParticipantResponses('tok', 50_000);
+
+      const values = (queryRaw.mock.calls[0][0] as Prisma.Sql).values;
+      expect(values).toContain(1000);
+      expect(values).not.toContain(50_000);
+    });
+
+    it('passes a positive offset through as OFFSET and reports hasMore', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(250);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 5n,
+          display_name: 'Lin',
+          poll_slot_id: 100n,
+          availability: 'available',
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok', 50, 10);
+
+      const values = (queryRaw.mock.calls[0][0] as Prisma.Sql).values;
+      // poll.id, take, skip → 3, 50, 10 all flow in via Prisma.sql parameterization.
+      expect(values).toEqual([3n, 50, 10]);
+      // skip(10) + page(1) < total(250) → more pages remain.
+      expect(result.hasMore).toBe(true);
+    });
+
+    it('reports hasMore false once the page covers the remaining participants', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(2);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: null,
+          availability: null,
+        },
+        {
+          participant_id: 2n,
+          display_name: 'Grace',
+          poll_slot_id: null,
+          availability: null,
+        },
+      ]);
+
+      const result = await service.getParticipantResponses('tok');
+
+      expect(result.total).toBe(2);
+      // skip(0) + page(2) === total(2) → no more pages.
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('falls back to defaults for negative/NaN limit and offset', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(0);
+      queryRaw.mockResolvedValue([]);
+
+      await service.getParticipantResponses('tok', -5, Number.NaN);
+
+      const values = (queryRaw.mock.calls[0][0] as Prisma.Sql).values;
+      // Garbage inputs clamp to the safe defaults: take=100, skip=0.
+      expect(values).toEqual([3n, 100, 0]);
     });
   });
 });

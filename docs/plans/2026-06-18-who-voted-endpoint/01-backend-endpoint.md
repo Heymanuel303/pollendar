@@ -94,7 +94,7 @@ Add the participant-responses DTO, PublicService.getParticipantResponses(token, 
 - Manual SQL read: the `$queryRaw` in `getParticipantResponses` selects `id`/`display_name`/`poll_slot_id`/`availability` only — never `email`, never `*`.
 
 ## Acceptance
-- [ ] `getParticipantResponses(token)` returns `{ participants: [{ participantId, displayName, answers: [{ pollSlotId, availability }] }], total, hasMore }` with NO `email` anywhere — verified by the no-leak spec and the adversarial grep/SQL audit.
-- [ ] Returns rows for a `completed`/`cancelled` poll identically to `open` — no `status` filter, no submit-gate (only a valid token gates it; unknown → 404).
-- [ ] `GET /api/public/polls/:token/participants-responses` is registered, unauthenticated (no `@UseGuards`), on the global throttle default, with optional `?limit` (default 100, cap 1000) & `?offset` passed through to the service.
-- [ ] `cd backend && npm run lint && npm test` pass; existing `getResults`/`submitResponses` specs and the `slot_tallies` cache are untouched.
+- [x] `getParticipantResponses(token)` returns `{ participants: [{ participantId, displayName, answers: [{ pollSlotId, availability }] }], total, hasMore }` with NO `email` anywhere — verified by the no-leak spec and the adversarial grep/SQL audit.
+- [x] Returns rows for a `completed`/`cancelled` poll identically to `open` — no `status` filter, no submit-gate (only a valid token gates it; unknown → 404).
+- [x] `GET /api/public/polls/:token/participants-responses` is registered, unauthenticated (no `@UseGuards`), on the global throttle default, with optional `?limit` (default 100, cap 1000) & `?offset` passed through to the service.
+- [x] `cd backend && npm run lint && npm test` pass; existing `getResults`/`submitResponses` specs and the `slot_tallies` cache are untouched.

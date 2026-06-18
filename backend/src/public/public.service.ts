@@ -4,11 +4,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Availability, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { generatePublicToken } from '../polls/public-token.util';
 import { PublicPoll } from './dto/public-poll.dto';
 import { PollResults } from './dto/poll-results.dto';
+import {
+  ParticipantResponses,
+  ParticipantWithResponses,
+} from './dto/participant-responses.dto';
 import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 /**
@@ -128,6 +132,92 @@ export class PublicService {
       : null;
 
     return { best, slots };
+  }
+
+  /**
+   * Per-participant `displayName` + per-slot answers for a poll, reachable via the public token. A
+   * participant's `email` NEVER reaches the wire — it is excluded at the SQL SELECT level (the
+   * SELECT enumerates only `id`/`display_name`, never `*`), not mapped away afterward. There is NO
+   * `status` check and NO submit-gate: rows are returned for open AND completed/cancelled polls
+   * alike; the only gate is a valid token (unknown token → 404).
+   *
+   * Pagination counts PARTICIPANTS (not response rows): the participant page is selected in a
+   * subquery, then LEFT JOINed to `responses` so zero-response participants still appear (with
+   * `answers: []`). Values flow into the query only via `Prisma.sql` `${...}` parameterization.
+   * `participantId`/`pollSlotId` stay raw `bigint`; the `BigIntSerializerInterceptor` stringifies
+   * them on the wire (the DTO types them `string` only to document that contract).
+   */
+  async getParticipantResponses(
+    token: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<ParticipantResponses> {
+    const poll = await this.prisma.poll.findUnique({
+      where: { publicToken: token },
+    });
+    if (!poll) {
+      throw new NotFoundException();
+    }
+
+    const take = Math.min(
+      Math.max(
+        Number.isFinite(limit) && (limit ?? NaN) > 0 ? Math.floor(limit!) : 100,
+        1,
+      ),
+      1000,
+    );
+    const skip =
+      Number.isFinite(offset) && (offset ?? 0) > 0 ? Math.floor(offset!) : 0;
+
+    const total = await this.prisma.participant.count({
+      where: { pollId: poll.id },
+    });
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        participant_id: bigint;
+        display_name: string;
+        poll_slot_id: bigint | null;
+        availability: Availability | null;
+      }>
+    >(Prisma.sql`
+      SELECT p.id            AS participant_id,
+             p.display_name  AS display_name,
+             r.poll_slot_id  AS poll_slot_id,
+             r.availability  AS availability
+      FROM (
+        SELECT id, display_name
+        FROM participants
+        WHERE poll_id = ${poll.id}
+        ORDER BY id ASC
+        LIMIT ${take} OFFSET ${skip}
+      ) p
+      LEFT JOIN responses r ON r.participant_id = p.id
+      ORDER BY p.id ASC, r.poll_slot_id ASC
+    `);
+
+    const byId = new Map<bigint, ParticipantWithResponses>();
+    const participants: ParticipantWithResponses[] = [];
+    for (const row of rows) {
+      let entry = byId.get(row.participant_id);
+      if (!entry) {
+        entry = {
+          participantId: row.participant_id as unknown as string,
+          displayName: row.display_name,
+          answers: [],
+        };
+        byId.set(row.participant_id, entry);
+        participants.push(entry);
+      }
+      if (row.poll_slot_id !== null) {
+        entry.answers.push({
+          pollSlotId: row.poll_slot_id as unknown as string,
+          availability: row.availability!,
+        });
+      }
+    }
+
+    return { participants, total, hasMore: skip + participants.length < total };
   }
 
   /** Format a `@db.Date` value as a `YYYY-MM-DD` string, dropping any time component. */
