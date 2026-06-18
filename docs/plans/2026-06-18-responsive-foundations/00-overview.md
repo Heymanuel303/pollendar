@@ -36,7 +36,7 @@ Make Pollendar mobile-friendly with a responsive-first single codebase: ship the
 
 ## Phases
 1. [01-foundations](01-foundations.md) — `useBreakpoint` composable + safe-area/touch-target/`.pb-with-footer` utilities + responsive `AppNav` + tighter mobile shell padding · _solo_ ✓
-2. [02-landing-dashboard](02-landing-dashboard.md) — pure-CSS mobile-first pass over `Landing.vue` and `Dashboard.vue` (heading scale, padding, `md:` grids) · _solo_
+2. [02-landing-dashboard](02-landing-dashboard.md) — pure-CSS mobile-first pass over `Landing.vue` and `Dashboard.vue` (heading scale, padding, `md:` grids) · _solo_ ✓
 3. [03-voter-manage-chrome](03-voter-manage-chrome.md) — voter form + manage chrome pass: safe-area footer fix, About-you form, `PollManage` chrome, `ShareBox`, `ResultsTable`, `BestSlotBloom`, `AvailabilityToggle`/`SlotRow` touch targets · _workflow_
 
 ## Open questions

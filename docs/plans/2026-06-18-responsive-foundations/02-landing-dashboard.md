@@ -31,7 +31,7 @@ Apply a mobile-first responsive CSS pass to `Landing.vue` and `Dashboard.vue` â€
 - Manual mobile-viewport check at 375px and 768px in devtools: Landing hero heading and lede do not overflow; `New poll` button on Dashboard does not collide with the title; Dashboard card grid is 1-col on phone, 2-col at `sm`, 3-col at `lg`.
 
 ## Acceptance
-- [ ] At 375px, the Dashboard `h1` renders at `text-2xl` and the `New poll` action stacks below it with no horizontal scroll.
-- [ ] At `sm` (640px) and above, the Dashboard `h1` is `text-3xl` and the header is a single `flex-row` with title left / action right (unchanged from before).
-- [ ] Landing hero uses tighter `gap-10 py-8` on phones and the original `gap-14`/`py-10`/`lg:py-16` rhythm at `sm`+; heading remains `text-4xl sm:text-5xl`.
-- [ ] No DOM/markup changes, no new color tokens, and `npm run build` + `npm run lint` both pass.
+- [x] At 375px, the Dashboard `h1` renders at `text-2xl` and the `New poll` action stacks below it with no horizontal scroll.
+- [x] At `sm` (640px) and above, the Dashboard `h1` is `text-3xl` and the header is a single `flex-row` with title left / action right (unchanged from before).
+- [x] Landing hero uses tighter `gap-10 py-8` on phones and the original `gap-14`/`py-10`/`lg:py-16` rhythm at `sm`+; heading remains `text-4xl sm:text-5xl`.
+- [x] No DOM/markup changes, no new color tokens, and `npm run build` + `npm run lint` both pass.

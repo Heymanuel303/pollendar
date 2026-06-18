@@ -23,9 +23,9 @@ function onShare(poll: Poll): void {
 <template>
   <div class="py-2">
     <!-- Page header -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div>
-        <h1 class="font-display text-3xl font-semibold tracking-tight">Your polls</h1>
+        <h1 class="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Your polls</h1>
         <p class="mt-1.5 text-dim">
           Find the time everyone can make — track every gathering in one place.
         </p>

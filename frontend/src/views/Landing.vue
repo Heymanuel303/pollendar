@@ -23,7 +23,7 @@ const previewRows: Cell[][] = [
 </script>
 
 <template>
-  <section class="grid items-center gap-14 py-10 lg:grid-cols-2 lg:py-16">
+  <section class="grid items-center gap-10 py-8 sm:gap-14 sm:py-10 lg:grid-cols-2 lg:py-16">
     <!-- Copy + EmailGate -->
     <div>
       <p class="text-xs uppercase tracking-widest text-mute">Availability polling, in bloom</p>
@@ -53,7 +53,10 @@ const previewRows: Cell[][] = [
     <!-- Decorative constellation preview — illustrative only, no live data this phase. -->
     <div class="relative hidden lg:block">
       <div class="bloom-bg absolute -inset-6 -z-10 rounded-3xl" aria-hidden="true"></div>
-      <section class="rounded-2xl border border-line bg-surface p-6 shadow-card" aria-hidden="true">
+      <section
+        class="rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8"
+        aria-hidden="true"
+      >
         <div class="flex items-center justify-between">
           <div>
             <h2 class="font-display text-lg font-semibold tracking-tight">Team dinner</h2>
