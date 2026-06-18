@@ -48,7 +48,7 @@ const inviteMessage = computed<string>(() =>
       <label class="text-xs uppercase tracking-widest text-mute">Invite message</label>
       <p
         data-testid="invite-message"
-        class="mt-2 whitespace-pre-line rounded-xl border border-line bg-canvas p-4 text-sm leading-relaxed text-dim"
+        class="mt-2 mb-2 whitespace-pre-line rounded-xl border border-line bg-canvas p-4 text-sm leading-relaxed text-dim"
       >{{ inviteMessage }}</p>
       <CopyButton :value="inviteMessage" variant="secondary">Copy invite message</CopyButton>
     </div>

@@ -53,7 +53,7 @@ const invalid = computed<boolean>(
 const showError = computed<boolean>(() => props.showErrors === true && invalid.value)
 
 const timeFieldClass =
-  'w-20 rounded-md border bg-canvas px-2 py-1 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
+  'field-sizing-content rounded-md border bg-canvas px-2 py-1 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
 const timeStateClass = computed<string>(() =>
   showError.value
     ? 'border-coral focus:border-coral focus:ring-coral/30'
@@ -70,7 +70,7 @@ const timeStateClass = computed<string>(() =>
         v-model="label"
         aria-label="Slot label"
         placeholder="Label"
-        class="w-24 rounded-md border border-line bg-canvas px-2 py-1 text-sm text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
+        class="field-sizing-content min-w-16 rounded-md border border-line bg-canvas px-2 py-1 text-sm text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
       />
 
       <!-- All-day / Set-times segmented toggle -->
