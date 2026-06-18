@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* ── Dusk Calendar design tokens (DESIGN-UI.md) ──────────────────────────────
+   Declared once here, CSS-first. Tailwind v4 generates utilities from each token
+   (bg-canvas, text-pollen, border-line, font-display, shadow-glow, …). No
+   tailwind.config.js, no PostCSS, no legacy base/components/utilities at-rules. */
+@theme {
+  --color-canvas: #14122b;
+  --color-surface: #211e40;
+  --color-surface2: #2b2752;
+  --color-line: #36325e;
+  --color-pollen: #ffc857;
+  --color-pollen-deep: #f0a93b;
+  --color-moonlight: #f4f2ff;
+  --color-dim: #b8b3de;
+  --color-mute: #7e79ae;
+  --color-yes: #ffc857;
+  --color-maybe: #b8b3de;
+  --color-no: #3a3563;
+  --color-mint: #6fe0b0;
+  --color-coral: #ff7a6b;
+
+  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, sans-serif;
+
+  --shadow-glow: 0 0 0 1px rgb(255 200 87 / 0.55), 0 0 28px rgb(255 200 87 / 0.32);
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 0.35);
+
+  /* Two motions only — settle (ease into place) and bloom (the winner's glow
+     grows in). 150–250ms, ease-out, nothing bounces or loops. */
+  --animate-settle: settle 0.2s ease-out;
+  --animate-bloom: bloom 0.25s ease-out;
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bloom {
+    from {
+      box-shadow: 0 0 0 0 rgb(255 200 87 / 0);
+    }
+    to {
+      box-shadow: var(--shadow-glow);
+    }
+  }
+}
+
+/* Body defaults to the sans family; numerals get the display family via .num. */
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+/* ── Signature motifs ────────────────────────────────────────────────────────
+   The helpers that aren't pure token utilities (ported verbatim from the
+   mockups in docs/design/mockups/). */
+@layer components {
+  /* The dusk sky: deep canvas base + faint pollen/indigo washes. */
+  .bg-dusk {
+    background-color: var(--color-canvas);
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgb(255 200 87 / 0.1), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgb(124 138 224 / 0.12), transparent 60%);
+  }
+
+  /* A single grain of pollen — the constellation marker. Size is set by callers
+     (e.g. h-2.5 w-2.5 in the header, h-3 w-3 in the grid). */
+  .pollen-dot {
+    background: radial-gradient(circle at 35% 30%, #ffe6a8, #ffc857 58%, #e0a325);
+    border-radius: 9999px;
+    box-shadow: 0 0 8px rgb(255 200 87 / 0.55);
+  }
+
+  /* The bloom — reserved for the winning slot. */
+  .bloom {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* A faint radial pollen wash behind the winner. */
+  .bloom-bg {
+    background-image: radial-gradient(130% 120% at 50% 0%, rgb(255 200 87 / 0.16), rgb(255 200 87 / 0) 70%);
+  }
+}
+
+/* Set numerals in the display family even inside body (sans) text. */
+@utility num {
+  font-family: var(--font-display);
+}
+
+/* Respect reduced-motion: disable settle/bloom and show the final state. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-settle,
+  .animate-bloom {
+    animation: none;
+  }
+}

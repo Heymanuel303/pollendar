@@ -1,0 +1,58 @@
+import { describe, it, expect } from 'vitest'
+import { formatDate, formatTime, formatSlotRange, localZoneLabel } from '../timezone'
+import type { PollSlot } from '@/lib/api/types'
+
+function slot(overrides: Partial<PollSlot>): PollSlot {
+  return {
+    id: '1',
+    startTime: null,
+    endTime: null,
+    isAllDay: false,
+    label: null,
+    sortOrder: 0,
+    ...overrides,
+  }
+}
+
+describe('formatTime', () => {
+  it('renders a HH:mm wall-clock time in 24-hour form', () => {
+    expect(formatTime('18:00', 'Europe/Brussels')).toBe('18:00')
+  })
+
+  it('accepts HH:mm:ss and drops the seconds', () => {
+    expect(formatTime('08:30:45', 'America/New_York')).toBe('08:30')
+  })
+})
+
+describe('formatDate', () => {
+  it('renders a YYYY-MM-DD date as a comma-less weekday/month/day label', () => {
+    // 2026-06-26 is a Friday; the value is timezone-independent (anchored in UTC).
+    expect(formatDate('2026-06-26', 'Europe/Brussels')).toBe('Fri Jun 26')
+  })
+})
+
+describe('formatSlotRange', () => {
+  it('collapses a start/end pair into a dash range', () => {
+    expect(formatSlotRange(slot({ startTime: '18:00', endTime: '20:00' }), 'Europe/Brussels')).toBe(
+      '18:00–20:00',
+    )
+  })
+
+  it('renders a single start time when there is no end', () => {
+    expect(formatSlotRange(slot({ startTime: '18:00' }), 'Europe/Brussels')).toBe('18:00')
+  })
+
+  it('renders "All day" for an all-day slot', () => {
+    expect(formatSlotRange(slot({ isAllDay: true }), 'Europe/Brussels')).toBe('All day')
+  })
+
+  it('renders "All day" when there is no start time', () => {
+    expect(formatSlotRange(slot({}), 'Europe/Brussels')).toBe('All day')
+  })
+})
+
+describe('localZoneLabel', () => {
+  it('returns a non-empty IANA-style zone string', () => {
+    expect(localZoneLabel()).toMatch(/\w/)
+  })
+})
