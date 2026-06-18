@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { validate } from './config/env.validation';
 import { MailModule } from './mail/mail.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PollsModule } from './polls/polls.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { PublicModule } from './public/public.module';
@@ -32,6 +33,7 @@ import { PublicModule } from './public/public.module';
     }),
     PrismaModule,
     MailModule,
+    NotificationsModule,
     AuthModule,
     PollsModule,
     PublicModule,

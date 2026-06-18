@@ -73,6 +73,33 @@ describe('MailService', () => {
     expect(arg.text).toContain(link);
   });
 
+  it('sendPollCompleted sends to the address with the slot label and share URL', async () => {
+    const shareUrl = 'http://localhost:5173/p/abc123token0000000000';
+    await service.sendPollCompleted(
+      'guest@example.com',
+      'Team offsite',
+      'Mon Jun 22, 10:00',
+      shareUrl,
+    );
+
+    expect(sendMail).toHaveBeenCalledTimes(1);
+    const arg = sendMail.mock.calls[0][0];
+    expect(arg.to).toBe('guest@example.com');
+    expect(arg.from).toBe('Pollendar <no-reply@pollendar.local>');
+    expect(arg.subject).toContain('Team offsite');
+    expect(arg.html).toContain(shareUrl);
+    expect(arg.html).toContain('Mon Jun 22, 10:00');
+    expect(arg.text).toContain(shareUrl);
+    expect(arg.text).toContain('Mon Jun 22, 10:00');
+  });
+
+  it('sendPollCompleted re-throws when the transport fails', async () => {
+    sendMail.mockRejectedValueOnce(new Error('smtp down'));
+    await expect(
+      service.sendPollCompleted('x@y.z', 'P', 'slot', 'http://link'),
+    ).rejects.toThrow('smtp down');
+  });
+
   it('sendMagicLink re-throws when the transport fails', async () => {
     sendMail.mockRejectedValueOnce(new Error('smtp down'));
     await expect(service.sendMagicLink('x@y.z', 'http://link')).rejects.toThrow(

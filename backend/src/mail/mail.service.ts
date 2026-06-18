@@ -54,4 +54,32 @@ export class MailService {
       throw err;
     }
   }
+
+  async sendPollCompleted(
+    email: string,
+    pollTitle: string,
+    finalSlotLabel: string,
+    shareUrl: string,
+  ): Promise<void> {
+    const subject = `Poll "${pollTitle}" is finalized`;
+    const text = `The poll "${pollTitle}" has been finalized.\n\nFinal slot: ${finalSlotLabel}\n\nView the poll: ${shareUrl}`;
+    const html = `<p>The poll "${pollTitle}" has been finalized.</p>\n<p>Final slot: <strong>${finalSlotLabel}</strong></p>\n<p><a href="${shareUrl}">View the poll</a></p>`;
+
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to: email,
+        subject,
+        text,
+        html,
+      });
+      this.logger.log(`Completion email sent to ${email}`);
+    } catch (err) {
+      this.logger.error(
+        `Failed to send completion email to ${email}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+      throw err;
+    }
+  }
 }
