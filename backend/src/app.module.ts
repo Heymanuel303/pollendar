@@ -9,6 +9,7 @@ import { validate } from './config/env.validation';
 import { MailModule } from './mail/mail.module';
 import { PollsModule } from './polls/polls.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PrismaModule } from './prisma/prisma.module';
     MailModule,
     AuthModule,
     PollsModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [
