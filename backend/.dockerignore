@@ -1,0 +1,19 @@
+# Keep the Docker build context small. The image installs deps from
+# package-lock.json and builds from source, so vendored/build/test artifacts
+# and local secrets must never enter the context.
+#
+# Do NOT ignore prisma/ — the schema + committed migrations
+# (prisma/migrations/20260617111242_init) must ship so `prisma migrate deploy`
+# can run in the container. Do NOT ignore prisma.config.ts — Prisma 7 reads
+# DATABASE_URL and the migrations path from it.
+
+node_modules
+dist
+coverage
+.git
+test
+**/*.spec.ts
+.env
+.env.*
+*.log
+.eslintcache

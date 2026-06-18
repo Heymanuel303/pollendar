@@ -27,3 +27,11 @@ npm run start:dev          # http://localhost:3000/api
 npm test          # unit specs (Jest)
 npm run test:e2e  # end-to-end specs
 ```
+
+## Production / Deploy
+
+See [`../docs/DEPLOY.md`](../docs/DEPLOY.md) for the full production deploy guide
+(image build, run order, required env, and the security checklist). In short: the
+image is built from `backend/` (`docker build -t pollendar-api:<tag> ./backend`),
+and on container start the entrypoint runs `prisma migrate deploy` before serving
+the API.
