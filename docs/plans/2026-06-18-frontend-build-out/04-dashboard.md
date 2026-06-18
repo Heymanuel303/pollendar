@@ -151,16 +151,16 @@ state, an `EmptyState` for zero polls, and a "New poll" entry point routing to `
   Space Grotesk via `.num`.
 
 ## Acceptance
-- [ ] Visiting `/dashboard` while authenticated calls `GET /api/polls` once (with cookie
+- [x] Visiting `/dashboard` while authenticated calls `GET /api/polls` once (with cookie
       credentials) and renders one `PollCard` per returned poll, newest first (no client re-sort).
-- [ ] An account with no polls shows the `EmptyState` panel (dashed border, "New polls show up here")
+- [x] An account with no polls shows the `EmptyState` panel (dashed border, "New polls show up here")
       and **no** empty grid.
-- [ ] An open poll renders the gold "Open" badge + "Manage" button; a completed poll renders the
+- [x] An open poll renders the gold "Open" badge + "Manage" button; a completed poll renders the
       mint "Completed" badge + "View results" button; both primary buttons navigate to
       `/polls/{id}`.
-- [ ] The card never fabricates data the list API does not return: when no response count is present
+- [x] The card never fabricates data the list API does not return: when no response count is present
       it omits the count line and grains; when no `dates` are present it omits the date range and
       shows the timezone alone — with a tracked `TODO(phase-hardening)` for adding `_count`/dates
       to the backend list endpoint.
-- [ ] The "New poll" button and the empty-state CTA both route to `/polls/new`.
-- [ ] `npm run build` / type-check and the `PollCard` + `Dashboard` component tests pass.
+- [x] The "New poll" button and the empty-state CTA both route to `/polls/new`.
+- [x] `npm run build` / type-check and the `PollCard` + `Dashboard` component tests pass.
