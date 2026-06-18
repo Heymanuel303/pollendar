@@ -20,6 +20,12 @@ const router = createRouter({
       component: () => import('@/views/Dashboard.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/polls/new',
+      name: 'poll-new',
+      component: () => import('@/views/PollEditor.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

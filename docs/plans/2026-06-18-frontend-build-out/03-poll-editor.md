@@ -45,7 +45,7 @@ Build the `PollEditor` view + `DateSlotEditor` (and a small `DateCard`/slot-row 
 - Manual API check: with the backend running and a valid auth cookie, filling a title + one date + one time-range slot and clicking "Create poll" issues `POST /api/polls` and returns 201 `{ id, publicToken, shareUrl, title, status: 'open' }`; the app navigates to `/polls/:id`. Submitting with an empty title or a date with no slots is blocked client-side with coral error text. (Confirm dev share links/poll appear; the magic-link/Mailpit flow is Phase 2's concern.)
 
 ## Acceptance
-- [ ] `/polls/new` (authenticated) renders the PollEditor view styled to the Dusk Calendar mockups, with a working `DateSlotEditor` (add/remove dates + slots, all-day vs time-range toggle, reactive count badge).
-- [ ] Submitting a valid form calls `pollStore.create()` → `POST /api/polls` and, on 201, navigates to the new poll's manage route with `id`/`publicToken`/`shareUrl` captured; `closesAt` is surfaced in the UI but NOT sent on create (PATCH follow-up TODO noted).
-- [ ] Client-side validation blocks empty title / dateless polls / date-with-no-slot / time-range slot missing start or end, showing `text-coral` messages; server `400`/`409` errors surface cleanly.
-- [ ] All ids are typed `string`; `npm run type-check` and `npm run test:unit` (DateSlotEditor) pass.
+- [x] `/polls/new` (authenticated) renders the PollEditor view styled to the Dusk Calendar mockups, with a working `DateSlotEditor` (add/remove dates + slots, all-day vs time-range toggle, reactive count badge).
+- [x] Submitting a valid form calls `pollStore.create()` → `POST /api/polls` and, on 201, navigates to the new poll's manage route with `id`/`publicToken`/`shareUrl` captured; `closesAt` is surfaced in the UI but NOT sent on create (PATCH follow-up TODO noted).
+- [x] Client-side validation blocks empty title / dateless polls / date-with-no-slot / time-range slot missing start or end, showing `text-coral` messages; server `400`/`409` errors surface cleanly.
+- [x] All ids are typed `string`; `npm run type-check` and `npm run test:unit` (DateSlotEditor) pass.
