@@ -26,10 +26,23 @@ export function formatDate(eventDate: string, _timeZone?: string): string {
     .replace(/,/g, '')
 }
 
-/** Format a `"HH:mm"` / `"HH:mm:ss"` wall-clock time as a 24-hour `"18:00"` label. */
-export function formatTime(hms: string, _timeZone?: string): string {
-  const [hours, minutes, seconds] = hms.split(':').map(Number)
-  const anchor = new Date(Date.UTC(2000, 0, 1, hours ?? 0, minutes ?? 0, seconds ?? 0))
+/**
+ * Format a wall-clock time as a 24-hour `"18:00"` label. Accepts either a bare `"HH:mm[:ss]"` string
+ * or a full ISO instant — the latter is the wire shape of a poll slot's `@db.Time` column, which
+ * Prisma anchors to `1970-01-01` and serializes as e.g. `"1970-01-01T18:00:00.000Z"`.
+ *
+ * Both forms are rendered anchored in **UTC** so the stored wall-clock digits are preserved verbatim.
+ * The slot time is already a *naive* value expressed in the poll's `timeZone`, so re-projecting it
+ * through `poll.timezone` here would double-shift it; the `timeZone` arg is kept for documentation
+ * (and future re-rendering) only — see the file header.
+ */
+export function formatTime(value: string, _timeZone?: string): string {
+  const anchor = value.includes('T')
+    ? new Date(value)
+    : (() => {
+        const [hours, minutes, seconds] = value.split(':').map(Number)
+        return new Date(Date.UTC(2000, 0, 1, hours ?? 0, minutes ?? 0, seconds ?? 0))
+      })()
   return new Intl.DateTimeFormat('en-GB', {
     hour: '2-digit',
     minute: '2-digit',

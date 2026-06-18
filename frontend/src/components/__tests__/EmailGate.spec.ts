@@ -2,7 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 
 // Spy directly on the store action the component is meant to call.
-const { requestLink } = vi.hoisted(() => ({ requestLink: vi.fn() }))
+const { requestLink } = vi.hoisted(() => ({
+  requestLink: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+}))
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => ({ requestLink }) }))
 
 import EmailGate from '../EmailGate.vue'

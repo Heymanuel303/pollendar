@@ -4,10 +4,10 @@ import { ApiError } from '@/lib/api/client'
 
 // Stub the endpoint module so the store is exercised against controlled resolutions/rejections.
 const api = vi.hoisted(() => ({
-  requestMagicLink: vi.fn(),
-  verify: vi.fn(),
-  getMe: vi.fn(),
-  logout: vi.fn(),
+  requestMagicLink: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  verify: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  getMe: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  logout: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }))
 vi.mock('@/api/auth', () => api)
 

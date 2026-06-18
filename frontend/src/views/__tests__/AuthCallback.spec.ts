@@ -3,8 +3,8 @@ import { mount, flushPromises } from '@vue/test-utils'
 
 // Drive the verify action, the router, and the route query from the test.
 const { verify, replace, route } = vi.hoisted(() => ({
-  verify: vi.fn(),
-  replace: vi.fn(),
+  verify: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  replace: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
   route: { query: {} as Record<string, unknown> },
 }))
 vi.mock('@/stores/authStore', () => ({ useAuthStore: () => ({ verify }) }))

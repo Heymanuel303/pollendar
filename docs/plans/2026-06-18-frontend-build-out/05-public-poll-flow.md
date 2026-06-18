@@ -54,9 +54,9 @@ Read directly from `backend/src/public/`:
 - Manual flow check via Mailpit-free path: open a real seeded poll's `/p/:token`, submit with a duplicate email → coral inline 409 alert with the exact server message, form not lost; submit fresh → lands on `/p/:token/done` with the best slot.
 
 ## Acceptance
-- [ ] Visiting `/p/:publicToken` for an open seeded poll renders dates → slots with working Yes/Maybe/No toggles and times shown in the poll's IANA timezone.
-- [ ] Submitting a valid response (name + ≥1 answer) POSTs `answers[]` with backend enum values, navigates to `/p/:publicToken/done`, and stores the returned participant edit token in localStorage keyed by the poll's `publicToken`.
-- [ ] A duplicate-email submit surfaces the server's 409 message as a clean coral inline alert without losing the form, and does NOT navigate.
-- [ ] `PublicThanks` calls `GET /results` (separately from submit) and shows the live best slot with the "✦ In bloom" treatment, plus Copy link / Copy invite buttons built from `window.location.origin`.
-- [ ] `AvailabilityToggle` and `publicPollStore` unit tests pass; `npm run build` (type-check) and `npm run lint` are green.
-- [ ] No `tailwind.config.js`/PostCSS introduced; new components use the `@theme` tokens + motif helpers from `main.css`.
+- [x] Visiting `/p/:publicToken` for an open seeded poll renders dates → slots with working Yes/Maybe/No toggles and times shown in the poll's IANA timezone.
+- [x] Submitting a valid response (name + ≥1 answer) POSTs `answers[]` with backend enum values, navigates to `/p/:publicToken/done`, and stores the returned participant edit token in localStorage keyed by the poll's `publicToken`.
+- [x] A duplicate-email submit surfaces the server's 409 message as a clean coral inline alert without losing the form, and does NOT navigate.
+- [x] `PublicThanks` calls `GET /results` (separately from submit) and shows the live best slot with the "✦ In bloom" treatment, plus Copy link / Copy invite buttons built from `window.location.origin`.
+- [x] `AvailabilityToggle` and `publicPollStore` unit tests pass; `npm run build` (type-check) and `npm run lint` are green.
+- [x] No `tailwind.config.js`/PostCSS introduced; new components use the `@theme` tokens + motif helpers from `main.css`.

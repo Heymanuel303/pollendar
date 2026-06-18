@@ -17,7 +17,12 @@ export interface User {
   displayName: string | null
 }
 
-/** One time slot on a candidate date. `startTime`/`endTime` are `"HH:mm[:ss]"` (or null = all-day). */
+/**
+ * One time slot on a candidate date. `startTime`/`endTime` come off the wire as ISO instants anchored
+ * to `1970-01-01` (the serialized form of the backend's `@db.Time` columns, e.g.
+ * `"1970-01-01T18:00:00.000Z"`), or `null` when all-day. Render them with `formatTime`/`formatSlotRange`
+ * from `@/lib/utils/timezone`, which read the wall-clock digits anchored in UTC.
+ */
 export interface PollSlot {
   id: string
   startTime: string | null
