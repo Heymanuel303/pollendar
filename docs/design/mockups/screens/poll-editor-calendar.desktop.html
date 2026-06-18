@@ -1,0 +1,320 @@
+<!-- @dsCard group="Screens" name="Poll editor · calendar (desktop)" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+
+<header class="sticky top-0 z-20 border-b border-line/70 bg-canvas/80 backdrop-blur">
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+    <a class="flex items-center gap-2.5">
+      <span class="grid h-8 w-8 place-items-center rounded-xl bg-pollen font-display text-base font-bold text-canvas shadow-glow">P</span>
+      <span class="font-display text-lg font-semibold tracking-tight">Pollendar</span>
+    </a>
+    <nav class="flex items-center gap-1 text-sm">
+      <a class="rounded-lg px-3 py-2 text-dim hover:bg-surface hover:text-moonlight">Polls</a>
+      <a class="rounded-lg px-3 py-2 text-moonlight">New poll</a>
+      <span class="ml-2 grid h-8 w-8 place-items-center rounded-full bg-surface2 text-sm font-medium text-dim ring-1 ring-line">M</span>
+    </nav>
+  </div>
+</header>
+
+<main class="mx-auto max-w-6xl px-6 py-8">
+
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <nav class="mb-2 flex items-center gap-2 text-xs uppercase tracking-widest text-mute">
+        <a class="hover:text-dim">Polls</a><span>/</span><span class="text-dim">New poll</span>
+      </nav>
+      <h1 class="font-display text-3xl font-semibold tracking-tight">Create a poll</h1>
+      <p class="mt-1.5 text-dim">Same calendar multi-select on desktop — with the List view one toggle away.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-medium text-dim transition hover:text-moonlight">Save draft</button>
+      <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">Create poll</button>
+    </div>
+  </div>
+
+  <!-- Title + Calendar|List toggle row -->
+  <section class="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-moonlight">Poll title</label>
+          <input value="Team dinner" class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-moonlight">Timezone</label>
+          <div class="relative">
+            <select class="w-full appearance-none rounded-xl border border-line bg-canvas px-4 py-3 pr-10 text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30">
+              <option selected>Europe/Brussels</option>
+              <option>Europe/London</option>
+              <option>America/New_York</option>
+            </select>
+            <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-mute">▾</span>
+          </div>
+        </div>
+      </div>
+      <!-- Calendar | List segmented toggle -->
+      <div class="lg:pb-0.5">
+        <span class="mb-1.5 block text-xs uppercase tracking-widest text-mute">View</span>
+        <div role="tablist" aria-label="Editor view" class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+          <button role="tab" aria-selected="true" class="flex h-10 items-center gap-1.5 rounded-lg bg-surface2 px-4 text-moonlight shadow-glow ring-1 ring-pollen/30">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+            Calendar
+          </button>
+          <button role="tab" aria-selected="false" class="flex h-10 items-center gap-1.5 rounded-lg px-4 text-dim transition hover:text-moonlight">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            List
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coexistence note -->
+  <p class="mb-4 flex items-center gap-2 text-sm text-mute">
+    <svg class="h-4 w-4 text-pollen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+    <span><span class="font-medium text-dim">Calendar</span> and <span class="font-medium text-dim">List</span> edit the same <span class="font-display text-dim">dates[]</span> — switching never loses data. List view (right) previews the per-date detail the toggle reveals.</span>
+  </p>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+
+    <!-- LEFT: Calendar view (active) -->
+    <div class="space-y-6">
+
+      <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="font-display text-lg font-semibold">Pick dates</h2>
+            <p class="mt-0.5 text-sm text-dim">Tap to toggle any set of days — Mon/Wed/Fri, a whole week, anything.</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="grid h-10 w-10 place-items-center rounded-lg text-dim transition hover:bg-surface2 hover:text-moonlight" aria-label="Previous month">‹</button>
+            <span class="min-w-[8rem] text-center font-display text-sm font-semibold">June 2026</span>
+            <button class="grid h-10 w-10 place-items-center rounded-lg text-dim transition hover:bg-surface2 hover:text-moonlight" aria-label="Next month">›</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1.5 text-center text-xs uppercase tracking-wide text-mute">
+          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+
+        <div class="mt-1.5 grid grid-cols-7 gap-1.5">
+          <!-- Week 1 -->
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">1</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">2</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">3</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">4</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">5</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">6</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">7</button>
+          <!-- Week 2 -->
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">8</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">9</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">10</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">11</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">12</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">13</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">14</button>
+          <!-- Week 3 · today = 18 -->
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">15</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">16</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">17</button>
+          <button class="relative grid h-14 place-items-center rounded-xl font-display text-base text-moonlight ring-1 ring-line transition hover:bg-surface2" aria-current="date">18<span class="absolute bottom-1.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-pollen"></span></button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">19</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">20</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">21</button>
+          <!-- Week 4 · selected 22, 24, 26 -->
+          <button aria-pressed="true" class="grid h-14 place-items-center rounded-xl bg-pollen/25 font-display text-base font-semibold text-pollen ring-1 ring-pollen/60 transition">22</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">23</button>
+          <button aria-pressed="true" class="grid h-14 place-items-center rounded-xl bg-pollen/25 font-display text-base font-semibold text-pollen ring-1 ring-pollen/60 transition">24</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">25</button>
+          <button aria-pressed="true" class="grid h-14 place-items-center rounded-xl bg-pollen/25 font-display text-base font-semibold text-pollen ring-1 ring-pollen/60 transition">26</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">27</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-mute transition hover:bg-surface2">28</button>
+          <!-- Week 5 -->
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">29</button>
+          <button class="grid h-14 place-items-center rounded-xl font-display text-base text-dim transition hover:bg-surface2">30</button>
+          <span class="grid h-14 place-items-center font-display text-base text-line/70">1</span>
+          <span class="grid h-14 place-items-center font-display text-base text-line/70">2</span>
+          <span class="grid h-14 place-items-center font-display text-base text-line/70">3</span>
+          <span class="grid h-14 place-items-center font-display text-base text-line/70">4</span>
+          <span class="grid h-14 place-items-center font-display text-base text-line/70">5</span>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between border-t border-line/70 pt-4">
+          <p aria-live="polite" class="text-sm text-dim"><span class="font-display font-semibold text-pollen">3</span> dates selected · <span class="text-mute">Mon 22, Wed 24, Fri 26</span></p>
+          <button class="rounded-lg px-3 py-2 text-sm font-medium text-mute transition hover:text-coral">Clear selection</button>
+        </div>
+      </section>
+
+      <!-- Bulk-apply panel -->
+      <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <h2 class="font-display text-lg font-semibold">Slots to offer</h2>
+        <p class="mt-0.5 text-sm text-dim">Toggle presets, then apply them across every selected date.</p>
+
+        <div class="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <button aria-pressed="true" class="flex items-center gap-3 rounded-xl border border-pollen/50 bg-pollen/10 px-4 py-3 text-left transition">
+            <span class="grid h-6 w-6 place-items-center rounded-md bg-pollen text-xs font-bold text-canvas">✓</span>
+            <span><span class="block font-medium text-moonlight">Morning</span><span class="block font-display text-xs text-dim">09:00–12:00</span></span>
+          </button>
+          <button aria-pressed="false" class="flex items-center gap-3 rounded-xl border border-line bg-canvas px-4 py-3 text-left transition hover:bg-surface2">
+            <span class="grid h-6 w-6 place-items-center rounded-md border border-line text-xs text-mute"></span>
+            <span><span class="block font-medium text-moonlight">Noon / Afternoon</span><span class="block font-display text-xs text-dim">12:00–14:00</span></span>
+          </button>
+          <button aria-pressed="true" class="flex items-center gap-3 rounded-xl border border-pollen/50 bg-pollen/10 px-4 py-3 text-left transition">
+            <span class="grid h-6 w-6 place-items-center rounded-md bg-pollen text-xs font-bold text-canvas">✓</span>
+            <span><span class="block font-medium text-moonlight">Evening</span><span class="block font-display text-xs text-dim">18:00–21:00</span></span>
+          </button>
+          <button aria-pressed="false" class="flex items-center gap-3 rounded-xl border border-line bg-canvas px-4 py-3 text-left transition hover:bg-surface2">
+            <span class="grid h-6 w-6 place-items-center rounded-md border border-line text-xs text-mute"></span>
+            <span><span class="block font-medium text-moonlight">All-day</span><span class="block font-display text-xs text-dim">No fixed time</span></span>
+          </button>
+          <!-- Custom spans both columns -->
+          <div class="rounded-xl border border-line bg-canvas px-4 py-3 sm:col-span-2">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
+              <button aria-pressed="true" class="flex items-center gap-3 text-left">
+                <span class="grid h-6 w-6 place-items-center rounded-md bg-pollen text-xs font-bold text-canvas">✓</span>
+                <span class="font-medium text-moonlight">Custom</span>
+              </button>
+              <div class="flex items-center gap-2">
+                <input value="14:30" class="w-24 rounded-lg border border-line bg-surface px-3 py-2 text-center font-display text-sm text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" aria-label="Start time" />
+                <span class="text-mute">–</span>
+                <input value="16:30" class="w-24 rounded-lg border border-line bg-surface px-3 py-2 text-center font-display text-sm text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" aria-label="End time" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p class="text-xs text-mute">3 presets × 3 dates → <span class="font-display text-dim">9 slots</span></p>
+          <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Apply to all 3 dates
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT: List view (the other half of the toggle), live over the same dates[] -->
+    <aside class="lg:sticky lg:top-24 lg:self-start">
+      <section class="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+        <div class="flex items-center justify-between border-b border-line/70 px-5 py-3">
+          <p class="text-xs uppercase tracking-widest text-mute">List view · same data</p>
+          <span class="rounded-full bg-surface2 px-2.5 py-1 text-xs font-medium text-dim ring-1 ring-line"><span class="font-display">3</span> dates · <span class="font-display">9</span> slots</span>
+        </div>
+        <div class="space-y-3 p-5">
+
+          <!-- Mon Jun 22 -->
+          <div class="rounded-xl border border-line bg-canvas p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-lg bg-surface2 ring-1 ring-line"><span class="font-display text-base font-semibold leading-none text-pollen">22</span></span>
+                <div><p class="font-display text-sm font-semibold">Mon Jun 22</p><p class="text-xs text-mute">3 slots</p></div>
+              </div>
+              <button class="rounded-xl px-3 py-2 text-dim transition hover:text-coral" aria-label="Remove date">✕</button>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pl-13">
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>09:00–12:00</span>
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>18:00–21:00</span>
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>14:30–16:30</span>
+            </div>
+          </div>
+
+          <!-- Wed Jun 24 · overridden -->
+          <div class="rounded-xl border border-pollen/40 bg-canvas bloom-bg p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-lg bg-surface2 ring-1 ring-line"><span class="font-display text-base font-semibold leading-none text-pollen">24</span></span>
+                <div><p class="font-display text-sm font-semibold">Wed Jun 24</p><p class="text-xs text-pollen">2 slots · edited</p></div>
+              </div>
+              <button class="rounded-xl px-3 py-2 text-dim transition hover:text-coral" aria-label="Remove date">✕</button>
+            </div>
+            <div class="space-y-2 pl-13">
+              <div class="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2.5">
+                <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+                <input value="Dinner" class="w-24 rounded-md border border-line bg-canvas px-2 py-1.5 text-sm text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" />
+                <input value="19:00" class="w-20 rounded-md border border-line bg-canvas px-2 py-1.5 text-center font-display text-sm text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" />
+                <span class="text-mute">–</span>
+                <input value="21:30" class="w-20 rounded-md border border-line bg-canvas px-2 py-1.5 text-center font-display text-sm text-moonlight focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" />
+                <button class="ml-auto rounded-md px-2 py-1.5 text-sm text-mute transition hover:text-coral" aria-label="Remove slot">✕</button>
+              </div>
+              <button class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-dim transition hover:text-pollen">+ Add slot</button>
+            </div>
+          </div>
+
+          <!-- Fri Jun 26 -->
+          <div class="rounded-xl border border-line bg-canvas p-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-lg bg-surface2 ring-1 ring-line"><span class="font-display text-base font-semibold leading-none text-pollen">26</span></span>
+                <div><p class="font-display text-sm font-semibold">Fri Jun 26</p><p class="text-xs text-mute">3 slots</p></div>
+              </div>
+              <button class="rounded-xl px-3 py-2 text-dim transition hover:text-coral" aria-label="Remove date">✕</button>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pl-13">
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>09:00–12:00</span>
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>18:00–21:00</span>
+              <span class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 py-1.5 font-display text-xs text-dim"><span class="pollen-dot inline-block h-2 w-2"></span>14:30–16:30</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </aside>
+
+  </div>
+</main>
+
+</body>
+</html>

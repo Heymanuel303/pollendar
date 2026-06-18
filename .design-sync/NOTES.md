@@ -1,0 +1,7 @@
+# design-sync notes — Pollendar UI
+
+- **Project:** "Pollendar UI" · `dae673e0-8add-4af2-8420-bd2d23140bd3` · https://claude.ai/design/p/dae673e0-8add-4af2-8420-bd2d23140bd3
+- **Shape: hand-authored.** This is NOT a component-library repo — there is no Storybook, no `dist/` bundle, no build step. The "design system" is a set of standalone Tailwind-CDN HTML mockups under `docs/design/mockups/`, each carrying a first-line `<!-- @dsCard group="…" name="…" -->` marker. The Design System pane builds its card index from those markers.
+- **Do NOT run the design-sync converter pipeline** (npm install → esbuild bundle → render-verify) against this — it expects a compilable component library and there isn't one. Sync = direct `DesignSync` upload of the changed HTML files.
+- **Sync recipe:** `DesignSync(list_files)` → `finalize_plan` with `localDir: docs/design/mockups`, project-relative `writes`, usually empty `deletes` (additive) → `write_files` with `localPath` mirroring each project path. The project layout mirrors `docs/design/mockups/` 1:1 (`components/`, `foundations/`, `screens/`, `index.html`, `00-overview.html`).
+- **2026-06-18:** added the mobile-redesign novel surfaces — `screens/poll-editor-calendar.{mobile,desktop}.html`, `screens/public-poll-matrix.{mobile,desktop}.html`, `components/segmented-toggle.html`, `components/date-calendar.html` — plus the updated `index.html` tiles.
