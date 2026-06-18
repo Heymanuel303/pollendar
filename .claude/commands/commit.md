@@ -1,91 +1,234 @@
 ---
-description: Stage and commit the current phase/plan changes with a Conventional Commits message derived from the working-tree diff and the related plan + phase. Inspects status/diff/log first; never pushes, amends, or force-anything.
-argument-hint: "[scope or message hint, e.g. backend phase 2]"
-allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(git add:*), Bash(git commit:*), Bash(git rev-parse:*), Bash(git ls-files:*), Read, Glob, Grep
+description: Stage and commit the Pollendar working tree (NestJS 11 / Prisma 7 / MySQL 8.4) with a Conventional Commits message. Functional, scannable, actionable — no co-author trailers, no fluff.
+model: sonnet
 ---
 
-## Working-tree state (captured before you act)
+Commit pending changes. Invoked like:
 
-Current status:
+```
+/commit
+/commit scope hint: magic-link wiring
+```
 
-!`git status --short --branch`
+`$ARGUMENTS` is an optional hint (scope, framing, ticket id). Treat it as guidance, not the message itself.
 
-Staged + unstaged change summary:
+## Inspect
 
-!`git rev-parse --verify HEAD >/dev/null 2>&1 && git diff --stat HEAD || git diff --stat`
+Run in parallel:
 
-Unstaged diff (working tree vs index):
+- `git status` (no `-uall`)
+- `git diff` (staged + unstaged)
+- `git log -n 10 --oneline` to match this repo's commit style
 
-!`git diff`
+This is a monorepo with NO root package.json — real application code lives under `backend/` (NestJS API). `frontend/` is NOT yet scaffolded (empty but for a README), so do not expect changes there.
 
-Staged diff (index vs HEAD):
+If working tree is clean → stop, say so. Do not create empty commits.
 
-!`git diff --cached`
+## Group
 
-Recent commit messages (match this repo's style/conventions):
+If the diff spans unrelated concerns (e.g. a backend feature change *and* a dep bump *and* a docs edit) → propose splitting via `AskUserQuestion` with concrete groupings. Otherwise proceed with one commit.
 
-!`git log --oneline --no-decorate -15 2>/dev/null || echo '(no commits yet)'`
+Watch for files that should not be committed:
+- The repo-root `.env` (single source of truth for secrets — both `@nestjs/config` and `backend/prisma.config.ts` read it). NEVER commit `.env`; `.env.example` is the tracked template.
+- `*.key`, credential files
+- Large binaries unrelated to the change
+- Editor scratch files
 
-Plan files touched most recently (to discover the related plan + phase):
+If found → surface and ask before staging them.
 
-!`git status --porcelain -- plan 2>/dev/null; git ls-files -m -o --exclude-standard -- plan 2>/dev/null`
+## Detect phase work
 
-## Your task
+Check whether this commit closes a plan phase before composing the message:
 
-Create exactly ONE commit that captures the changes for the just-executed phase (or plan). You are language/stack agnostic: infer everything from the diff and the repo, never from an assumed framework.
+1. Look at the changed paths and the conversation. Was the work driven by a phase file under `docs/plans/{date}-{feature-name}/NN-*.md`?
+2. If yes, identify:
+   - The phase file (e.g. `docs/plans/2026-06-18-magic-link-auth/02-sessions.md`).
+   - The overview (`docs/plans/{date}-{feature-name}/00-overview.md`).
+3. If ambiguous (multiple plans touched, or unclear which phase) → `AskUserQuestion` once to confirm or skip.
+4. If no phase is involved, skip this section entirely and proceed to message composition.
 
-If the optional hint was provided, treat it as guidance for the scope and/or the related plan phase: `$ARGUMENTS`
+When a phase is identified, follow this **exact procedure** before staging. Do not skip steps.
 
-### 0. Clean-tree guard
+### Step A — Read current state on disk
 
-If the status above shows NO changes (nothing staged, nothing unstaged, nothing untracked relevant), then the working tree is clean. Say exactly that — "Working tree is clean; nothing to commit." — and STOP. Do not create an empty commit.
+`Read` the overview file and the phase file fresh. Do NOT rely on memory or assume status. From the overview, extract:
 
-### 1. Understand what changed
+- `N_total` = total number of phase entries under the "Phases" heading.
+- `N_done_before` = count of phase lines that **already** end with ` ✓`.
+- `current_phase_number` = the phase this commit closes (e.g. `2` for `02-sessions.md`).
 
-Read the diffs above. Group the changes mentally into:
-- The intended work (the source/test/config files for the executed phase).
-- Anything unrelated (stray edits, debug leftovers, unrelated files that happen to be dirty).
+### Step B — Update the phase file
 
-If a file's purpose is unclear, Read it (or the relevant hunk) before deciding. Do not commit changes you cannot explain. If the captured diff above was truncated or summarized, run a fuller `git diff -- <path>` for the files you need to inspect.
+- Flip its `Status:` (if present) to `completed`.
+- Tick `- [ ]` → `- [x]` under "Acceptance" **only** for criteria actually met by the work in this commit. Leave others unticked.
 
-### 2. Discover the related plan + phase
+### Step C — Update the overview
 
-Determine which plan and phase this commit belongs to, in this priority order:
-1. The hint in `$ARGUMENTS`, if it names a scope and/or phase (e.g. `backend phase 2`, `auth-magic-link 1`).
-2. Otherwise, look at the plan files surfaced above. Find the phase file `plan/<scope>/NN-<phase-slug>.md` that was most recently modified — especially one whose frontmatter `status:` is now `done`. Use Glob (`plan/*/*.md`) and Read its frontmatter (`plan:`, `phase:`, `title:`) to confirm.
-3. If no plan/phase can be confidently determined, proceed WITHOUT a plan reference rather than guessing.
+- Append ` ✓` to the line for `current_phase_number` in the "Phases" list. **Only that line.** Do not touch other phase lines.
+- Update the overview's top-level `Status:` using this table — no other transitions allowed:
 
-Record, when found: the plan `<scope-slug>`, the phase number `N`, and the phase title.
+  | Before | Condition | After |
+  | --- | --- | --- |
+  | `planned` | this is the first phase closed (`N_done_before == 0`) | `in-progress` |
+  | `in-progress` | more phases remain after this one | `in-progress` (no change) |
+  | `in-progress` | `N_done_before + 1 == N_total` **AND** every plan-level acceptance box is genuinely met | `completed` |
+  | `completed` | — | leave alone, flag to user (shouldn't be re-closing a done plan) |
 
-### 3. Decide what to stage (be deliberate)
+- Tick plan-level `- [ ]` acceptance boxes **only** when transitioning to `completed`, and only those genuinely met.
 
-- Prefer staging only the files that belong to this phase's work (the intended group from step 1), including its tests and the updated `plan/<scope>/NN-*.md` (status flipped to `done`, acceptance boxes ticked).
-- Do NOT run a blind `git add -A` if the tree contains unrelated dirty files. Stage explicit paths instead (`git add <path> <path> ...`).
-- If the working tree contains ONLY the phase's changes (nothing unrelated), staging everything is fine.
-- If you find unrelated changes, leave them unstaged and note in your final summary that they were excluded and why.
-- Use `git add -- <path>` form to be safe with unusual filenames. Stage with the appropriate `Bash(git add:*)` calls.
+### Step D — Sanity check before staging
 
-After staging, you may re-run `git diff --cached --stat` to confirm the staged set matches your intent.
+State out loud (in one short line) what you changed:
+`Phase {N}/{N_total} closed. Overview status: {before} → {after}.`
 
-### 4. Compose the Conventional Commits message
+If `after` is `completed`, double-check: are all `N_total` phase lines now ✓? If not, you made a mistake — revert the status change before staging.
 
-Format: `type(scope): subject`
+Never tick phase lines or acceptance boxes for phases not closed by **this** commit. Never pre-emptively mark future phases done. If acceptance criteria for the current phase are unmet but the user still wants to commit → ask once, do not silently tick boxes.
 
-- `type`: choose from `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `build`, `ci`, `style` — pick the one that best matches the dominant change in the diff (e.g. new endpoint/feature -> `feat`; bug fix -> `fix`; only tests -> `test`; tooling/config -> `chore`/`build`).
-- `scope`: prefer the plan `<scope-slug>` when known (e.g. `backend`, `auth-magic-link`); otherwise a concise scope inferred from the touched area (module/dir/layer). Omit the scope parentheses if no sensible scope exists.
-- `subject`: imperative mood, lower-case start, no trailing period, ~50 chars. Describe WHAT the phase delivered, not the file list.
-- Body: a short blank-line-separated set of `- ` bullets summarizing the substantive changes (what/why), grounded in the diff. Reference the plan + phase on its own line when known, e.g. `Plan: backend phase 2 - <phase title>`. No co-author trailers, no "Generated with" lines, no filler.
+Stage these markdown edits as part of the same commit. They belong with the work they describe.
 
-Build the commit with multiple `-m` flags to keep the subject and body clean, e.g.:
-`git commit -m "feat(backend): add user authentication endpoints" -m "- ..." -m "- ..." -m "Plan: backend phase 2 - Auth endpoints"`
+## Verify before committing
 
-### 5. Safety rules (do not violate)
+These are not gates the command must always run, but if the diff touches the relevant area, run the matching check **from the `backend/` directory** and fix failures before composing the message. Lead with these concrete commands (defined in `backend/package.json`); if they ever change, re-discover from `backend/package.json`:
 
-- Create exactly one commit. Do NOT push. Do NOT `git push`, `--force`, or `--force-with-lease`.
-- Do NOT `git commit --amend` or rebase — never rewrite published/existing history.
-- Do NOT add co-author or `Co-Authored-By`/`Generated with` trailers.
-- Do NOT modify files other than staging them; if a file needs a content change, that is out of scope for this command.
+- Lint: `npm run lint` (eslint `--fix` over `{src,apps,libs,test}/**/*.ts`)
+- Format check: `npx prettier --check "src/**/*.ts" "test/**/*.ts"` (there is NO dedicated format-check script; `npm run format` is the write variant)
+- Unit tests: `npm test` (jest; unit specs live next to source as `*.spec.ts` under `backend/src/`)
+- E2E tests: `npm run test:e2e` (specs under `backend/test/`)
+- Build: `npm run build` (`nest build`)
 
-### 6. Report
+Prisma-touching changes (anything under `backend/prisma/` — `schema.prisma`, migrations, `seed.ts`):
+- Regenerate the client after schema edits: `npx prisma generate` (from `backend/`).
+- New schema changes are Prisma migrations: `npx prisma migrate dev --name <name>`; reset (re-runs migrations + seed) with `npx prisma migrate reset`. Migration SQL lives under `backend/prisma/migrations/` — stage the generated migration dir with the schema change.
+- Prisma 7 gotchas to honor (do not "fix" these into breakage): no `url` in `schema.prisma` (connection string comes from `backend/prisma.config.ts` via repo-root `.env` `DATABASE_URL`); `PrismaService` connects through the `@prisma/adapter-mariadb` driver adapter; the generator is the CLASSIC `prisma-client-js` (NOT the ESM `prisma-client` generator); the seed is wired in `prisma.config.ts` (`tsx prisma/seed.ts`), not `package.json`.
+- Inspect the DB with `npx prisma studio` or the `mysql` CLI against `localhost:3306` (db `pollendar`). Inspect dev emails in Mailpit at http://localhost:8025. There is no external error tracking — signal sources are nest app logs, Mailpit, and DB inspection.
 
-After committing, output a concise summary: the final commit subject line, the list of staged paths committed, and (if any) the unrelated paths you intentionally left out. If you stopped early (clean tree, or no confident plan reference), say why.
+## Compose message
+
+**Format (Conventional Commits):**
+
+```
+{type}({scope}): {subject}
+
+{body}
+
+Plan: docs/plans/{date}-{feature-name}/NN-*.md
+```
+
+**Type** — pick the one that matches the dominant change:
+- `feat` — new user-facing capability
+- `fix` — bug fix
+- `refactor` — internal restructure, no behavior change
+- `perf` — performance improvement
+- `chore` — tooling, deps, config, version bumps, infra (docker-compose)
+- `docs` — documentation only
+- `test` — tests only
+- `build` / `ci` — build system or CI pipeline
+- `style` — formatting only (rare; usually folded into another type)
+
+**Scope** — a scope is REQUIRED for this repo (lower-case). Derive in this priority order:
+
+1. **Plan-driven work → the plan's `{feature-name}`.** When the "Detect phase work" section identified a plan under `docs/plans/{date}-{feature-name}/`, the scope is `{feature-name}` verbatim (the folder name with the date prefix stripped). Example: a commit closing `docs/plans/2026-06-18-magic-link-auth/02-*.md` → `feat(magic-link-auth): …`. This holds regardless of which modules the diff touches — the plan is the unit of work. (Existing history follows this: `feat(scaffold-db): add deterministic Prisma seed`, `chore(scaffold-db): scaffold NestJS backend`.)
+2. **No plan → the module or area touched**, derived from the changed paths against the project's actual layout:
+   - DATA layer → `prisma` (schema/migrations/`PrismaService`/seed under `backend/prisma/` + `backend/src/prisma/`). EXISTS.
+   - SERVICE/API layer → the NestJS module under `backend/src/`: `auth`, `polls`, `public`, `responses`, `notifications` (all PLANNED, not yet created), or `prisma`/`config` which EXIST.
+   - CONFIG/INFRA layer → `config` (env validation under `backend/src/config/`), or `infra` for `docker-compose.yml` / repo-root `.env.example`.
+   - FRONTEND layer → the Vue app is NOT yet scaffolded; do not invent a frontend scope until it exists.
+   Never assume a module exists — read it off the changed paths. Match recent `git log` style. Multi-module → pick the most-impacted; if truly cross-cutting use the plan slug or `repo`.
+
+**Subject** — imperative, lowercase, ≤72 chars, no trailing period. Describes *what changed*, scannable at a glance.
+- Good: `wire magic-link tokens to single-use login flow`
+- Bad: `Updated the auth logic to work better`
+
+**Plan trailer** — when this commit closes a plan phase (the "Detect phase work" section identified one), append a `Plan:` trailer as the **last line** of the message, after the body:
+
+- One trailer per commit: `Plan: docs/plans/{date}-{feature-name}/NN-name.md` (e.g. `Plan: docs/plans/2026-06-18-magic-link-auth/02-sessions.md`) — the exact phase file path on disk, using the real dated folder name, not a fabricated one.
+- If the work spans the overview only (no single phase), use the overview path: `Plan: docs/plans/{date}-{feature-name}/00-overview.md`.
+- Always the relative repo path (starts `docs/plans/`), never an absolute path.
+- Omit entirely when no plan/phase is involved.
+
+This makes history greppable: `git log --grep="docs/plans/2026-06-18-magic-link-auth"` finds every commit tied to a plan.
+
+**Body** — include when *why* or *what* isn't obvious from the subject + diff. Omit when the subject already says it.
+
+When present, body rules:
+- Wrap at ~72 chars.
+- Lead with motivation (why), then the mechanism (how), then any caller/migration notes.
+- Bullet list (`- `) when there are >2 discrete changes. Plain prose for a single thread.
+- Reference issue/PR ids if the user provided them.
+- No marketing language. No "this commit ...". No restating the diff line-by-line.
+
+**Forbidden:**
+- `Co-Authored-By:` trailers
+- `🤖 Generated with ...` lines
+- "Signed-off-by" unless the user explicitly asked
+- Emoji in subject or body (unless user explicitly asked)
+- Vague subjects: `update code`, `fixes`, `misc changes`, `wip`
+
+## Stage
+
+Stage by explicit paths — never `git add -A` / `git add .` blindly. Build the path list from the diff inspection above, excluding anything flagged in the Group step (and never the repo-root `.env`).
+
+If a file is partially relevant, stage the whole file (no interactive hunks). If the user wants partial staging they'll say so.
+
+## Commit
+
+Protected branch: `main`. If currently on `main`, branch first before committing (e.g. `git switch -c {type}/{short-slug}`) — `main` is also the PR base. Confirm the branch with `git branch --show-current` before committing if unsure.
+
+Use a heredoc to preserve formatting:
+
+```bash
+git commit -m "$(cat <<'EOF'
+{type}({scope}): {subject}
+
+{body}
+
+Plan: docs/plans/{date}-{feature-name}/NN-name.md
+EOF
+)"
+```
+
+(Drop the `Plan:` line when no plan phase is involved.)
+
+For subject-only commits, drop the heredoc:
+
+```bash
+git commit -m "{type}({scope}): {subject}"
+```
+
+If a pre-commit hook fails:
+1. Read the hook output.
+2. Fix the underlying issue (formatting, lint, test failure) — run the matching `backend/` command from the Verify section.
+3. Re-stage the fix.
+4. Create a **new** commit. Do not `--amend` — the original commit didn't land.
+5. Never bypass with `--no-verify` unless the user explicitly asks.
+
+After commit: run `git status` to confirm clean tree + show the new SHA.
+
+## Report
+
+End-of-turn summary (1 sentence): `{sha} {type}({scope}): {subject}`. Nothing else.
+
+Do NOT push. Do NOT open a PR. Do NOT start follow-up work.
+
+## Rules
+
+- **Conventional Commits only.** Type + scope + subject. Body when it adds signal. Scope is required (lower-case) for this repo.
+- **Scope = plan feature-name when plan-driven.** `{feature-name}` from `docs/plans/{date}-{feature-name}/` (date stripped); fall back to the touched module/area (`prisma`, `config`, `auth`, `polls`, `public`, `responses`, `notifications`, `infra`) only when no plan is involved.
+- **No co-author trailer.** No generator trailer. No emoji unless asked.
+- **Imperative, lowercase subject.** ≤72 chars.
+- **Explicit staging.** Path list, not `-A`. Never stage repo-root `.env`.
+- **Branch off `main` before committing.** `main` is protected and the PR base.
+- **No empty commits, no amends, no force pushes, no `--no-verify`.**
+- **One concern per commit.** Split if the diff sprawls.
+- **Phase bookkeeping in-band.** When closing a phase, plan-file edits ship in the same commit as the work. Stage Prisma migration dirs with their schema change.
+- **Plan trailer when plan-driven.** Last line = `Plan: docs/plans/{date}-{feature-name}/NN-*.md` (exact path). Omit when no plan involved.
+- **Never tick unmet acceptance.** Ask before lying about phase status.
+
+## Output style
+
+- Brief. No preamble, no recap, no chatter.
+- Bullet points over prose.
+- Lead with the answer; cut everything that isn't actionable.
+- Questions (if any): one line each, batched in a single `AskUserQuestion`.
+- No closing summary beyond the 1-sentence "Report" step.

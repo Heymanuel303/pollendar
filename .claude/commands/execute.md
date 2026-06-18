@@ -1,124 +1,177 @@
 ---
-description: Execute ONE phase of an existing multi-phase plan. Reads the plan overview and target phase file cold, verifies dependencies are done, implements the phase steps against the project's real (discovered) stack, ALWAYS adds and runs the phase's tests until green, then marks the phase done. Leaves changes uncommitted.
-argument-hint: [phase N from @plan/<scope>/00-overview.md | @plan/<scope>/NN-phase.md]
-disable-model-invocation: true
-allowed-tools: Read, Edit, Write, Glob, Grep, Bash, Task
+description: Execute a single phase from a Pollendar plan in docs/plans/ (NestJS 11 / Prisma 7 / MySQL 8.4). Reads the phase file cold, runs it solo or as a workflow per the phase's Execution field, verifies, writes tests (via /test), and hands back a dirty tree.
+model: opus
 ---
 
-# Execute a plan phase
-
-You are executing exactly ONE phase of a multi-phase plan. Work from the files on disk, not from prior conversation memory. Do not commit — committing is the separate `/commit` command.
-
-ARGUMENTS: $ARGUMENTS
-
-## 0. Resolve the target plan + phase (parse `$ARGUMENTS`)
-
-`$ARGUMENTS` arrives in one of two shapes. Detect which, and resolve to a single concrete phase file under `plan/<scope-slug>/`:
-
-1. **`phase <N> from @<overview-path>`** — e.g. `phase 1 from @plan/backend/00-overview.md`.
-   - The plan directory is the directory of the referenced overview (e.g. `plan/backend/`).
-   - The phase number is `<N>`. Resolve the phase file by listing the plan directory and selecting the file whose name begins with the zero-padded number `NN-` (e.g. `01-`, `02-`). N may be given un-padded (`1`); always match against the zero-padded prefix. There is exactly one file per number — if zero or more than one match, STOP and report the ambiguity.
-
-2. **A direct phase file** — `@<plan/<scope>/NN-phase.md>` (e.g. `@plan/backend/01-schema.md`).
-   - Use that file directly as the target phase. Its directory is the plan directory; its `00-overview.md` sibling is the overview.
-
-If `$ARGUMENTS` references the `00-overview.md` with NO phase number, do not guess. STOP and ask which phase to run (or suggest the first phase whose `status` is not `done`).
-
-After resolving, you must know two paths: `PLAN_DIR/00-overview.md` (the overview) and `PLAN_DIR/NN-<slug>.md` (the target phase). Both are relative to the project root.
-
-## 1. Read COLD
-
-Read these files fresh now — do not rely on anything from earlier in the conversation:
-
-- The overview `PLAN_DIR/00-overview.md`.
-- The target phase file `PLAN_DIR/NN-<slug>.md`.
-
-The phase file is authored to this exact, self-contained format (restated here so this command needs no sibling file):
+Execute one phase of a plan. Invoked like:
 
 ```
----
-phase: <N>
-title: <short title>
-plan: <scope-slug>
-status: pending            # pending | in-progress | done
-depends_on: [<phase numbers, may be empty>]
-execution: solo|workflow
----
-
-## Goal
-## Context & files     (paths to read/modify — discovered from the repo)
-## Steps               (ordered, concrete, actionable, language-agnostic)
-## Tests               (which tests to add + how to run them, using the detected test runner)
-## Acceptance criteria (a GitHub checkbox list; objective and verifiable)
-## Out of scope
+/execute phase 1 from docs/plans/{YYYY-MM-DD}-{feature}/00-overview.md
+/execute phase 2 from @docs/plans/2026-06-09-some-feature/00-overview.md
+/execute 3 docs/plans/{YYYY-MM-DD}-{feature}/00-overview.md
 ```
 
-The overview's frontmatter (`status`, `phases`) and its `## Phases` table describe the whole plan. The `## Phases` table is static structure — its columns are `# | title | depends on | execution | one-line goal` and it carries NO status column. Use the table only for the dependency MAP (the `depends on` column lists the same phase numbers as each phase's `depends_on` frontmatter). The authoritative status of any phase lives ONLY in that phase file's own frontmatter `status`.
+`$ARGUMENTS` carries the phase number and the overview path. Parse both.
 
-**Status state machine:** `pending -> in-progress -> done`. `/plan` always writes `pending`. This command flips the phase to `in-progress` at the start of implementation and to `done` only on success (all tests green + acceptance criteria met).
+Plan folders are dated: `docs/plans/{YYYY-MM-DD}-{feature-name}/` (e.g. `docs/plans/2026-06-09-some-feature/`), so a sorted listing runs oldest→newest. The `{feature}` placeholder below resolves to that full dated folder name. (Example already in-repo: `docs/plans/scaffold-db/`.)
 
-## 2. Guard: dependencies must be done
+## Resolve inputs
 
-Read each phase number listed in the target phase's `depends_on` frontmatter (cross-check against the overview `## Phases` table `depends on` column if you want — they list the same numbers). For each dependency, open the corresponding `NN-*.md` file in the same plan directory and read its frontmatter `status` (this is the authoritative status — never infer it from the overview table).
+1. **Phase number** — first integer in `$ARGUMENTS`.
+2. **Overview path** — first path matching `docs/plans/*/00-overview.md` (strip a leading `@` if present). If `$ARGUMENTS` names no overview, list `docs/plans/*/00-overview.md` and take the **chronologically-last** match — dated folders sort by date, so the last entry is the newest plan; prefer that over modified-time heuristics.
+3. **Phase file** — read the overview, find the link for phase N, resolve relative to the overview's folder. Fallback: `docs/plans/{feature}/{NN}-*.md` where `{feature}` is the dated folder name and `NN` is the zero-padded phase number.
 
-- If ANY dependency is not `status: done`, STOP. Report which dependency phases are unfinished and tell the user to run `/execute` on them first. Do not modify any files.
-- If `depends_on` is empty or all dependencies are `done`, proceed.
+If either input is missing or ambiguous (no phase number, overview not found, phase file not found) → stop and ask the user with `AskUserQuestion`. Do NOT guess.
 
-Also check the target phase's own `status`:
-- If it is already `done`, warn the user it appears complete and ask for confirmation before re-running (re-running may be a no-op or may redo work).
-- If it is `in-progress`, note that a prior attempt may have left partial changes; continue, but be careful to make steps idempotent where possible.
+State what you resolved in one line before starting:
+`Executing phase {N}: {phase title} — {phase-file-path}`
 
-## 3. Mark in-progress
+## Read the phase cold
 
-Edit the target phase file's frontmatter: set `status: in-progress`. Then, in the overview `00-overview.md` frontmatter, set `status: in-progress` if it is currently `pending` (the overview frontmatter always has a `status` key per the plan contract; do not touch the `## Phases` table — it has no status column).
+This session is fresh by design. Read **only**:
 
-## 4. Discover the real stack (language-agnostic)
+- The phase file itself (full content).
+- Files explicitly listed under "Files to touch" in the phase.
+- Adjacent files needed to understand those (imports, callers) — pull as you go.
 
-Never assume a language, framework, or test runner. Detect them from the repository before implementing:
+Do NOT read other phase files. Do NOT read the overview beyond resolving the phase link. The phase is self-contained by contract; if it isn't, surface that as a blocker rather than papering over it.
 
-- Read the paths named in the phase's `## Context & files`. Use Glob/Grep/Read to inspect the actual files and surrounding code so your changes match existing conventions (naming, structure, style, error handling).
-- Detect build/dependency manifests and lockfiles at the repo root and in relevant subdirectories (e.g. `package.json`, `pnpm-lock.yaml`, `cargo.toml`, `go.mod`, `pyproject.toml`, `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`, `Makefile`, `justfile`, etc. — whatever is present).
-- Detect the **test runner** from those manifests' scripts/dev-dependencies and from existing test directories/config (e.g. a `test`/`test:e2e` script, a test config file, existing `*.spec.*` / `*_test.*` / `test_*.py` files, a `tests/` folder). Prefer the command the project already uses. If the phase's `## Tests` section names the runner/command, that takes precedence.
+### Pollendar toolchain (the concrete defaults)
 
-You may run discovery in parallel with subagents (the Task tool) for large repos, but keep all file edits in this main context.
+This is a monorepo with **NO root package.json**. Repo root = `/home/emmanuel/projects/pollendar`. The only real application code today is in `backend/` (a NestJS 11 / Prisma 7 API). `frontend/` is PLANNED Vue 3 but NOT yet scaffolded (empty except a README — no package.json, no commands). Skip the frontend entirely until it exists.
 
-## 5. Implement the Steps
+**All backend commands run FROM the `backend/` directory.** Bake these exact values as the defaults:
 
-Work through the phase's `## Steps` in order, top to bottom. They are the source of truth for what to build. For each step:
+- **Lint:** `npm run lint` (= `eslint "{src,apps,libs,test}/**/*.ts" --fix`)
+- **Format (write):** `npm run format` (= `prettier --write "src/**/*.ts" "test/**/*.ts"`). There is NO format-check script; a check is `npx prettier --check "src/**/*.ts" "test/**/*.ts"`.
+- **Unit tests:** `npm test` (= `jest`; rootDir=`src`, testRegex `.*\.spec\.ts$` — unit specs live next to source as `*.spec.ts` under `backend/src/`).
+- **E2E tests:** `npm run test:e2e` (= `jest --config ./test/jest-e2e.json`; specs under `backend/test/`).
+- **Coverage:** `npm run test:cov` (= `jest --coverage`).
+- **Build:** `npm run build` (= `nest build`).
+- **Dev server:** `npm run start:dev` (= `nest start --watch`; serves http://localhost:3000/api).
+- **Prisma / codegen (from `backend/`):** `npx prisma generate`, `npx prisma migrate dev --name <name>`, `npx prisma migrate reset` (re-runs migrations + seed), `npx prisma studio` (inspect data). Seed = `tsx prisma/seed.ts`, wired in `backend/prisma.config.ts` under `migrations.seed` (Prisma 7 reads the seed from `prisma.config.ts`, NOT package.json).
 
-- Make the concrete code/file change using the discovered stack and existing conventions.
-- Stay within scope — honor the phase's `## Out of scope` section and do not implement future phases.
-- Keep changes minimal and coherent; match the repo's existing patterns rather than introducing new ones.
+Local infra is `docker-compose.yml` at repo root: MySQL 8.4 (localhost:3306, db `pollendar`) + Mailpit (SMTP localhost:1025, web UI http://localhost:8025). Bring up with `docker compose up -d` if a phase needs the DB or email.
 
-If a step is blocked (missing info, contradicts the repo state, or depends on something not present), STOP, report the blocker precisely (which step, why), and do not fake progress. Leave the phase `in-progress`.
+Env is single-sourced at **repo-root `.env`** (copy from `.env.example`). Both the NestJS app (`@nestjs/config`, validated on boot) and the Prisma CLI (via `backend/prisma.config.ts`) read it. NEVER duplicate secrets under `backend/`.
 
-## 6. Tests — HARD, NON-SKIPPABLE
+**Prisma 7 gotchas (load-bearing — respect when touching the data layer):**
+- `schema.prisma` MUST NOT contain `url`. The connection string is supplied by `backend/prisma.config.ts` (which loads repo-root `.env` and passes `DATABASE_URL`).
+- `PrismaService` connects via a DRIVER ADAPTER using `@prisma/adapter-mariadb` + `mariadb`.
+- The schema uses the CLASSIC generator (`provider = "prisma-client-js"`), NOT the ESM `prisma-client` generator (the ESM one uses `import.meta` and breaks the CommonJS ts-jest / nest-build toolchain).
+- `migrate dev` needs a grant on the shadow database.
 
-This step is mandatory. You may not mark the phase done without it.
+If any of these commands change, re-discover from `backend/package.json` and `backend/prisma.config.ts` — lead with the concrete values above but don't trust them blindly if the repo has drifted.
 
-1. **Add the tests described in the phase's `## Tests` section.** Write every test it specifies, placed where the project keeps tests, in the project's existing test style. If the section describes behavior to cover but not exact cases, add concrete tests that verify the phase's acceptance criteria.
-2. **Run the tests** using the detected test runner (the command from step 4 / the phase's `## Tests` section). Scope the run to the new/affected tests when the runner supports it, but ensure the phase's tests actually execute.
-3. **Iterate until green.** If tests fail, diagnose, fix the implementation or the tests, and re-run. Repeat until the phase's tests pass.
-4. If after genuine effort the tests cannot pass due to an external blocker (missing service, credentials, environment), STOP and report the exact failure, the command used, and the output. Leave the phase `in-progress`. Never edit a test merely to make it pass without verifying real behavior, and never delete/skip a test to go green.
+### Pollendar layers (the project's actual structure)
 
-Capture the final test command and its passing output — you will report it at the end.
+The phase's "Files to touch" tells you where to work; these are the named layers it draws from:
 
-## 7. Mark done + tick acceptance criteria
+- **DATA layer** — `backend/prisma/`: `schema.prisma`, migrations under `backend/prisma/migrations/`, `seed.ts`, plus `backend/src/prisma/` (`PrismaModule` + `PrismaService`, global DI). EXISTS. Tables: users, login_tokens, auth_sessions, polls, poll_dates, poll_slots, participants, responses, slot_tallies, email_log. Enums: PollStatus, Availability, EmailType, EmailStatus.
+- **SERVICE / API layer** — NestJS modules/controllers/services under `backend/src/`. Exists: `prisma/`, `config/`. PLANNED (not yet created — create per the phase): `auth/` (magic link, sessions, guards), `polls/` (CRUD, complete, invite message), `public/` (public poll fetch + response submit), `responses/` (tally / best-slot computation), `notifications/` (mailer + completion emails).
+- **CONFIG / INFRA layer** — `backend/src/config/` (env validation, `env.validation.ts`, fails fast on missing/invalid required vars), `docker-compose.yml`, repo-root `.env`. EXISTS.
+- **FRONTEND layer** — PLANNED Vue 3 app, NOT yet scaffolded. Do NOT touch or invent frontend commands until it exists.
 
-Only after the phase's tests are green:
+There is no shared/packages module today. No external observability (no Sentry) — dev signal = nest app logs, Mailpit UI (http://localhost:8025) for emails, `npx prisma studio` / `mysql` CLI against localhost:3306 for data.
 
-- Edit the target phase file: set frontmatter `status: done`.
-- In the phase's `## Acceptance criteria` section, change each satisfied checkbox from `- [ ]` to `- [x]`. Every criterion must be objectively met; if one cannot be ticked truthfully, the phase is NOT done — return to step 5/6 or report the gap.
-- Update the overview `00-overview.md` frontmatter `status`: set it to `done` if this was the last phase still not `done`, otherwise set/leave it `in-progress`. Do NOT edit the `## Phases` table — it is static structure with no status column.
+Follow the project's existing conventions (DTOs with class-validator/class-transformer, module/service/controller layering, naming) — discover them from neighboring code under `backend/src/`, don't impose new ones.
 
-## 8. Leave dirty + report
+## Choose execution mode
 
-Do NOT run `git add`, `git commit`, or any commit. Leave the working tree dirty.
+Read the phase's `**Execution:**` field:
 
-End with a concise report:
+- **`solo`** (or field absent) → run it yourself in this session: **Execute (solo)** below.
+- **`workflow`** → the planner judged this phase worth fanning out. Run it via the `Workflow` tool following the phase's **## Execution strategy** section: **Execute (workflow)** below.
 
-- **Phase:** `<N> — <title>` of plan `<scope-slug>` → `status: done`.
-- **Changed:** the files you created/modified (use `git status --short` / `git diff --stat` to be accurate).
-- **Tests:** the exact test command run and the pass result (counts).
-- **Acceptance:** confirm each criterion is now ticked.
-- **Next:** suggest `/commit` to commit this phase, then `/execute phase <N+1> from @PLAN_DIR/00-overview.md` (or the next not-`done` phase) — or note the plan is complete if no phases remain.
+State which mode you're using in one line before starting.
+
+## Execute (solo)
+
+1. **Plan tasks.** Use `TaskCreate` to mirror the phase's "Steps" list. Mark each `in_progress` / `completed` as you go.
+2. **Implement.** Edit files using `Edit` / `Write`. Stay within the phase's stated scope. If the phase says "do X in file Y" and you discover Y also needs Z to compile, do Z — but flag scope creep in the final report. Follow the project's existing conventions (discover them from neighboring code under `backend/src/`).
+3. **Verify.** Run the commands under the phase's "Verification" section, from `backend/`. Typically:
+   - `npm run lint`
+   - `npx prisma format` is NOT used; format via `npm run format` (or check with `npx prettier --check "src/**/*.ts" "test/**/*.ts"`)
+   - `npm test` (and `npm run test:e2e` if the phase touched e2e-covered flows)
+   - `npm run build`
+   - `npx prisma generate` if `schema.prisma` was touched (regenerate the client); `npx prisma migrate dev --name <name>` if the phase adds a migration
+   Fix failures before committing. Don't suppress lints to make verification pass.
+4. **Check acceptance.** Walk the phase's "Acceptance" checklist. If a box can't be checked, stop and report — don't hand back a half-done phase.
+
+## Execute (workflow)
+
+The phase is marked `**Execution:** workflow`. Author **one** `Workflow` call inline that follows the phase's **## Execution strategy** section verbatim — it tells you the fan-out unit, shape, isolation, and verify stage. You own correctness; the workflow is your fan-out, not an excuse to skip the cold read.
+
+1. **Pre-flight (in this session).** Cold-read the phase + its "Files to touch". If "Execution strategy" says edit sites must be discovered first, find them now (grep/Explore) so you can hand the workflow a concrete work-list — don't make the workflow guess scope.
+2. **Author the script.** Translate "Execution strategy" into the script:
+   - **Shape:** `pipeline(items, transform, verify)` for independent edit-sites/files (the default — each item flows transform→verify without a barrier). `parallel(...)` only when a stage genuinely needs all prior results together (cross-file dedup, all-or-nothing gate). `find → transform → verify` when sites were discovered in pre-flight.
+   - **Fan-out unit:** one agent per file / call-site / NestJS module / layer / dimension, as the section states.
+   - **Isolation:** `isolation: 'worktree'` ONLY if agents would edit the **same** file concurrently. If each agent owns a distinct file, omit it — they edit the shared tree without conflict (cheaper, no merge step).
+   - **Cold prompts:** each agent starts fresh — embed the exact file path, the precise change, and the pattern to follow as string literals. Reference no conversation context. Tell each editor to stay strictly within its assigned file/scope and leave changes uncommitted.
+   - **Verify stage:** have each item's verifier confirm its edit compiles/matches intent; for high-assurance phases, make verifiers adversarial (try to refute the edit) and use a `schema` so verdicts are structured.
+3. **Run it**, then **reconcile in this session:** review the diff the workflow produced, run the phase's full "Verification" commands yourself from `backend/` (`npm run lint`, `npm test`, `npm run build`, plus `npx prisma generate`/`migrate dev` if the schema changed) against the merged tree, and fix any cross-file breakage the per-item agents couldn't see. A green per-item verifier is not a green phase — you own the whole-tree verification.
+4. **Check acceptance** exactly as in solo mode. If a box can't be checked, stop and report.
+
+If mid-run the workflow reveals the phase's scope was wrong (sites that don't exist, a shape that doesn't fit), stop and surface it as a blocker — don't let the workflow paper over a bad phase.
+
+## Write tests
+
+Once verification is green and acceptance is met, cover the phase's changes with tests by running the `/test` command scoped to this phase:
+
+1. **Scope to the phase.** Test only the behavior this phase introduced — the files under "Files to touch" and the new/changed services, controllers, modules, or functions. Don't backfill unrelated coverage.
+2. **Write tests** following the `/test` command's rules: unit specs as `*.spec.ts` next to the source under `backend/src/` (Jest, ts-jest); e2e specs under `backend/test/` if the phase introduced an HTTP flow. Cover the contract not the implementation, one group per subject, arrange-act-assert. Run `npx prisma generate` first if the phase changed `schema.prisma`.
+3. **Run tests in an isolated subagent** exactly as the `/test` command describes — delegate execution to a single `Agent` call (`subagent_type: "general-purpose"`) so output stays out of main context. Brief it self-contained: run `npm test` (and `npm run test:e2e` if relevant) from `backend/`.
+4. **Fix failures** per the `/test` command: test wrong → fix the test; code wrong (regression in this phase's scope) → fix the code. No skipped tests, no loosened asserts, no swallowed errors. Rerun fix → test until green or 3 cycles, then stop and ask.
+
+If nothing testable changed (pure docs/config/generated code) → say so and skip. Don't fabricate tests.
+
+## Hand off
+
+When verification is green and acceptance is met, stop. Leave changes uncommitted in the working tree — the user commits manually at the end of their session.
+
+Do NOT commit. Do NOT push. Do NOT open a PR. Do NOT start the next phase — that's a separate `/execute` invocation in a fresh session.
+
+(For context when the user does commit: protected branch is `main` — branch before committing if on main. Commit style is Conventional Commits WITH a scope, lower-case, scope = the plan/feature slug, e.g. `feat(scaffold-db): add deterministic Prisma seed`. No co-author trailers, no fluff.)
+
+## Schema/migration safety
+
+Pollendar's DB schema is consumed ONLY by the in-repo NestJS API — it does NOT deploy independently of any client (no mobile app, no external versioned consumers, no force-update mechanism). So there is NO expand→contract / version-floor migration contract to honor here; do NOT impose one.
+
+Keep migrations light and concrete: they live under `backend/prisma/migrations/`, applied with `npx prisma migrate dev --name <name>` from `backend/`, reset with `npx prisma migrate reset` (which also re-runs the seed). Inspect the result with `npx prisma studio` or the `mysql` CLI against localhost:3306 (db `pollendar`); inspect dev emails in Mailpit at http://localhost:8025. Respect the Prisma 7 gotchas above (no `url` in schema; driver adapter; classic generator; shadow-DB grant for `migrate dev`).
+
+## Blockers
+
+Stop and ask the user if:
+
+- Phase file references something that doesn't exist (file, NestJS module, package, migration, table).
+- "Files to touch" conflicts with current repo state in a way the phase didn't anticipate.
+- Verification fails for a reason outside the phase's scope.
+- Acceptance criteria are ambiguous given the code you see.
+- A phase assumes the frontend exists (it is not scaffolded) — surface that rather than inventing frontend commands.
+
+Don't silently expand scope to fix upstream problems — surface them.
+
+## Report
+
+End-of-turn summary (1–3 sentences):
+- What landed (files touched + one-line scope).
+- Tests added (count + files) and final test status.
+- Anything skipped or flagged for the next phase.
+- Next phase to run, if any (just the pointer — don't auto-trigger).
+
+## Rules
+
+- **Cold read.** Treat the phase file as the spec. Don't lean on conversation context the planner had.
+- **Single phase only.** No "while I'm here" work from other phases.
+- **No commit, no push, no PR.** Hand back a dirty working tree; user commits manually.
+- **No edits outside the phase scope** except minimum-needed compile fixes — and flag them.
+- **Don't rewrite the plan.** If the phase is wrong, report it; user decides whether to revise the plan or push through.
+- **Tests are part of the phase.** A phase isn't done until its changes are covered by tests (via the `/test` command) and green — unless nothing testable changed.
+
+## Output style
+
+- Brief. No preamble, no recap, no chatter.
+- Bullet points over prose.
+- Lead with the answer; cut everything that isn't actionable.
+- Questions (if any): one line each, batched in a single `AskUserQuestion`.
+- No closing summary beyond the 1–3 sentence "Report" step.

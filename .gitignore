@@ -29,3 +29,4 @@ pnpm-debug.log*
 
 # docker volume data (if mounted locally)
 .docker-data/
+.claude
