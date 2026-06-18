@@ -62,10 +62,10 @@ Add `POST /auth/verify`, `POST /auth/refresh`, and `POST /auth/logout` to AuthMo
   8. Confirm only hashes are stored: `docker compose exec mysql mysql -uroot -p<pw> pollendar -e "SELECT refresh_token_hash FROM auth_sessions LIMIT 1;"` → a 64-char hex string, never a base64url raw token.
 
 ## Acceptance
-- [ ] `req.cookies` is populated (`cookie-parser`, wired in Phase 1) so `refresh`/`logout` can read the refresh cookie.
-- [ ] `POST /api/auth/verify` consumes a valid login token (sets `consumed_at`), creates one `auth_sessions` row, returns `200` with the user id as a string, and sets httpOnly `accessToken` + `refreshToken` cookies.
-- [ ] Reusing an already-consumed or expired login token returns `401` and creates no new session.
-- [ ] `POST /api/auth/refresh` rotates the refresh token (old session `revoked_at` set, new session created), reissues the access cookie, and returns `200`; an invalid/revoked/missing refresh cookie returns `401`.
-- [ ] `POST /api/auth/logout` revokes the current session, clears both cookies, returns `200`, and is idempotent (no error when the refresh cookie is absent).
-- [ ] `auth_sessions.refresh_token_hash` and `login_tokens.token_hash` only ever contain 64-char SHA-256 hex digests — raw tokens never hit the database.
-- [ ] `npm run lint` and `npm test -- auth` pass.
+- [x] `req.cookies` is populated (`cookie-parser`, wired in Phase 1) so `refresh`/`logout` can read the refresh cookie.
+- [x] `POST /api/auth/verify` consumes a valid login token (sets `consumed_at`), creates one `auth_sessions` row, returns `200` with the user id as a string, and sets httpOnly `accessToken` + `refreshToken` cookies.
+- [x] Reusing an already-consumed or expired login token returns `401` and creates no new session.
+- [x] `POST /api/auth/refresh` rotates the refresh token (old session `revoked_at` set, new session created), reissues the access cookie, and returns `200`; an invalid/revoked/missing refresh cookie returns `401`.
+- [x] `POST /api/auth/logout` revokes the current session, clears both cookies, returns `200`, and is idempotent (no error when the refresh cookie is absent).
+- [x] `auth_sessions.refresh_token_hash` and `login_tokens.token_hash` only ever contain 64-char SHA-256 hex digests — raw tokens never hit the database.
+- [x] `npm run lint` and `npm test -- auth` pass.

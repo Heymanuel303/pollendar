@@ -1,8 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
+
+/** Request metadata recorded on a session for audit/debugging. */
+interface SessionContext {
+  ip?: string;
+  userAgent?: string;
+}
+
+/** The minimal user shape needed to mint an access token. */
+interface AccessTokenUser {
+  id: bigint;
+  email: string;
+  tokenVersion: number;
+}
 
 const TTL_MULTIPLIERS: Record<string, number> = {
   s: 1000,
@@ -22,6 +36,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
+    private readonly jwt: JwtService,
   ) {}
 
   /** 32 random bytes as a 43-char base64url string — the plain token mailed to the user. */
@@ -69,5 +84,137 @@ export class AuthService {
 
     const link = `${this.config.get<string>('APP_URL')}/auth/callback?token=${plainToken}`;
     await this.mail.sendMagicLink(email, link);
+  }
+
+  /**
+   * Exchange a raw magic-link token for a logged-in session. Consumes the single-use login
+   * token and creates the refresh session atomically (one transaction) so the same token can
+   * never mint two sessions. Returns the raw refresh + access token for the controller to set
+   * as httpOnly cookies; only their SHA-256 hashes ever touch the database.
+   */
+  async verify(
+    rawToken: string,
+    ctx: SessionContext,
+  ): Promise<{
+    user: AccessTokenUser & { displayName: string | null };
+    accessToken: string;
+    refreshToken: string;
+  }> {
+    const tokenHash = this.hashToken(rawToken);
+    const loginToken = await this.prisma.loginToken.findUnique({
+      where: { tokenHash },
+      include: { user: true },
+    });
+
+    if (
+      !loginToken ||
+      loginToken.consumedAt !== null ||
+      loginToken.expiresAt < new Date()
+    ) {
+      throw new UnauthorizedException('Invalid or expired link');
+    }
+
+    const { rawRefresh, op } = this.createSession(loginToken.userId, ctx);
+    await this.prisma.$transaction([
+      this.prisma.loginToken.update({
+        where: { id: loginToken.id },
+        data: { consumedAt: new Date() },
+      }),
+      op,
+    ]);
+
+    const accessToken = await this.issueAccessToken(loginToken.user);
+    return { user: loginToken.user, accessToken, refreshToken: rawRefresh };
+  }
+
+  /**
+   * Rotate a refresh session: revoke the presented one and issue a fresh refresh token + access
+   * token in a single transaction. A missing/revoked/expired refresh token is rejected.
+   */
+  async refresh(
+    rawRefresh: string,
+    ctx: SessionContext,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const refreshTokenHash = this.hashToken(rawRefresh);
+    const session = await this.prisma.authSession.findUnique({
+      where: { refreshTokenHash },
+      include: { user: true },
+    });
+
+    if (
+      !session ||
+      session.revokedAt !== null ||
+      session.expiresAt < new Date()
+    ) {
+      throw new UnauthorizedException('Session expired');
+    }
+
+    const { rawRefresh: newRawRefresh, op } = this.createSession(
+      session.userId,
+      ctx,
+    );
+    await this.prisma.$transaction([
+      this.prisma.authSession.update({
+        where: { id: session.id },
+        data: { revokedAt: new Date() },
+      }),
+      op,
+    ]);
+
+    const accessToken = await this.issueAccessToken(session.user);
+    return { accessToken, refreshToken: newRawRefresh };
+  }
+
+  /**
+   * Revoke the session backing a refresh token. Idempotent: resolves without throwing when the
+   * token is absent or already revoked, so logout is always safe to call.
+   */
+  async logout(rawRefresh?: string): Promise<void> {
+    if (!rawRefresh) {
+      return;
+    }
+    await this.prisma.authSession.updateMany({
+      where: { refreshTokenHash: this.hashToken(rawRefresh), revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  /**
+   * Prepare a new refresh session. Returns the raw token (mailed/cookied, never stored) and a
+   * lazy Prisma create op so the caller can compose it into a single atomic transaction with
+   * the consume/revoke of the prior token. Only the SHA-256 hash is written to the DB.
+   */
+  private createSession(userId: bigint, ctx: SessionContext) {
+    const rawRefresh = this.generateToken();
+    const refreshTokenHash = this.hashToken(rawRefresh);
+    const expiresAt = new Date(
+      Date.now() +
+        this.parseTtlToMs(this.config.get<string>('REFRESH_TOKEN_TTL')!),
+    );
+    const op = this.prisma.authSession.create({
+      data: {
+        userId,
+        refreshTokenHash,
+        expiresAt,
+        userAgent: ctx.userAgent?.slice(0, 255) ?? null,
+        ip: ctx.ip ?? null,
+      },
+    });
+    return { rawRefresh, op };
+  }
+
+  /** Sign a short-lived access JWT. `sub` is the BigInt id serialized as a string. */
+  private issueAccessToken(user: AccessTokenUser): Promise<string> {
+    return this.jwt.signAsync(
+      {
+        sub: user.id.toString(),
+        email: user.email,
+        tokenVersion: user.tokenVersion,
+      },
+      {
+        secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
+        expiresIn: this.config.getOrThrow<string>('ACCESS_TOKEN_TTL'),
+      },
+    );
   }
 }
