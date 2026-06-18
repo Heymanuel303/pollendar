@@ -82,11 +82,11 @@ const participantCount = computed<number>(() => {
         v-for="row in rows"
         :key="row.slotId"
         :data-testid="`result-row-${row.slotId}`"
-        class="grid grid-cols-12 items-center gap-3 px-4 py-4"
+        class="flex flex-col gap-3 px-4 py-4 md:grid md:grid-cols-12 md:items-center"
         :class="row.isWinner ? 'bloom-bg bloom ring-1 ring-pollen/40' : 'transition hover:bg-surface2'"
       >
         <!-- Left: date + slot sub-line -->
-        <div class="col-span-5">
+        <div class="md:col-span-5">
           <div class="flex flex-wrap items-center gap-2">
             <span class="font-display text-base font-semibold">{{
               formatDate(row.meta.date, timezone)
@@ -101,7 +101,7 @@ const participantCount = computed<number>(() => {
         </div>
 
         <!-- Middle: distribution bar + numeric line -->
-        <div class="col-span-5">
+        <div class="md:col-span-5">
           <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-no/60">
             <span data-bar="yes" class="h-full bg-yes" :style="{ width: row.pctYes + '%' }"></span>
             <span
@@ -117,7 +117,7 @@ const participantCount = computed<number>(() => {
         </div>
 
         <!-- Right: score -->
-        <div class="col-span-2 text-right">
+        <div class="md:col-span-2 text-left md:text-right">
           <span
             class="num font-display text-3xl font-bold"
             :class="row.isWinner ? 'text-pollen' : 'text-moonlight'"

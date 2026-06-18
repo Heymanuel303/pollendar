@@ -77,4 +77,29 @@ describe('ResultsTable', () => {
     // Every slot here has 5 responses.
     expect(norm(wrapper.text())).toContain('5 participants · best recomputed on every response')
   })
+
+  // Phase 3 responsive pass: rows stack on phones, restore the 12-col grid at md+.
+  it('stacks each row on phones and restores the 12-col grid at md+', () => {
+    const row = mountTable().get('[data-testid="result-row-s1"]')
+    // Mobile-first: a vertical flex column that becomes a 12-col grid at md.
+    expect(row.classes()).toEqual(
+      expect.arrayContaining(['flex', 'flex-col', 'md:grid', 'md:grid-cols-12', 'md:items-center']),
+    )
+    // The old desktop-only base spans must be gone (no overflow at 375px).
+    expect(row.classes()).not.toContain('grid-cols-12')
+  })
+
+  it('scopes each row child column span to md+ so it is full-width on phones', () => {
+    const row = mountTable().get('[data-testid="result-row-s1"]')
+    const cols = row.findAll(':scope > div')
+    // date · distribution · score blocks, each md-scoped (no unprefixed col-span).
+    expect(cols.length).toBeGreaterThanOrEqual(3)
+    for (const col of cols) {
+      expect(col.classes().some((c) => c === 'col-span-5' || c === 'col-span-2')).toBe(false)
+      expect(col.classes().some((c) => c.startsWith('md:col-span-'))).toBe(true)
+    }
+    // Score column left-aligns on phones, right-aligns at md+.
+    const score = cols[cols.length - 1]!
+    expect(score.classes()).toEqual(expect.arrayContaining(['text-left', 'md:text-right']))
+  })
 })

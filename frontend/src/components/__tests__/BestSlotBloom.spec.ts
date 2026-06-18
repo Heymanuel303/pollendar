@@ -57,4 +57,15 @@ describe('BestSlotBloom', () => {
     expect(wrapper.find('[data-testid="complete-btn"]').exists()).toBe(false)
     expect(wrapper.text()).toContain('No responses yet')
   })
+
+  // Phase 3 responsive pass: padding + score/title scale across sm/lg.
+  it('scales card padding and the score across breakpoints', () => {
+    const card = mountBloom().get('[data-testid="best-slot-bloom"]')
+    expect(card.classes()).toEqual(expect.arrayContaining(['p-4', 'sm:p-6', 'lg:p-8']))
+    // The score steps up from text-4xl on phones to text-5xl at sm+.
+    const score = card
+      .findAll('div')
+      .find((d) => d.classes().includes('font-display') && d.text() === '10')!
+    expect(score.classes()).toEqual(expect.arrayContaining(['text-4xl', 'sm:text-5xl']))
+  })
 })

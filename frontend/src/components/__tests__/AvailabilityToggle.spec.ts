@@ -50,4 +50,21 @@ describe('AvailabilityToggle', () => {
     expect(maybe.classes()).not.toContain('bg-maybe')
     expect(maybe.classes()).toContain('text-dim')
   })
+
+  // Phase 3 responsive pass: 44px touch targets + full-width group on phones.
+  it('fills the row on phones and reverts to inline-flex at sm+', () => {
+    const group = mountToggle(null).wrapper.get('[role="group"]')
+    expect(group.classes()).toEqual(
+      expect.arrayContaining(['flex', 'w-full', 'sm:inline-flex', 'sm:w-auto']),
+    )
+  })
+
+  it('gives every option a 44px floor and an even share of the phone row', () => {
+    const { yes, maybe, no } = mountToggle(null)
+    for (const button of [yes, maybe, no]) {
+      expect(button.classes()).toEqual(
+        expect.arrayContaining(['min-h-11', 'flex-1', 'sm:flex-none']),
+      )
+    }
+  })
 })

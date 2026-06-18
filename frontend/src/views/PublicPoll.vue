@@ -95,7 +95,7 @@ async function onSubmit(): Promise<void> {
       </div>
     </header>
 
-    <main class="mx-auto max-w-3xl px-6 pb-40 pt-10">
+    <main class="mx-auto max-w-3xl px-4 pb-with-footer pt-10 sm:px-6">
       <!-- Loading -->
       <div
         v-if="loadState === 'loading'"
@@ -224,10 +224,10 @@ async function onSubmit(): Promise<void> {
     <!-- Sticky submit bar (only while the poll is open) -->
     <div
       v-if="poll && isOpen"
-      class="fixed inset-x-0 bottom-0 z-20 border-t border-line/70 bg-canvas/85 backdrop-blur"
+      class="fixed inset-x-0 bottom-0 z-20 safe-bottom border-t border-line/70 bg-canvas/85 backdrop-blur"
     >
       <div
-        class="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+        class="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
       >
         <div class="min-w-0">
           <p class="text-xs uppercase tracking-widest text-mute">Leaning so far</p>
@@ -254,7 +254,7 @@ async function onSubmit(): Promise<void> {
             :disabled="!canSubmit"
             :aria-busy="submitting || undefined"
             :class="[
-              'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition',
+              'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-medium transition sm:w-auto',
               canSubmit
                 ? 'bg-pollen text-canvas shadow-glow hover:brightness-110 active:translate-y-px'
                 : 'cursor-not-allowed bg-pollen/40 text-canvas/60',

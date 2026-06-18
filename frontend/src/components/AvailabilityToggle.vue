@@ -38,7 +38,7 @@ const isActive = computed(() => (value: Availability) => props.modelValue === va
   <div
     role="group"
     :aria-label="label"
-    class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium"
+    class="flex w-full sm:inline-flex sm:w-auto rounded-xl border border-line bg-canvas p-1 text-sm font-medium"
   >
     <button
       v-for="opt in options"
@@ -46,7 +46,7 @@ const isActive = computed(() => (value: Availability) => props.modelValue === va
       type="button"
       :aria-pressed="isActive(opt.value)"
       :class="[
-        'rounded-lg px-3 py-1.5 transition focus:outline-none',
+        'flex-1 sm:flex-none inline-flex items-center justify-center min-h-11 rounded-lg px-3 py-2.5 transition focus:outline-none',
         isActive(opt.value) ? opt.active : inactive,
       ]"
       @click="select(opt.value)"

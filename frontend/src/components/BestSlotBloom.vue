@@ -37,7 +37,7 @@ const emit = defineEmits<{ complete: [] }>()
   <section
     v-else
     data-testid="best-slot-bloom"
-    class="bloom bloom-bg relative overflow-hidden rounded-2xl border border-pollen/40 bg-surface p-6 shadow-card"
+    class="bloom bloom-bg relative overflow-hidden rounded-2xl border border-pollen/40 bg-surface p-4 sm:p-6 lg:p-8 shadow-card"
   >
     <!-- Header: in-bloom pill + score -->
     <div class="flex items-start justify-between gap-4">
@@ -46,14 +46,14 @@ const emit = defineEmits<{ complete: [] }>()
         >✦ In bloom</span
       >
       <div class="text-right">
-        <div class="font-display text-5xl font-bold leading-none text-pollen">{{ best.score }}</div>
+        <div class="font-display text-4xl sm:text-5xl font-bold leading-none text-pollen">{{ best.score }}</div>
         <p class="pt-1 text-xs uppercase tracking-widest text-mute">Score</p>
       </div>
     </div>
 
     <!-- Date + slot range / label -->
     <div class="mt-5">
-      <h3 class="font-display text-2xl font-semibold tracking-tight text-moonlight">
+      <h3 class="font-display text-2xl md:text-3xl font-semibold tracking-tight text-moonlight">
         {{ formatDate(meta.date, timezone) }}
       </h3>
       <p class="mt-1 font-display text-base font-medium text-dim">

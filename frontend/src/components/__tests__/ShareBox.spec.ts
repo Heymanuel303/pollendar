@@ -65,6 +65,16 @@ describe('ShareBox', () => {
     expect(writeText).toHaveBeenCalledWith(SHARE_URL)
     expect(copyLink.text()).toContain('Copied')
   })
+
+  // Phase 3 responsive pass: copy button stretches full-width on phones, no label wrap.
+  it('makes the copy button full-width on phones and keeps its label on one line', () => {
+    const copyLink = mountBox(makePoll())
+      .findAll('button')
+      .find((b) => b.text().includes('Copy link'))!
+    expect(copyLink.classes()).toEqual(
+      expect.arrayContaining(['w-full', 'sm:w-auto', 'whitespace-nowrap']),
+    )
+  })
 })
 
 beforeEach(() => {

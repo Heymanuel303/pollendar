@@ -53,7 +53,7 @@ const invalid = computed<boolean>(
 const showError = computed<boolean>(() => props.showErrors === true && invalid.value)
 
 const timeFieldClass =
-  'field-sizing-content rounded-md border bg-canvas px-2 py-1 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
+  'field-sizing-content rounded-md border bg-canvas px-2 py-2.5 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
 const timeStateClass = computed<string>(() =>
   showError.value
     ? 'border-coral focus:border-coral focus:ring-coral/30'
@@ -70,7 +70,7 @@ const timeStateClass = computed<string>(() =>
         v-model="label"
         aria-label="Slot label"
         placeholder="Label"
-        class="field-sizing-content min-w-16 rounded-md border border-line bg-canvas px-2 py-1 text-sm text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
+        class="field-sizing-content min-w-16 rounded-md border border-line bg-canvas px-2 py-2.5 text-sm text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
       />
 
       <!-- All-day / Set-times segmented toggle -->
@@ -79,8 +79,8 @@ const timeStateClass = computed<string>(() =>
           type="button"
           :class="
             isAllDay
-              ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
-              : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
+              ? 'rounded-md bg-yes px-3 py-2 min-h-11 text-canvas shadow-glow'
+              : 'rounded-md px-3 py-2 min-h-11 text-dim transition hover:text-moonlight'
           "
           @click="setAllDay(true)"
         >
@@ -90,8 +90,8 @@ const timeStateClass = computed<string>(() =>
           type="button"
           :class="
             !isAllDay
-              ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
-              : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
+              ? 'rounded-md bg-yes px-3 py-2 min-h-11 text-canvas shadow-glow'
+              : 'rounded-md px-3 py-2 min-h-11 text-dim transition hover:text-moonlight'
           "
           @click="setAllDay(false)"
         >
@@ -120,7 +120,7 @@ const timeStateClass = computed<string>(() =>
 
       <button
         type="button"
-        class="ml-auto rounded-md px-2 py-1 text-sm text-mute transition hover:text-coral"
+        class="ml-auto rounded-md px-3 py-2 min-h-11 text-sm text-mute transition hover:text-coral"
         aria-label="Remove slot"
         @click="emit('remove')"
       >

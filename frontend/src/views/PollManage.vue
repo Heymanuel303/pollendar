@@ -133,7 +133,7 @@ const bestLabel = computed<string>(() => {
       <!-- Header -->
       <header class="mb-6 mt-3">
         <div class="flex flex-wrap items-center gap-3">
-          <h1 class="font-display text-3xl font-semibold tracking-tight">{{ currentPoll.title }}</h1>
+          <h1 class="font-display text-2xl sm:text-3xl font-semibold tracking-tight">{{ currentPoll.title }}</h1>
           <Pill v-if="isCompleted" tone="mint">Completed</Pill>
           <Pill v-else tone="pollen">Open · gathering responses</Pill>
         </div>
@@ -214,7 +214,7 @@ const bestLabel = computed<string>(() => {
     <!-- Complete-confirm dialog -->
     <div
       v-if="confirmOpen"
-      class="fixed inset-0 z-30 grid place-items-center bg-canvas/70 p-6 backdrop-blur"
+      class="fixed inset-0 z-30 grid place-items-center bg-canvas/70 p-4 sm:p-6 backdrop-blur safe-bottom"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"

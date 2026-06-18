@@ -2,7 +2,7 @@
 
 **Slug:** `responsive-foundations` (folder: `docs/plans/2026-06-18-responsive-foundations/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Make Pollendar mobile-friendly with a responsive-first single codebase: ship the shared foundations (a `useBreakpoint` composable, safe-area / touch-target / sticky-footer utilities, and a responsive `AppNav` shell), then apply pure-CSS mobile-first responsive passes to the existing screens. No DOM-switching, no backend changes — source: `docs/design/2026-06-18-mobile-friendly-overview.md` (Mobile strategy + workstreams 1–3).
@@ -27,17 +27,17 @@ Make Pollendar mobile-friendly with a responsive-first single codebase: ship the
 - Changes left uncommitted; the user commits manually.
 
 ## Acceptance criteria
-- [ ] `useBreakpoint` composable exists and is SSR-safe with listener cleanup.
-- [ ] `main.css` exposes touch-target, safe-area (top/bottom), and `.pb-with-footer` utilities.
-- [ ] `AppNav` has safe-area-top and a sensible phone layout; container padding tightened on mobile.
-- [ ] Landing + Dashboard render cleanly at 320–375px with no overflow and no color/DOM changes.
-- [ ] `PublicPoll` sticky footer respects `env(safe-area-inset-bottom)` (no hardcoded `pb-40`); all interactive controls (toggle, vote, remove) meet 44×44px.
-- [ ] `cd frontend && npm run build && npm run lint` is green after each phase.
+- [x] `useBreakpoint` composable exists and is SSR-safe with listener cleanup.
+- [x] `main.css` exposes touch-target, safe-area (top/bottom), and `.pb-with-footer` utilities.
+- [x] `AppNav` has safe-area-top and a sensible phone layout; container padding tightened on mobile.
+- [x] Landing + Dashboard render cleanly at 320–375px with no overflow and no color/DOM changes.
+- [x] `PublicPoll` sticky footer respects `env(safe-area-inset-bottom)` (no hardcoded `pb-40`); all interactive controls (toggle, vote, remove) meet 44×44px.
+- [x] `cd frontend && npm run build && npm run lint` is green after each phase.
 
 ## Phases
 1. [01-foundations](01-foundations.md) — `useBreakpoint` composable + safe-area/touch-target/`.pb-with-footer` utilities + responsive `AppNav` + tighter mobile shell padding · _solo_ ✓
 2. [02-landing-dashboard](02-landing-dashboard.md) — pure-CSS mobile-first pass over `Landing.vue` and `Dashboard.vue` (heading scale, padding, `md:` grids) · _solo_ ✓
-3. [03-voter-manage-chrome](03-voter-manage-chrome.md) — voter form + manage chrome pass: safe-area footer fix, About-you form, `PollManage` chrome, `ShareBox`, `ResultsTable`, `BestSlotBloom`, `AvailabilityToggle`/`SlotRow` touch targets · _workflow_
+3. [03-voter-manage-chrome](03-voter-manage-chrome.md) — voter form + manage chrome pass: safe-area footer fix, About-you form, `PollManage` chrome, `ShareBox`, `ResultsTable`, `BestSlotBloom`, `AvailabilityToggle`/`SlotRow` touch targets · _workflow_ ✓
 
 ## Open questions
 - None for this plan. Deferred items (calendar editor, participant matrix, "who voted" backend endpoint, mockups, view-toggle persistence) are tracked in the source overview's workstreams 4–7.

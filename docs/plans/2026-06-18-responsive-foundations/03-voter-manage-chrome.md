@@ -3,6 +3,7 @@
 **Plan:** [responsive-foundations](00-overview.md)
 **Depends on:** 01-foundations.md
 **Execution:** workflow
+**Status:** completed
 
 ## Context
 Make Pollendar mobile-friendly via responsive-first foundations and CSS responsive passes over existing screens — no DOM-switching, no backend changes. Phase 1 established the foundations (`main.css` safe-area utilities/tokens, `useBreakpoint.ts`, App.vue/AppNav responsive shell). This phase applies a CSS-only responsive pass over the public voter flow (PublicPoll) and the creator manage chrome (PollManage, ShareBox, ResultsTable, BestSlotBloom) plus the shared tri-state/segmented toggles (AvailabilityToggle, SlotRow) so they reflow cleanly and hit 44px touch targets on phones.
@@ -41,10 +42,10 @@ Reflow the voter form, manage header/sidebar, results/share/bloom blocks, and to
 - Manual mobile-viewport check (~375px): PublicPoll sticky bar clears the safe area and never overlaps content; ResultsTable rows stack instead of overflowing; AvailabilityToggle/SlotRow toggles are at least 44px tall and tappable.
 
 ## Acceptance
-- [ ] PublicPoll sticky submit bar uses safe-area-aware bottom padding (no hardcoded `pb-40` overlap) and the Submit button is full-width on phones.
-- [ ] ResultsTable rows stack vertically below `md` and restore the 12-col grid at `md+` with no horizontal overflow at 375px.
-- [ ] AvailabilityToggle tri-state buttons and SlotRow All-day/Set-times toggle are at least 44px tall on phones.
-- [ ] BestSlotBloom padding and title/score scale across `sm`/`lg` using only existing `@theme` tokens.
-- [ ] `cd frontend && npm run build` and `npm run lint` both pass; no new colors introduced.
+- [x] PublicPoll sticky submit bar uses safe-area-aware bottom padding (no hardcoded `pb-40` overlap) and the Submit button is full-width on phones.
+- [x] ResultsTable rows stack vertically below `md` and restore the 12-col grid at `md+` with no horizontal overflow at 375px.
+- [x] AvailabilityToggle tri-state buttons and SlotRow All-day/Set-times toggle are at least 44px tall on phones.
+- [x] BestSlotBloom padding and title/score scale across `sm`/`lg` using only existing `@theme` tokens.
+- [x] `cd frontend && npm run build` and `npm run lint` both pass; no new colors introduced.
 
 IMPORTANT: Leave changes uncommitted; the user commits manually. Do NOT push or open a PR.
