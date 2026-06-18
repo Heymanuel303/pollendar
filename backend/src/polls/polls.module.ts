@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, type JwtSignOptions } from '@nestjs/jwt';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PollOwnershipGuard } from './poll-ownership.guard';
 import { PollsController } from './polls.controller';
 import { PollsService } from './polls.service';
 
@@ -23,6 +24,6 @@ import { PollsService } from './polls.service';
     }),
   ],
   controllers: [PollsController],
-  providers: [PollsService, JwtAuthGuard],
+  providers: [PollsService, JwtAuthGuard, PollOwnershipGuard],
 })
 export class PollsModule {}

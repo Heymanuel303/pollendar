@@ -2,7 +2,7 @@
 
 **Slug:** `poll-crud` (folder: `docs/plans/2026-06-18-poll-crud/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 > Implements **Phase 3** of [`docs/PLAN.md`](../../PLAN.md). Builds on the completed
 > Phase 2 (creator magic-link auth: `JwtAuthGuard`, `@CurrentUser()`, session cookies).
@@ -34,16 +34,16 @@ poll exposes an opaque 22-char `public_token` for sharing.
 - Routes live under the global `/api` prefix.
 
 ## Acceptance criteria
-- [ ] Authenticated creator `POST /api/polls` creates a poll with multiple dates and slots in one transaction; response carries `id` (string), `publicToken` (22 chars), `shareUrl`, `title`, `status`.
-- [ ] `GET /api/polls` returns only the caller's own polls; `GET /api/polls/:id` returns the owner's poll with nested `dates[].slots[]`, or `404` if not owned/missing.
-- [ ] `PATCH /api/polls/:id` edits scalars and replaces nested dates+slots while `open`; returns `409` when `status !== 'open'`.
-- [ ] `DELETE /api/polls/:id` returns `204` and cascade-removes dates/slots/participants; not-owned → `404`.
-- [ ] All routes return `401` without a valid access cookie; nested DTO validation rejects empty `dates`/slot-less dates with `400`.
-- [ ] `npm run lint` and `npm test` (scoped `npx jest polls`) green.
+- [x] Authenticated creator `POST /api/polls` creates a poll with multiple dates and slots in one transaction; response carries `id` (string), `publicToken` (22 chars), `shareUrl`, `title`, `status`.
+- [x] `GET /api/polls` returns only the caller's own polls; `GET /api/polls/:id` returns the owner's poll with nested `dates[].slots[]`, or `404` if not owned/missing.
+- [x] `PATCH /api/polls/:id` edits scalars and replaces nested dates+slots while `open`; returns `409` when `status !== 'open'`.
+- [x] `DELETE /api/polls/:id` returns `204` and cascade-removes dates/slots/participants; not-owned → `404`.
+- [x] All routes return `401` without a valid access cookie; nested DTO validation rejects empty `dates`/slot-less dates with `400`.
+- [x] `npm run lint` and `npm test` (scoped `npx jest polls`) green.
 
 ## Phases
 1. [01-polls-module-create-read](01-polls-module-create-read.md) — scaffold `PollsModule`, global BigInt interceptor + `ValidationPipe`, and `POST`/`GET`/`GET :id` (create + read, owner-scoped). · _solo_ ✓
-2. [02-polls-update-delete](02-polls-update-delete.md) — `PollOwnershipGuard` + `PATCH` (status-gated edit with nested replace, 409 when not open) and `DELETE` (cascade, 204). · _solo_
+2. [02-polls-update-delete](02-polls-update-delete.md) — `PollOwnershipGuard` + `PATCH` (status-gated edit with nested replace, 409 when not open) and `DELETE` (cascade, 204). · _solo_ ✓
 
 ## Open questions
 - `closesAt` (optional response deadline, in DESIGN's create example) is omitted from Phase-1 `CreatePollDto` but editable via Phase-2 `UpdatePollDto`. If creators should set it at creation time, add it to `CreatePollDto` in Phase 1 — otherwise it's set-on-edit only.

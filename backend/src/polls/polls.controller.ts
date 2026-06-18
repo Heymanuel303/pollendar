@@ -1,9 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +15,8 @@ import type { User } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreatePollDto } from './dto/create-poll.dto';
+import { UpdatePollDto } from './dto/update-poll.dto';
+import { PollOwnershipGuard } from './poll-ownership.guard';
 import { PollsService } from './polls.service';
 import { buildShareUrl } from './public-token.util';
 
@@ -53,6 +58,24 @@ export class PollsController {
   @Get(':id')
   findOne(@CurrentUser() user: User, @Param('id') id: string) {
     return this.polls.findOneForUser(user.id, this.parseId(id));
+  }
+
+  /**
+   * Edit an owned, open poll: patches scalar fields and fully replaces nested dates+slots. The
+   * BigInt ids in the result are stringified by the global interceptor — no manual mapping needed.
+   */
+  @Patch(':id')
+  @UseGuards(PollOwnershipGuard)
+  update(@Param('id') id: string, @Body() dto: UpdatePollDto) {
+    return this.polls.update(this.parseId(id), dto);
+  }
+
+  /** Delete an owned poll (cascade); 204 No Content. */
+  @Delete(':id')
+  @HttpCode(204)
+  @UseGuards(PollOwnershipGuard)
+  async remove(@Param('id') id: string): Promise<void> {
+    await this.polls.remove(this.parseId(id));
   }
 
   /** Parse a path id to BigInt; a non-numeric id is a 404 (same as not-found, no leak). */

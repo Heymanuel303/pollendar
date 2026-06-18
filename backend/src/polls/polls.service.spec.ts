@@ -3,26 +3,53 @@ import { Prisma } from '@prisma/client';
 import { Test } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePollDto } from './dto/create-poll.dto';
+import { UpdatePollDto } from './dto/update-poll.dto';
 import { PollsService } from './polls.service';
 
 const BASE64URL_22 = /^[A-Za-z0-9_-]{22}$/;
 
-const pollCreate = jest.fn();
+// Mocks whose call arguments are asserted carry explicit generics so `.mock.calls[0][0]` is typed
+// (not `any`) — matching the convention in auth.service.spec.ts.
+const pollCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const pollFindMany = jest.fn();
-const pollFindFirst = jest.fn();
+const pollFindFirst = jest.fn<Promise<unknown>, [unknown]>();
+const pollFindUnique = jest.fn();
+const pollUpdate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
+const pollDelete = jest.fn();
+const pollDateDeleteMany = jest.fn();
+const pollDateCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
+
+/** The interactive-tx handle handed to the `$transaction(fn)` callback. */
+const tx = {
+  poll: { create: pollCreate, update: pollUpdate, findUnique: pollFindUnique },
+  pollDate: { deleteMany: pollDateDeleteMany, create: pollDateCreate },
+};
 
 const prisma: Partial<PrismaService> = {
   poll: {
     create: pollCreate,
     findMany: pollFindMany,
     findFirst: pollFindFirst,
+    findUnique: pollFindUnique,
+    update: pollUpdate,
+    delete: pollDelete,
+  } as never,
+  pollDate: {
+    deleteMany: pollDateDeleteMany,
+    create: pollDateCreate,
   } as never,
   $transaction: jest.fn((arg: unknown) =>
     typeof arg === 'function'
-      ? (arg as (tx: unknown) => unknown)({ poll: { create: pollCreate } })
+      ? (arg as (tx: unknown) => unknown)(tx)
       : Promise.all(arg as unknown[]),
   ) as never,
 };
+
+const notFound = () =>
+  new Prisma.PrismaClientKnownRequestError('Record to delete does not exist', {
+    code: 'P2025',
+    clientVersion: 'test',
+  });
 
 const tokenCollision = () =>
   new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
@@ -45,14 +72,24 @@ describe('PollsService', () => {
   let service: PollsService;
 
   beforeEach(async () => {
-    [pollCreate, pollFindMany, pollFindFirst].forEach((m) => m.mockReset());
+    [
+      pollCreate,
+      pollFindMany,
+      pollFindFirst,
+      pollFindUnique,
+      pollUpdate,
+      pollDelete,
+      pollDateDeleteMany,
+      pollDateCreate,
+    ].forEach((m) => m.mockReset());
     pollCreate.mockResolvedValue({ id: 5n });
+    pollUpdate.mockResolvedValue({ id: 5n });
+    pollDelete.mockResolvedValue({ id: 5n });
+    pollDateDeleteMany.mockResolvedValue({ count: 0 });
+    pollDateCreate.mockResolvedValue({ id: 1n });
 
     const moduleRef = await Test.createTestingModule({
-      providers: [
-        PollsService,
-        { provide: PrismaService, useValue: prisma },
-      ],
+      providers: [PollsService, { provide: PrismaService, useValue: prisma }],
     }).compile();
     service = moduleRef.get(PollsService);
   });
@@ -86,7 +123,9 @@ describe('PollsService', () => {
           data: {
             dates: {
               create: {
-                slots: { create: { startTime: Date | null; endTime: Date | null }[] };
+                slots: {
+                  create: { startTime: Date | null; endTime: Date | null }[];
+                };
               }[];
             };
           };
@@ -122,10 +161,12 @@ describe('PollsService', () => {
       await service.create(1n, validDto);
 
       expect(pollCreate).toHaveBeenCalledTimes(2);
-      const first = (pollCreate.mock.calls[0][0] as { data: { publicToken: string } })
-        .data.publicToken;
-      const second = (pollCreate.mock.calls[1][0] as { data: { publicToken: string } })
-        .data.publicToken;
+      const first = (
+        pollCreate.mock.calls[0][0] as { data: { publicToken: string } }
+      ).data.publicToken;
+      const second = (
+        pollCreate.mock.calls[1][0] as { data: { publicToken: string } }
+      ).data.publicToken;
       expect(first).not.toBe(second);
     });
 
@@ -164,6 +205,99 @@ describe('PollsService', () => {
     it('throws 404 when the poll is not owned or missing (no existence leak)', async () => {
       pollFindFirst.mockResolvedValue(null);
       await expect(service.findOneForUser(7n, 999n)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+  });
+
+  describe('update', () => {
+    it('patches scalar fields while the poll is open', async () => {
+      pollFindUnique
+        .mockResolvedValueOnce({ id: 5n, status: 'open' }) // initial load
+        .mockResolvedValueOnce({ id: 5n, title: 'Updated', dates: [] }); // re-fetch
+
+      const result = await service.update(5n, { title: 'Updated' });
+
+      const patch = (pollUpdate.mock.calls[0][0] as { data: { title: string } })
+        .data;
+      expect(patch.title).toBe('Updated');
+      expect(result).toEqual({ id: 5n, title: 'Updated', dates: [] });
+      expect(pollDateDeleteMany).not.toHaveBeenCalled(); // no dates ⇒ nested untouched
+    });
+
+    it('rejects editing a non-open poll with 409', async () => {
+      pollFindUnique.mockResolvedValue({ id: 5n, status: 'completed' });
+      await expect(
+        service.update(5n, { title: 'Nope' }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(pollUpdate).not.toHaveBeenCalled();
+    });
+
+    it('throws 404 when the poll no longer exists', async () => {
+      pollFindUnique.mockResolvedValue(null);
+      await expect(service.update(5n, { title: 'x' })).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('replaces nested dates/slots: deletes existing before recreating', async () => {
+      pollFindUnique
+        .mockResolvedValueOnce({ id: 5n, status: 'open' })
+        .mockResolvedValueOnce({ id: 5n, dates: [] });
+      const dto: UpdatePollDto = {
+        dates: [
+          {
+            eventDate: '2026-07-01',
+            slots: [{ isAllDay: true, sortOrder: 0 }],
+          },
+        ],
+      };
+
+      await service.update(5n, dto);
+
+      expect(pollDateDeleteMany).toHaveBeenCalledWith({
+        where: { pollId: 5n },
+      });
+      expect(pollDateCreate).toHaveBeenCalledTimes(1);
+      const created = (
+        pollDateCreate.mock.calls[0][0] as {
+          data: { pollId: bigint; slots: { create: unknown[] } };
+        }
+      ).data;
+      expect(created.pollId).toBe(5n);
+      expect(created.slots.create).toHaveLength(1);
+      // deleteMany must run before create (cascade clears old slots first).
+      expect(pollDateDeleteMany.mock.invocationCallOrder[0]).toBeLessThan(
+        pollDateCreate.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('rejects duplicate slots within a replaced date (NULLs the DB cannot dedupe)', async () => {
+      pollFindUnique.mockResolvedValue({ id: 5n, status: 'open' });
+      const dto: UpdatePollDto = {
+        dates: [
+          {
+            eventDate: '2026-07-01',
+            slots: [{ isAllDay: true }, { isAllDay: true }],
+          },
+        ],
+      };
+      await expect(service.update(5n, dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(pollDateDeleteMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('remove', () => {
+    it('cascade-deletes the poll by id', async () => {
+      await service.remove(5n);
+      expect(pollDelete).toHaveBeenCalledWith({ where: { id: 5n } });
+    });
+
+    it('translates a Prisma P2025 (record not found) into a 404', async () => {
+      pollDelete.mockRejectedValue(notFound());
+      await expect(service.remove(999n)).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

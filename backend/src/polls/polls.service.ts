@@ -4,9 +4,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PollStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePollDto, CreatePollSlotDto } from './dto/create-poll.dto';
+import {
+  CreatePollDateDto,
+  CreatePollDto,
+  CreatePollSlotDto,
+} from './dto/create-poll.dto';
+import { UpdatePollDto } from './dto/update-poll.dto';
 import { generatePublicToken } from './public-token.util';
 
 /** How many times to regenerate a colliding public_token before giving up. */
@@ -40,22 +45,7 @@ export class PollsService {
    * public_token is generated app-side; a P2002 collision on it triggers a bounded regenerate.
    */
   async create(userId: bigint, dto: CreatePollDto) {
-    if (!dto.dates?.length) {
-      throw new BadRequestException('A poll needs at least one date');
-    }
-    for (const date of dto.dates) {
-      if (!date.slots?.length) {
-        throw new BadRequestException('Each date needs at least one slot');
-      }
-      const seen = new Set<string>();
-      for (const slot of date.slots) {
-        const key = slotKey(slot);
-        if (seen.has(key)) {
-          throw new ConflictException('Duplicate slot on a date');
-        }
-        seen.add(key);
-      }
-    }
+    this.validateDates(dto.dates);
 
     for (let attempt = 0; attempt < MAX_TOKEN_ATTEMPTS; attempt++) {
       const publicToken = generatePublicToken();
@@ -116,6 +106,113 @@ export class PollsService {
     return poll;
   }
 
+  /**
+   * Edit an open poll's scalar fields and (optionally) fully replace its nested dates + slots, all
+   * in one transaction. Only keys present in the DTO are patched. Editing is gated to
+   * `status === 'open'` — a 409 otherwise.
+   */
+  async update(pollId: bigint, dto: UpdatePollDto) {
+    // Defensive: PollOwnershipGuard already loaded + ownership-checked the poll, but the service
+    // stays self-contained so it is safe to call directly (e.g. from tests).
+    const poll = await this.prisma.poll.findUnique({ where: { id: pollId } });
+    if (!poll) {
+      throw new NotFoundException('Poll not found');
+    }
+    if (poll.status !== PollStatus.open) {
+      throw new ConflictException('Poll can only be edited while open');
+    }
+    if (dto.dates !== undefined) {
+      this.validateDates(dto.dates); // re-assert non-empty + dedupe slots before writing
+    }
+
+    const scalarPatch: Prisma.PollUncheckedUpdateInput = {};
+    if (dto.title !== undefined) scalarPatch.title = dto.title;
+    if (dto.description !== undefined)
+      scalarPatch.description = dto.description;
+    if (dto.timezone !== undefined) scalarPatch.timezone = dto.timezone;
+    if (dto.closesAt !== undefined) {
+      scalarPatch.closesAt =
+        dto.closesAt == null ? null : new Date(dto.closesAt);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.poll.update({ where: { id: pollId }, data: scalarPatch });
+
+      if (dto.dates !== undefined) {
+        // Replace nested data: deleting poll_dates cascades to poll_slots (onDelete: Cascade).
+        // finalSlotId is a circular FK to PollSlot (onDelete: SetNull), but it is only set at
+        // completion and editing is gated to status === 'open', so while open it is always null —
+        // the replace can never orphan it and no extra null-out step is needed.
+        await tx.pollDate.deleteMany({ where: { pollId } });
+        for (const date of this.buildDatesCreate(dto.dates)) {
+          await tx.pollDate.create({ data: { pollId, ...date } });
+        }
+      }
+
+      return tx.poll.findUnique({
+        where: { id: pollId },
+        include: {
+          dates: {
+            orderBy: { sortOrder: 'asc' },
+            include: { slots: { orderBy: { sortOrder: 'asc' } } },
+          },
+        },
+      });
+    });
+  }
+
+  /** Delete an owned poll; cascade removes its dates, slots, and participants. */
+  async remove(pollId: bigint): Promise<void> {
+    try {
+      await this.prisma.poll.delete({ where: { id: pollId } });
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2025'
+      ) {
+        throw new NotFoundException('Poll not found');
+      }
+      throw err;
+    }
+  }
+
+  /** Reject empty dates / per-date slots and duplicate `(startTime,endTime,isAllDay)` slots. */
+  private validateDates(dates?: CreatePollDateDto[]): void {
+    if (!dates?.length) {
+      throw new BadRequestException('A poll needs at least one date');
+    }
+    for (const date of dates) {
+      if (!date.slots?.length) {
+        throw new BadRequestException('Each date needs at least one slot');
+      }
+      const seen = new Set<string>();
+      for (const slot of date.slots) {
+        const key = slotKey(slot);
+        if (seen.has(key)) {
+          throw new ConflictException('Duplicate slot on a date');
+        }
+        seen.add(key);
+      }
+    }
+  }
+
+  /** Map validated date DTOs to Prisma nested-create inputs (one per date, slots nested). */
+  private buildDatesCreate(dates: CreatePollDateDto[]) {
+    return dates.map((date) => ({
+      eventDate: new Date(date.eventDate),
+      sortOrder: date.sortOrder,
+      slots: {
+        create: date.slots.map((slot) => ({
+          startTime: timeToDate(slot.startTime),
+          endTime: timeToDate(slot.endTime),
+          isAllDay: slot.isAllDay,
+          label: slot.label,
+          sortOrder: slot.sortOrder,
+        })),
+      },
+    }));
+  }
+
   /** Nested create payload — dates and their slots are created atomically with the poll. */
   private buildPollData(
     userId: bigint,
@@ -128,21 +225,7 @@ export class PollsService {
       title: dto.title,
       description: dto.description,
       timezone: dto.timezone, // undefined ⇒ schema default "UTC"
-      dates: {
-        create: dto.dates.map((date) => ({
-          eventDate: new Date(date.eventDate),
-          sortOrder: date.sortOrder,
-          slots: {
-            create: date.slots.map((slot) => ({
-              startTime: timeToDate(slot.startTime),
-              endTime: timeToDate(slot.endTime),
-              isAllDay: slot.isAllDay,
-              label: slot.label,
-              sortOrder: slot.sortOrder,
-            })),
-          },
-        })),
-      },
+      dates: { create: this.buildDatesCreate(dto.dates) },
     };
   }
 
