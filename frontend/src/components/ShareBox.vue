@@ -12,14 +12,21 @@ import type { BestSlot, Poll, SlotMeta } from '@/lib/api/types'
  * It owns no fetching — the share URL, poll, and best-slot data are passed in. The "Please reply
  * before …" line is added by `buildFullInviteMessage` only when the poll has a close time.
  */
-const props = defineProps<{ poll: Poll; shareUrl: string; best: BestSlot | null; bestMeta: SlotMeta | null }>()
+const props = defineProps<{
+  poll: Poll
+  shareUrl: string
+  best: BestSlot | null
+  bestMeta: SlotMeta | null
+}>()
 
 const inviteMessage = computed<string>(() =>
   buildFullInviteMessage({
     title: props.poll.title,
     description: props.poll.description,
     shareUrl: props.shareUrl,
-    closesAtHuman: props.poll.closesAt ? formatCloseLabel(props.poll.closesAt, props.poll.timezone) : null,
+    closesAtHuman: props.poll.closesAt
+      ? formatCloseLabel(props.poll.closesAt, props.poll.timezone)
+      : null,
   }),
 )
 </script>
@@ -40,7 +47,9 @@ const inviteMessage = computed<string>(() =>
           :value="shareUrl"
           class="w-full min-w-0 flex-1 truncate rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-dim focus:outline-none"
         />
-        <CopyButton :value="shareUrl" variant="primary" class="w-full whitespace-nowrap sm:w-auto">Copy link</CopyButton>
+        <CopyButton :value="shareUrl" variant="primary" class="w-full whitespace-nowrap sm:w-auto"
+          >Copy link</CopyButton
+        >
       </div>
     </div>
 
@@ -49,7 +58,9 @@ const inviteMessage = computed<string>(() =>
       <p
         data-testid="invite-message"
         class="mt-2 mb-2 whitespace-pre-line rounded-xl border border-line bg-canvas p-4 text-sm leading-relaxed text-dim"
-      >{{ inviteMessage }}</p>
+      >
+        {{ inviteMessage }}
+      </p>
       <CopyButton :value="inviteMessage" variant="secondary">Copy invite message</CopyButton>
     </div>
 

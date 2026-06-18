@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ── Dusk Calendar design tokens (DESIGN-UI.md) ──────────────────────────────
    Declared once here, CSS-first. Tailwind v4 generates utilities from each token
@@ -20,8 +20,8 @@
   --color-mint: #6fe0b0;
   --color-coral: #ff7a6b;
 
-  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, sans-serif;
+  --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, sans-serif;
 
   --shadow-glow: 0 0 0 1px rgb(255 200 87 / 0.55), 0 0 28px rgb(255 200 87 / 0.32);
   --shadow-card: 0 8px 24px rgb(0 0 0 / 0.35);
@@ -93,7 +93,11 @@ body {
 
   /* A faint radial pollen wash behind the winner. */
   .bloom-bg {
-    background-image: radial-gradient(130% 120% at 50% 0%, rgb(255 200 87 / 0.16), rgb(255 200 87 / 0) 70%);
+    background-image: radial-gradient(
+      130% 120% at 50% 0%,
+      rgb(255 200 87 / 0.16),
+      rgb(255 200 87 / 0) 70%
+    );
   }
 }
 

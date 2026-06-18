@@ -22,7 +22,8 @@ const emit = defineEmits<{ click: [event: MouseEvent] }>()
 
 const isDisabled = computed(() => props.disabled || props.loading)
 
-const base = 'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition'
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-medium transition'
 
 const variantClass = computed<string>(() => {
   switch (props.variant) {
@@ -62,7 +63,12 @@ function onClick(event: MouseEvent) {
       aria-hidden="true"
     >
       <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity="0.3" />
-      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"
+      />
     </svg>
     <slot />
   </button>

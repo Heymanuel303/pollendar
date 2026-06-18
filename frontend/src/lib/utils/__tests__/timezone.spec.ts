@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatDayNumber, formatTime, formatSlotRange, localZoneLabel } from '../timezone'
+import {
+  formatDate,
+  formatDayNumber,
+  formatTime,
+  formatSlotRange,
+  localZoneLabel,
+} from '../timezone'
 import type { PollSlot } from '@/lib/api/types'
 
 function slot(overrides: Partial<PollSlot>): PollSlot {

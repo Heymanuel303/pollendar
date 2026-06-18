@@ -75,7 +75,9 @@ const primaryClass = computed<string>(() =>
           </template>
           <template v-else>
             <span v-if="dateRange" class="num text-moonlight">{{ dateRange }}</span>
-            <span class="text-mute"><template v-if="dateRange"> · </template>{{ poll.timezone }}</span>
+            <span class="text-mute"
+              ><template v-if="dateRange"> · </template>{{ poll.timezone }}</span
+            >
           </template>
         </p>
       </div>
@@ -92,9 +94,15 @@ const primaryClass = computed<string>(() =>
     <!-- Response grains + count — only when the list payload carries a count (absent today) -->
     <div v-if="responseCount !== null" class="mt-4 flex items-center gap-2.5 text-sm text-dim">
       <span class="flex flex-wrap items-center gap-1" aria-hidden="true">
-        <span v-for="n in responseCount" :key="n" class="pollen-dot inline-block h-2.5 w-2.5"></span>
+        <span
+          v-for="n in responseCount"
+          :key="n"
+          class="pollen-dot inline-block h-2.5 w-2.5"
+        ></span>
       </span>
-      <span><span class="num font-medium text-moonlight">{{ responseCount }}</span> responses</span>
+      <span
+        ><span class="num font-medium text-moonlight">{{ responseCount }}</span> responses</span
+      >
     </div>
 
     <!-- Actions -->

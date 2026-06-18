@@ -7,10 +7,9 @@ import { computed, onBeforeUnmount, ref } from 'vue'
  * it is unavailable (older/insecure contexts). The idle label is provided via the default slot so
  * callers can include an icon; the "Copied" state replaces it.
  */
-const props = withDefaults(
-  defineProps<{ value: string; variant?: 'primary' | 'secondary' }>(),
-  { variant: 'primary' },
-)
+const props = withDefaults(defineProps<{ value: string; variant?: 'primary' | 'secondary' }>(), {
+  variant: 'primary',
+})
 
 const copied = ref(false)
 let timer: ReturnType<typeof setTimeout> | undefined
@@ -65,7 +64,12 @@ const variantClass = computed<string>(() =>
 </script>
 
 <template>
-  <button type="button" :class="[base, variantClass]" :aria-live="copied ? 'polite' : undefined" @click="copy">
+  <button
+    type="button"
+    :class="[base, variantClass]"
+    :aria-live="copied ? 'polite' : undefined"
+    @click="copy"
+  >
     <template v-if="copied"><span aria-hidden="true">✓</span> Copied</template>
     <slot v-else />
   </button>

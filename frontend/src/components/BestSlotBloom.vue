@@ -46,7 +46,9 @@ const emit = defineEmits<{ complete: [] }>()
         >✦ In bloom</span
       >
       <div class="text-right">
-        <div class="font-display text-4xl sm:text-5xl font-bold leading-none text-pollen">{{ best.score }}</div>
+        <div class="font-display text-4xl sm:text-5xl font-bold leading-none text-pollen">
+          {{ best.score }}
+        </div>
         <p class="pt-1 text-xs uppercase tracking-widest text-mute">Score</p>
       </div>
     </div>
@@ -65,11 +67,7 @@ const emit = defineEmits<{ complete: [] }>()
     <!-- Availability grains + timezone -->
     <div class="mt-5 flex items-center gap-3 border-t border-line/70 pt-4">
       <span class="flex flex-wrap items-center gap-1" aria-hidden="true">
-        <span
-          v-for="n in available"
-          :key="n"
-          class="pollen-dot inline-block h-3.5 w-3.5"
-        ></span>
+        <span v-for="n in available" :key="n" class="pollen-dot inline-block h-3.5 w-3.5"></span>
       </span>
       <p class="font-display text-sm font-medium text-moonlight">
         {{ available }} of {{ participantCount }} available

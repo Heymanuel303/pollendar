@@ -10,7 +10,12 @@ import { useBreakpoint } from '../useBreakpoint'
  * computed tiers update reactively.
  */
 function installMatchMedia() {
-  type Entry = { query: string; min: number; matches: boolean; listeners: Set<(e: MediaQueryListEvent) => void> }
+  type Entry = {
+    query: string
+    min: number
+    matches: boolean
+    listeners: Set<(e: MediaQueryListEvent) => void>
+  }
   const entries: Entry[] = []
 
   const matchMedia = vi.fn<(query: string) => MediaQueryList>((query: string): MediaQueryList => {
@@ -23,8 +28,10 @@ function installMatchMedia() {
       },
       media: query,
       onchange: null,
-      addEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => entry.listeners.add(cb),
-      removeEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) => entry.listeners.delete(cb),
+      addEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) =>
+        entry.listeners.add(cb),
+      removeEventListener: (_type: string, cb: (e: MediaQueryListEvent) => void) =>
+        entry.listeners.delete(cb),
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => true,
@@ -33,7 +40,11 @@ function installMatchMedia() {
 
   vi.stubGlobal('matchMedia', matchMedia)
   // Mirror onto window so both `matchMedia(...)` and `window.matchMedia(...)` resolve to the stub.
-  Object.defineProperty(window, 'matchMedia', { value: matchMedia, configurable: true, writable: true })
+  Object.defineProperty(window, 'matchMedia', {
+    value: matchMedia,
+    configurable: true,
+    writable: true,
+  })
 
   function setWidth(width: number) {
     for (const e of entries) {

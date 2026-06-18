@@ -5,7 +5,12 @@ import type { PollResults, PollSlot, SlotMeta } from '@/lib/api/types'
 
 const TZ = 'Europe/Brussels'
 
-function slot(id: string, label: string | null, startTime: string | null, endTime: string | null): PollSlot {
+function slot(
+  id: string,
+  label: string | null,
+  startTime: string | null,
+  endTime: string | null,
+): PollSlot {
   return { id, startTime, endTime, isAllDay: startTime === null, label, sortOrder: 0 }
 }
 

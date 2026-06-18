@@ -10,10 +10,9 @@ import type { Availability } from '@/lib/api/types'
  * cycles back to "none" (`null`). Buttons are real `<button type="button">` with `aria-pressed`, and
  * the group carries an accessible label.
  */
-const props = withDefaults(
-  defineProps<{ modelValue: Availability | null; label?: string }>(),
-  { label: 'Your availability for this slot' },
-)
+const props = withDefaults(defineProps<{ modelValue: Availability | null; label?: string }>(), {
+  label: 'Your availability for this slot',
+})
 
 const emit = defineEmits<{ 'update:modelValue': [Availability | null] }>()
 

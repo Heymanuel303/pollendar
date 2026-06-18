@@ -13,7 +13,12 @@ function mountRow(modelValue: PollSlotInput, showErrors = false) {
   return mount(SlotRow, { props: { modelValue, showErrors } })
 }
 
-const TIMED: PollSlotInput = { isAllDay: false, startTime: '18:00', endTime: '20:00', label: 'Early' }
+const TIMED: PollSlotInput = {
+  isAllDay: false,
+  startTime: '18:00',
+  endTime: '20:00',
+  label: 'Early',
+}
 const ALL_DAY: PollSlotInput = { isAllDay: true, label: 'Any time' }
 
 describe('SlotRow', () => {

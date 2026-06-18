@@ -110,7 +110,9 @@ async function onSubmit(): Promise<void> {
         <h1 class="font-display text-2xl font-semibold tracking-tight text-moonlight">
           This poll isn't available
         </h1>
-        <p class="mt-3 text-dim">{{ errorMessage ?? 'The link may be wrong or the poll may have been removed.' }}</p>
+        <p class="mt-3 text-dim">
+          {{ errorMessage ?? 'The link may be wrong or the poll may have been removed.' }}
+        </p>
       </div>
 
       <template v-else>
@@ -137,7 +139,17 @@ async function onSubmit(): Promise<void> {
           <p v-if="poll.description" class="mt-4 text-dim">{{ poll.description }}</p>
           <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-mute">
             <span class="inline-flex items-center gap-1.5">
-              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+              <svg
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
               Times shown in <span class="text-dim">{{ poll.timezone }}</span>
             </span>
           </div>
@@ -262,7 +274,17 @@ async function onSubmit(): Promise<void> {
             @click="onSubmit"
           >
             {{ submitting ? 'Submitting…' : 'Submit availability' }}
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </button>
         </div>
       </div>

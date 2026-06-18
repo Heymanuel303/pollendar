@@ -83,7 +83,9 @@ const participantCount = computed<number>(() => {
         :key="row.slotId"
         :data-testid="`result-row-${row.slotId}`"
         class="flex flex-col gap-3 px-4 py-4 md:grid md:grid-cols-12 md:items-center"
-        :class="row.isWinner ? 'bloom-bg bloom ring-1 ring-pollen/40' : 'transition hover:bg-surface2'"
+        :class="
+          row.isWinner ? 'bloom-bg bloom ring-1 ring-pollen/40' : 'transition hover:bg-surface2'
+        "
       >
         <!-- Left: date + slot sub-line -->
         <div class="md:col-span-5">

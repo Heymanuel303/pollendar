@@ -5,7 +5,12 @@ import type { PollDate, PollResults, PollSlot } from '@/lib/api/types'
 
 const TZ = 'Europe/Brussels'
 
-function slot(id: string, label: string | null, startTime: string | null, endTime: string | null): PollSlot {
+function slot(
+  id: string,
+  label: string | null,
+  startTime: string | null,
+  endTime: string | null,
+): PollSlot {
   return { id, startTime, endTime, isAllDay: startTime === null, label, sortOrder: 0 }
 }
 
@@ -14,10 +19,18 @@ const DATES: PollDate[] = [
     id: 'd1',
     eventDate: '2026-06-26',
     sortOrder: 0,
-    slots: [slot('s1', 'Early', '18:00:00', '20:00:00'), slot('s2', 'Late', '20:00:00', '22:00:00')],
+    slots: [
+      slot('s1', 'Early', '18:00:00', '20:00:00'),
+      slot('s2', 'Late', '20:00:00', '22:00:00'),
+    ],
   },
   { id: 'd2', eventDate: '2026-06-27', sortOrder: 1, slots: [slot('s3', null, null, null)] },
-  { id: 'd3', eventDate: '2026-06-28', sortOrder: 2, slots: [slot('s4', 'Evening', '19:00:00', '22:00:00')] },
+  {
+    id: 'd3',
+    eventDate: '2026-06-28',
+    sortOrder: 2,
+    slots: [slot('s4', 'Evening', '19:00:00', '22:00:00')],
+  },
 ]
 const RESULTS: PollResults = {
   best: { slotId: 's1', date: '2026-06-26', label: 'Early', score: 10 },

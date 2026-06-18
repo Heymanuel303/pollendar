@@ -32,7 +32,10 @@ onMounted(async () => {
   await store.get(id.value)
   // Results + invite text are supplementary; load them in parallel once the poll resolved.
   if (currentPoll.value) {
-    await Promise.all([store.loadResults(currentPoll.value.publicToken), store.loadInviteMessage(id.value)])
+    await Promise.all([
+      store.loadResults(currentPoll.value.publicToken),
+      store.loadInviteMessage(id.value),
+    ])
   }
 })
 
@@ -66,8 +69,10 @@ const participantCount = computed<number>(() =>
 )
 
 /** Canonical share URL: the backend's value when loaded, else built from the app origin. */
-const shareUrl = computed<string>(() =>
-  store.invite?.shareUrl ?? (currentPoll.value ? buildShareUrl(currentPoll.value.publicToken) : ''),
+const shareUrl = computed<string>(
+  () =>
+    store.invite?.shareUrl ??
+    (currentPoll.value ? buildShareUrl(currentPoll.value.publicToken) : ''),
 )
 
 const closesAtHuman = computed<string | null>(() =>
@@ -133,7 +138,9 @@ const bestLabel = computed<string>(() => {
       <!-- Header -->
       <header class="mb-6 mt-3">
         <div class="flex flex-wrap items-center gap-3">
-          <h1 class="font-display text-2xl sm:text-3xl font-semibold tracking-tight">{{ currentPoll.title }}</h1>
+          <h1 class="font-display text-2xl sm:text-3xl font-semibold tracking-tight">
+            {{ currentPoll.title }}
+          </h1>
           <Pill v-if="isCompleted" tone="mint">Completed</Pill>
           <Pill v-else tone="pollen">Open · gathering responses</Pill>
         </div>
@@ -141,8 +148,13 @@ const bestLabel = computed<string>(() => {
           {{ currentPoll.description }}
         </p>
         <div class="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-mute">
-          <span>Timezone <span class="text-dim">{{ currentPoll.timezone }}</span></span>
-          <span v-if="closesAtHuman" class="hidden h-1 w-1 rounded-full bg-line sm:inline-block"></span>
+          <span
+            >Timezone <span class="text-dim">{{ currentPoll.timezone }}</span></span
+          >
+          <span
+            v-if="closesAtHuman"
+            class="hidden h-1 w-1 rounded-full bg-line sm:inline-block"
+          ></span>
           <span v-if="closesAtHuman"
             >Responses close <span class="num text-dim">{{ closesAtHuman }}</span></span
           >
@@ -201,12 +213,7 @@ const bestLabel = computed<string>(() => {
           </section>
 
           <!-- Share -->
-          <ShareBox
-            :poll="currentPoll"
-            :share-url="shareUrl"
-            :best="best"
-            :best-meta="bestMeta"
-          />
+          <ShareBox :poll="currentPoll" :share-url="shareUrl" :best="best" :best-meta="bestMeta" />
         </div>
       </div>
     </template>
@@ -229,7 +236,9 @@ const bestLabel = computed<string>(() => {
         </p>
         <p v-if="completeError" class="mt-3 text-sm text-coral">{{ completeError }}</p>
         <div class="mt-5 flex justify-end gap-2">
-          <Button variant="ghost" :disabled="completing" @click="confirmOpen = false">Cancel</Button>
+          <Button variant="ghost" :disabled="completing" @click="confirmOpen = false"
+            >Cancel</Button
+          >
           <Button variant="primary" :loading="completing" @click="confirmComplete"
             >✦ Complete poll</Button
           >

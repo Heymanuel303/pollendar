@@ -29,7 +29,9 @@ onMounted(async () => {
 })
 
 const shareUrl = computed<string>(() => buildShareUrl(token.value))
-const inviteMessage = computed<string>(() => buildInviteMessage(poll.value?.title ?? '', shareUrl.value))
+const inviteMessage = computed<string>(() =>
+  buildInviteMessage(poll.value?.title ?? '', shareUrl.value),
+)
 
 /** Live best slot, or `null` when the poll has no slots / results haven't loaded. */
 const best = computed(() => results.value?.best ?? null)
@@ -37,11 +39,7 @@ const bestDate = computed<string>(() =>
   best.value ? formatDate(best.value.date, poll.value?.timezone) : '',
 )
 const bestHeading = computed<string>(() =>
-  best.value
-    ? best.value.label
-      ? `${bestDate.value} · ${best.value.label}`
-      : bestDate.value
-    : '',
+  best.value ? (best.value.label ? `${bestDate.value} · ${best.value.label}` : bestDate.value) : '',
 )
 
 /** "Edit my response" only makes sense once we've stored this participant's edit token for the poll. */
@@ -65,10 +63,14 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
     <main class="mx-auto max-w-2xl px-6 py-12 sm:py-16">
       <!-- Confirmation hero -->
       <div class="text-center">
-        <div class="bloom-bg mx-auto grid h-20 w-20 place-items-center rounded-full bg-pollen/15 shadow-glow">
+        <div
+          class="bloom-bg mx-auto grid h-20 w-20 place-items-center rounded-full bg-pollen/15 shadow-glow"
+        >
           <span class="font-display text-3xl text-pollen">✦</span>
         </div>
-        <h1 class="mt-6 font-display text-3xl font-semibold tracking-tight sm:text-4xl">You're in!</h1>
+        <h1 class="mt-6 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+          You're in!
+        </h1>
         <p class="mt-3 text-dim">
           <template v-if="name">Thanks {{ name }} — your availability is saved.</template>
           <template v-else>Your availability is saved.</template>
@@ -120,7 +122,9 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
             <span aria-hidden="true">✉</span> Copy invite
           </CopyButton>
         </div>
-        <div class="mt-4 truncate rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-dim">
+        <div
+          class="mt-4 truncate rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-dim"
+        >
           {{ shareUrl }}
         </div>
       </section>

@@ -6,7 +6,14 @@ import type { BestSlot, PollStatus, SlotMeta } from '@/lib/api/types'
 const TZ = 'Europe/Brussels'
 const BEST: BestSlot = { slotId: 's1', date: '2026-06-26', label: 'Early', score: 10 }
 const META: SlotMeta = {
-  slot: { id: 's1', startTime: '18:00:00', endTime: '20:00:00', isAllDay: false, label: 'Early', sortOrder: 0 },
+  slot: {
+    id: 's1',
+    startTime: '18:00:00',
+    endTime: '20:00:00',
+    isAllDay: false,
+    label: 'Early',
+    sortOrder: 0,
+  },
   date: '2026-06-26',
 }
 
