@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { BigIntSerializerInterceptor } from './common/bigint-serializer.interceptor';
+import { PrismaExceptionFilter } from './common/prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -26,6 +27,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  // Safety-net for unhandled Prisma errors: maps known codes to clean HTTP statuses without leaking
+  // DB internals. The inline service mappings (HttpException subclasses) are unaffected — this filter
+  // only catches `Prisma.PrismaClientKnownRequestError`.
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   const configService = app.get(ConfigService);
 

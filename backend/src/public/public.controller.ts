@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { PublicService } from './public.service';
 import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
@@ -23,7 +24,12 @@ export class PublicController {
     return this.public_.getResults(token);
   }
 
-  /** Submit availability anonymously; returns the new participant's `{ publicToken }` (201). */
+  /**
+   * Submit availability anonymously; returns the new participant's `{ publicToken }` (201). Tighter
+   * per-IP throttle than the global default (mirrors the auth `verify`/`refresh` shape) so the only
+   * write endpoint on the public surface can't be flooded; the global `ThrottlerGuard` enforces it.
+   */
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('polls/:token/responses')
   submit(@Param('token') token: string, @Body() dto: SubmitResponsesDto) {
     return this.public_.submitResponses(token, dto);
