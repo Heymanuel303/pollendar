@@ -1,10 +1,12 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
+import type { User } from '@prisma/client';
 import type { Request, Response } from 'express';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { ACCESS_COOKIE, REFRESH_COOKIE } from './cookie.util';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -58,7 +60,11 @@ describe('AuthController', () => {
         },
         { provide: ConfigService, useValue: config },
       ],
-    }).compile();
+    })
+      // me() is unit-tested by calling it directly; the guard's behaviour has its own spec.
+      .overrideGuard(JwtAuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
     controller = moduleRef.get(AuthController);
   });
 
@@ -180,6 +186,23 @@ describe('AuthController', () => {
         controller.refresh(buildReq({ cookies: {} } as Partial<Request>), res),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(refresh).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('me', () => {
+    it('maps the guard-attached user to a wire shape with id as a string', () => {
+      const user = {
+        id: BigInt(42),
+        email: 'creator@example.com',
+        displayName: null,
+        tokenVersion: 0,
+      } as User;
+
+      expect(controller.me(user)).toEqual({
+        id: '42',
+        email: 'creator@example.com',
+        displayName: null,
+      });
     });
   });
 

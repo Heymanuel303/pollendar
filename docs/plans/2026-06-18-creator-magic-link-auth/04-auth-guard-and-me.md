@@ -65,8 +65,8 @@ Add a `JwtAuthGuard` (validates the access-cookie JWT and the `users.token_versi
   7. (Optional, proves tokenVersion check) In a DB shell bump the user: `UPDATE users SET token_version = token_version + 1 WHERE email = 'creator@example.com';` then repeat step 4 → expect `401` (old access cookie now stale).
 
 ## Acceptance
-- [ ] `src/auth/jwt-auth.guard.ts` exports `JwtAuthGuard implements CanActivate` that reads the access cookie, `verifyAsync`s it against `JWT_ACCESS_SECRET`, loads the user, and rejects on missing/invalid token, unknown user, or `tokenVersion` mismatch.
-- [ ] `src/auth/current-user.decorator.ts` exports `@CurrentUser()` returning the guard-attached `req.user`.
-- [ ] `GET /api/auth/me` is guarded by `@UseGuards(JwtAuthGuard)` and returns `{ id, email, displayName }` with `id` serialized as a string (BigInt → string).
+- [x] `src/auth/jwt-auth.guard.ts` exports `JwtAuthGuard implements CanActivate` that reads the access cookie, `verifyAsync`s it against `JWT_ACCESS_SECRET`, loads the user, and rejects on missing/invalid token, unknown user, or `tokenVersion` mismatch.
+- [x] `src/auth/current-user.decorator.ts` exports `@CurrentUser()` returning the guard-attached `req.user`.
+- [x] `GET /api/auth/me` is guarded by `@UseGuards(JwtAuthGuard)` and returns `{ id, email, displayName }` with `id` serialized as a string (BigInt → string).
 - [ ] `curl -b <jar> /api/auth/me` returns `200` with the creator; no cookie / bad cookie / stale `token_version` each return `401`.
-- [ ] `npm run lint` and `npm test -- auth` pass.
+- [x] `npm run lint` and `npm test -- auth` pass.

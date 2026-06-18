@@ -39,7 +39,7 @@ Passwordless creator sign-in: a creator submits their email, receives an emailed
 1. [01-config-and-mailer](01-config-and-mailer.md) — global nodemailer `MailService.sendMagicLink` → Mailpit; register `cookie-parser` in `main.ts`. · _solo_ ✓
 2. [02-magic-link-request](02-magic-link-request.md) — `AuthModule` + `POST /auth/magic-link`: user upsert, hashed single-use token, magic-link email, always-200, throttling. · _solo_ ✓
 3. [03-verify-sessions-cookies](03-verify-sessions-cookies.md) — `verify`/`refresh`/`logout`: consume token → hashed-refresh `AuthSession`, httpOnly access + refresh cookies, rotation, revocation. · _solo_ ✓
-4. [04-auth-guard-and-me](04-auth-guard-and-me.md) — `JwtAuthGuard` (access-JWT + `token_version` check), `@CurrentUser` decorator, guarded `GET /auth/me`. · _solo_
+4. [04-auth-guard-and-me](04-auth-guard-and-me.md) — `JwtAuthGuard` (access-JWT + `token_version` check), `@CurrentUser` decorator, guarded `GET /auth/me`. · _solo_ ✓
 
 ## Open questions
 - Should `logout` bump `users.token_version` to kill all outstanding access JWTs, or only revoke the one refresh session? (Phase 3 step 9 leaves the global bump optional; Phase 4's guard checks `token_version`, so the mechanism is in place either way.)

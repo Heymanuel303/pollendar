@@ -1,14 +1,17 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
+import type { User } from '@prisma/client';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -18,8 +21,17 @@ import {
   clearCookieOptions,
   refreshCookieOptions,
 } from './cookie.util';
+import { CurrentUser } from './current-user.decorator';
 import { RequestMagicLinkDto } from './dto/request-magic-link.dto';
 import { VerifyDto } from './dto/verify.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
+
+/** Serialized creator returned to authenticated clients (BigInt id → string). */
+interface MeResponse {
+  id: string;
+  email: string;
+  displayName: string | null;
+}
 
 @Controller('auth')
 export class AuthController {
@@ -118,6 +130,21 @@ export class AuthController {
     res.clearCookie(ACCESS_COOKIE, clearCookieOptions(this.config));
     res.clearCookie(REFRESH_COOKIE, clearCookieOptions(this.config));
     return { ok: true };
+  }
+
+  /**
+   * Return the authenticated creator. `JwtAuthGuard` validates the access cookie and attaches the
+   * user; this just maps it to the wire shape (id as a string). 401 when the cookie is missing,
+   * invalid, or its `tokenVersion` is stale.
+   */
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  me(@CurrentUser() user: User): MeResponse {
+    return {
+      id: user.id.toString(),
+      email: user.email,
+      displayName: user.displayName,
+    };
   }
 
   /** Read the refresh cookie. `cookie-parser` (wired in main.ts) populates `req.cookies`. */

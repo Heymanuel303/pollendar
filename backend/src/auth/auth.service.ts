@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -213,7 +213,10 @@ export class AuthService {
       },
       {
         secret: this.config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.config.getOrThrow<string>('ACCESS_TOKEN_TTL'),
+        // jsonwebtoken types expiresIn as ms.StringValue, not a bare string.
+        expiresIn: this.config.getOrThrow<string>(
+          'ACCESS_TOKEN_TTL',
+        ) as JwtSignOptions['expiresIn'],
       },
     );
   }
