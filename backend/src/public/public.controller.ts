@@ -17,6 +17,12 @@ export class PublicController {
     return this.public_.findByPublicToken(token);
   }
 
+  /** Live per-slot tallies + the deterministic best slot; 404 on an unknown/invalid token. */
+  @Get('polls/:token/results')
+  getResults(@Param('token') token: string) {
+    return this.public_.getResults(token);
+  }
+
   /** Submit availability anonymously; returns the new participant's `{ publicToken }` (201). */
   @Post('polls/:token/responses')
   submit(@Param('token') token: string, @Body() dto: SubmitResponsesDto) {

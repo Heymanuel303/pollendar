@@ -11,10 +11,12 @@ import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 const pollFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const transaction = jest.fn();
+const queryRaw = jest.fn<Promise<unknown>, [unknown]>();
 
 const prisma: Partial<PrismaService> = {
   poll: { findUnique: pollFindUnique } as never,
   $transaction: transaction as never,
+  $queryRaw: queryRaw as never,
 };
 
 /** A raw Prisma row including owner/participant fields the sanitizer must strip. */
@@ -55,6 +57,7 @@ describe('PublicService', () => {
   beforeEach(async () => {
     pollFindUnique.mockReset();
     transaction.mockReset();
+    queryRaw.mockReset();
     const moduleRef = await Test.createTestingModule({
       providers: [PublicService, { provide: PrismaService, useValue: prisma }],
     }).compile();
@@ -277,6 +280,104 @@ describe('PublicService', () => {
       const boom = new Error('boom');
       transaction.mockRejectedValue(boom);
       await expect(service.submitResponses('tok', dto)).rejects.toBe(boom);
+    });
+  });
+
+  describe('getResults', () => {
+    const eventDate = new Date('2026-07-01');
+
+    /**
+     * Rows as the canonical SQL would return them: already sorted by the 5-key tie-break. The service
+     * trusts that ordering, so the test feeds DB-sorted rows. `available_count` for A is a string to
+     * prove the `Number(...)` coercion. Worked example: A=3/0/1, B=2/2/0 (tie on score 6, A wins on
+     * available_count), C=2/1/1 (score 5, third). A zero-response slot (99n) trails with all zeros.
+     */
+    const sortedRows = [
+      {
+        slot_id: 10n,
+        available_count: '3',
+        maybe_count: 0,
+        unavailable_count: 1,
+        score: 6,
+        event_date: eventDate,
+        start_time: null,
+        label: 'A',
+      },
+      {
+        slot_id: 11n,
+        available_count: 2,
+        maybe_count: 2,
+        unavailable_count: 0,
+        score: 6,
+        event_date: eventDate,
+        start_time: null,
+        label: 'B',
+      },
+      {
+        slot_id: 12n,
+        available_count: 2,
+        maybe_count: 1,
+        unavailable_count: 1,
+        score: 5,
+        event_date: eventDate,
+        start_time: null,
+        label: 'C',
+      },
+      {
+        slot_id: 99n,
+        available_count: 0,
+        maybe_count: 0,
+        unavailable_count: 0,
+        score: 0,
+        event_date: eventDate,
+        start_time: null,
+        label: 'Z',
+      },
+    ];
+
+    it('returns the deterministic best slot and per-slot tallies for the worked example', async () => {
+      pollFindUnique.mockResolvedValue({ id: 1n });
+      queryRaw.mockResolvedValue(sortedRows);
+
+      const result = await service.getResults('tok');
+
+      // A wins the score-6 tie via available_count (3 > 2); C is third.
+      expect(result.best?.slotId).toBe(10n);
+      expect(result.best?.score).toBe(6);
+      expect(result.best?.date).toBe('2026-07-01');
+      expect(result.best?.label).toBe('A');
+      expect(result.slots[0].slotId).toBe(10n);
+      expect(result.slots[1].slotId).toBe(11n);
+      expect(result.slots[2].slotId).toBe(12n);
+      // Counts and score coerce to numbers, even when SQL returns a string.
+      expect(result.slots[0].available).toBe(3);
+      expect(typeof result.slots[0].available).toBe('number');
+      expect(result.slots[0].score).toBe(6);
+      expect(typeof result.slots[0].score).toBe('number');
+    });
+
+    it('includes zero-response slots with all-zero tallies', async () => {
+      pollFindUnique.mockResolvedValue({ id: 1n });
+      queryRaw.mockResolvedValue(sortedRows);
+
+      const result = await service.getResults('tok');
+
+      const zero = result.slots.find((s) => s.slotId === 99n);
+      expect(zero).toBeDefined();
+      expect(zero).toMatchObject({
+        available: 0,
+        maybe: 0,
+        unavailable: 0,
+        score: 0,
+      });
+    });
+
+    it('throws 404 for an unknown token and does not query tallies', async () => {
+      pollFindUnique.mockResolvedValue(null);
+      await expect(service.getResults('bad')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(queryRaw).not.toHaveBeenCalled();
     });
   });
 });

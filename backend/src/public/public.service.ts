@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { generatePublicToken } from '../polls/public-token.util';
 import { PublicPoll } from './dto/public-poll.dto';
+import { PollResults } from './dto/poll-results.dto';
 import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 /**
@@ -56,6 +57,82 @@ export class PublicService {
         })),
       })),
     };
+  }
+
+  /**
+   * Compute the live per-slot tallies and the deterministic best slot for a poll. Queried fresh on
+   * every call — it does NOT read the `slot_tallies` cache. An unknown token is a 404.
+   *
+   * Canonical scoring (DESIGN §4): `score = available*2 + maybe*1`. The 5-key tie-break is done in
+   * SQL (score desc → available_count desc → unavailable_count asc → event_date/start_time asc →
+   * slot.id asc), so `rows[0]` is the deterministic best. A LEFT JOIN keeps zero-response slots with
+   * all-zero tallies. Raw `SUM(...)` results are coerced with `Number(...)`.
+   */
+  async getResults(token: string): Promise<PollResults> {
+    const poll = await this.prisma.poll.findUnique({
+      where: { publicToken: token },
+    });
+    if (!poll) {
+      throw new NotFoundException();
+    }
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        slot_id: bigint;
+        available_count: bigint | number | string;
+        maybe_count: bigint | number | string;
+        unavailable_count: bigint | number | string;
+        score: bigint | number | string;
+        event_date: Date;
+        start_time: Date | null;
+        label: string | null;
+      }>
+    >(Prisma.sql`
+      SELECT s.id AS slot_id,
+             SUM(r.availability = 'available')   AS available_count,
+             SUM(r.availability = 'maybe')       AS maybe_count,
+             SUM(r.availability = 'unavailable') AS unavailable_count,
+             (SUM(r.availability = 'available') * 2 + SUM(r.availability = 'maybe')) AS score,
+             d.event_date AS event_date,
+             s.start_time AS start_time,
+             s.label      AS label
+      FROM poll_slots s
+      JOIN poll_dates d ON d.id = s.poll_date_id
+      LEFT JOIN responses r ON r.poll_slot_id = s.id
+      WHERE d.poll_id = ${poll.id}
+      GROUP BY s.id, d.event_date, s.start_time, s.label
+      ORDER BY score DESC,
+               available_count DESC,
+               unavailable_count ASC,
+               event_date ASC,
+               start_time ASC,
+               s.id ASC
+    `);
+
+    const slots = rows.map((r) => ({
+      slotId: r.slot_id as unknown as string,
+      available: Number(r.available_count),
+      maybe: Number(r.maybe_count),
+      unavailable: Number(r.unavailable_count),
+      score: Number(r.score),
+    }));
+
+    const top = rows[0];
+    const best = top
+      ? {
+          slotId: top.slot_id as unknown as string,
+          date: this.toDateString(top.event_date),
+          label: top.label,
+          score: Number(top.score),
+        }
+      : null;
+
+    return { best, slots };
+  }
+
+  /** Format a `@db.Date` value as a `YYYY-MM-DD` string, dropping any time component. */
+  private toDateString(date: Date): string {
+    return new Date(date).toISOString().slice(0, 10);
   }
 
   /**
