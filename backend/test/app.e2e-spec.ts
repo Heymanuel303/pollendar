@@ -1,29 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { createTestApp, type TestApp } from './setup-e2e';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+/**
+ * Smoke test: the harness boots the whole app against the disposable schema and the global `/api`
+ * prefix is wired. Replaces the stock Hello-World `/ (GET)` expectation — the root is now `/api`,
+ * and `/` outside the prefix 404s.
+ */
+describe('App bootstrap (e2e)', () => {
+  let ctx: TestApp;
+  const server = (): App => ctx.app.getHttpServer() as App;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  beforeAll(async () => {
+    ctx = await createTestApp();
+    await ctx.app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  afterAll(async () => {
+    await ctx.app.close();
   });
 
-  afterEach(async () => {
-    await app.close();
+  it('GET /api → 200 with the global prefix applied', () => {
+    return request(server()).get('/api').expect(200).expect('Hello World!');
+  });
+
+  it('GET / → 404 (no route outside the /api prefix)', () => {
+    return request(server()).get('/').expect(404);
   });
 });

@@ -34,7 +34,7 @@ Production-readiness basics for the Pollendar backend (NestJS 11 / Prisma 7 / My
 
 ## Phases
 1. [01-error-handling-and-throttling](01-error-handling-and-throttling.md) — global exception filter + Prisma→HTTP mapping, public-submission throttle, prod cookie/anti-enumeration audit · _solo_ ✓
-2. [02-test-suite](02-test-suite.md) — disposable-DB e2e harness + auth & poll-lifecycle happy paths + unit gap-fill (algorithm, auth tokens) · _workflow_
+2. [02-test-suite](02-test-suite.md) — disposable-DB e2e harness + auth & poll-lifecycle happy paths + unit gap-fill (algorithm, auth tokens) · _workflow_ ✓
 3. [03-deploy-notes](03-deploy-notes.md) — multi-stage backend Dockerfile + `.dockerignore` + entrypoint + `docs/DEPLOY.md` · _solo_
 
 ## Open questions

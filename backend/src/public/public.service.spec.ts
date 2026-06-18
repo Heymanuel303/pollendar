@@ -555,5 +555,38 @@ describe('PublicService', () => {
       );
       expect(queryRaw).not.toHaveBeenCalled();
     });
+
+    it('returns best === null for a poll with no slots (empty result set)', async () => {
+      pollFindUnique.mockResolvedValue({ id: 1n });
+      queryRaw.mockResolvedValue([]);
+
+      const result = await service.getResults('tok');
+
+      expect(result.best).toBeNull();
+      expect(result.slots).toEqual([]);
+    });
+
+    it('coerces a bigint SUM(...) result to a number for best.score and slot tallies', async () => {
+      pollFindUnique.mockResolvedValue({ id: 1n });
+      queryRaw.mockResolvedValue([
+        {
+          slot_id: 10n,
+          available_count: 3n,
+          maybe_count: 0n,
+          unavailable_count: 1n,
+          score: 6n,
+          event_date: eventDate,
+          start_time: null,
+          label: 'A',
+        },
+      ]);
+
+      const result = await service.getResults('tok');
+
+      expect(typeof result.best?.score).toBe('number');
+      expect(result.best?.score).toBe(6);
+      expect(typeof result.slots[0].available).toBe('number');
+      expect(result.slots[0].available).toBe(3);
+    });
   });
 });

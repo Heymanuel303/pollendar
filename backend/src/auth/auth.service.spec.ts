@@ -2,6 +2,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
+import * as crypto from 'crypto';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthService } from './auth.service';
@@ -322,6 +323,157 @@ describe('AuthService', () => {
     it('is a no-op (never throws) when no token is supplied', async () => {
       await expect(service.logout(undefined)).resolves.toBeUndefined();
       expect(authSessionUpdateMany).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('parseTtlToMs / hashing / expiry edges', () => {
+    it('parseTtlToMs: 45s magic-link TTL lands ~45000ms in the future', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '45s',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      const before = Date.now();
+      await service.requestMagicLink('a@example.com', '1.2.3.4');
+
+      const arg = create.mock.calls[0][0];
+      const delta = arg.data.expiresAt.getTime() - before;
+      expect(delta).toBeGreaterThanOrEqual(45_000);
+      expect(delta).toBeLessThan(45_000 + 5_000);
+    });
+
+    it('parseTtlToMs: 1h magic-link TTL lands ~3600000ms in the future', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '1h',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      const before = Date.now();
+      await service.requestMagicLink('a@example.com', '1.2.3.4');
+
+      const arg = create.mock.calls[0][0];
+      const delta = arg.data.expiresAt.getTime() - before;
+      expect(delta).toBeGreaterThanOrEqual(3_600_000);
+      expect(delta).toBeLessThan(3_600_000 + 5_000);
+    });
+
+    it('parseTtlToMs: 30d refresh TTL lands ~2592000000ms in the future via createSession', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '15m',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      loginTokenFindUnique.mockResolvedValue({
+        id: 7n,
+        userId: 1n,
+        consumedAt: null,
+        expiresAt: new Date(Date.now() + 60_000),
+        user: validUser,
+      });
+
+      const before = Date.now();
+      await service.verify('raw', {});
+
+      const arg = authSessionCreate.mock.calls[0][0];
+      const delta = arg.data.expiresAt.getTime() - before;
+      expect(delta).toBeGreaterThanOrEqual(2_592_000_000);
+      expect(delta).toBeLessThan(2_592_000_000 + 5_000);
+    });
+
+    it('rejects a malformed TTL (15x)', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '15x',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      await expect(
+        service.requestMagicLink('a@example.com', '1.2.3.4'),
+      ).rejects.toThrow(/Invalid TTL format/);
+    });
+
+    it('stores sha256(plaintext) and never the plaintext token (determinism)', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '15m',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      await service.requestMagicLink('a@example.com', '1.2.3.4');
+
+      const link = sendMagicLink.mock.calls[0][1];
+      const raw = new URL(link).searchParams.get('token')!;
+      const arg = create.mock.calls[0][0];
+
+      expect(arg.data.tokenHash).toMatch(HEX64);
+      expect(arg.data.tokenHash).not.toBe(raw);
+      expect(crypto.createHash('sha256').update(raw).digest('hex')).toBe(
+        arg.data.tokenHash,
+      );
+    });
+
+    it('verify rejects a token whose expiresAt is exactly 1ms in the past (boundary)', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '15m',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      loginTokenFindUnique.mockResolvedValue({
+        id: 7n,
+        userId: 1n,
+        consumedAt: null,
+        expiresAt: new Date(Date.now() - 1),
+        user: validUser,
+      });
+
+      await expect(service.verify('raw', {})).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
+    });
+
+    it('refresh rejects a session whose expiresAt is exactly 1ms in the past (boundary)', async () => {
+      (config.get as jest.Mock).mockImplementation(
+        (key: string) =>
+          ({
+            MAGIC_LINK_TTL: '15m',
+            REFRESH_TOKEN_TTL: '30d',
+            APP_URL: 'http://localhost:5173',
+          })[key],
+      );
+
+      authSessionFindUnique.mockResolvedValue({
+        id: 3n,
+        userId: 1n,
+        revokedAt: null,
+        expiresAt: new Date(Date.now() - 1),
+        user: validUser,
+      });
+
+      await expect(service.refresh('raw', {})).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
     });
   });
 });
