@@ -76,9 +76,11 @@ export class EnvironmentVariables {
   @IsNotEmpty()
   MAGIC_LINK_TTL!: string;
 
+  // Empty = host-only cookie (the right default for localhost / LAN IPs). IP
+  // literals are invalid here per RFC 6265, so only set a real registered domain.
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  COOKIE_DOMAIN!: string;
+  COOKIE_DOMAIN?: string;
 
   @Transform(toBoolean)
   @IsBoolean()
