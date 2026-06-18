@@ -2,7 +2,7 @@
 
 **Slug:** `best-slot-computation` (folder: `docs/plans/2026-06-18-best-slot-computation/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Compute the winning date/slot for a poll: per-slot tallies plus a single deterministic best slot, recomputed on every submission and exposed via `GET /api/public/polls/:token/results`. The best is informational — the creator still confirms `finalSlotId` separately (out of scope here).
@@ -25,13 +25,13 @@ Compute the winning date/slot for a poll: per-slot tallies plus a single determi
 - lint = `npm run lint`, test = `npm test -- public.service` (run in `backend/`).
 
 ## Acceptance criteria
-- [ ] `GET /api/public/polls/:token/results` returns `{ best, slots }` with correct per-slot tallies and the deterministic best slot; unknown token → 404.
-- [ ] Unit test reproduces the worked example (A=3/0/1, B=2/2/0, C=2/1/1): A wins the A/B score-6 tie via available_count, C is third; zero-response slots appear with all-zero tallies.
-- [ ] `slot_tallies` is recomputed and upserted inside the `submitResponses` transaction so the cache stays current after every submit.
+- [x] `GET /api/public/polls/:token/results` returns `{ best, slots }` with correct per-slot tallies and the deterministic best slot; unknown token → 404.
+- [x] Unit test reproduces the worked example (A=3/0/1, B=2/2/0, C=2/1/1): A wins the A/B score-6 tie via available_count, C is third; zero-response slots appear with all-zero tallies.
+- [x] `slot_tallies` is recomputed and upserted inside the `submitResponses` transaction so the cache stays current after every submit.
 
 ## Phases
 1. [01-results-aggregation-endpoint](01-results-aggregation-endpoint.md) — live canonical aggregation + deterministic best slot, `GET /api/public/polls/:token/results`, worked-example unit test · _solo_ ✓
-2. [02-slot-tallies-cache](02-slot-tallies-cache.md) — recompute & upsert `SlotTally` inside the submission transaction; results endpoint stays live · _solo_
+2. [02-slot-tallies-cache](02-slot-tallies-cache.md) — recompute & upsert `SlotTally` inside the submission transaction; results endpoint stays live · _solo_ ✓
 
 ## Open questions
 - None.

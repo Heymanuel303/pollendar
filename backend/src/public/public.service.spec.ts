@@ -12,11 +12,13 @@ import { SubmitResponsesDto } from './dto/submit-responses.dto';
 const pollFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const transaction = jest.fn();
 const queryRaw = jest.fn<Promise<unknown>, [unknown]>();
+const prismaSlotTallyUpsert = jest.fn<Promise<unknown>, [unknown]>();
 
 const prisma: Partial<PrismaService> = {
   poll: { findUnique: pollFindUnique } as never,
   $transaction: transaction as never,
   $queryRaw: queryRaw as never,
+  slotTally: { upsert: prismaSlotTallyUpsert } as never,
 };
 
 /** A raw Prisma row including owner/participant fields the sanitizer must strip. */
@@ -58,6 +60,7 @@ describe('PublicService', () => {
     pollFindUnique.mockReset();
     transaction.mockReset();
     queryRaw.mockReset();
+    prismaSlotTallyUpsert.mockReset();
     const moduleRef = await Test.createTestingModule({
       providers: [PublicService, { provide: PrismaService, useValue: prisma }],
     }).compile();
@@ -140,21 +143,37 @@ describe('PublicService', () => {
       answers: [{ pollSlotId: '100', availability: 'available' }],
     };
 
-    /** Mock $transaction to run its callback with a tx whose create/createMany are spies. */
-    function mockTransaction(participantPublicToken = 'newtoken') {
+    /** Mock $transaction to run its callback with a tx whose create/createMany/$queryRaw/upsert are spies. */
+    function mockTransaction(
+      participantPublicToken = 'newtoken',
+      tallyRows: unknown[] = [],
+    ) {
       const participantCreate = jest
         .fn<Promise<{ id: bigint; publicToken: string }>, [unknown]>()
         .mockResolvedValue({ id: 7n, publicToken: participantPublicToken });
       const responseCreateMany = jest
         .fn<Promise<{ count: number }>, [unknown]>()
         .mockResolvedValue({ count: 1 });
+      const txQueryRaw = jest
+        .fn<Promise<unknown>, [unknown]>()
+        .mockResolvedValue(tallyRows);
+      const slotTallyUpsert = jest
+        .fn<Promise<unknown>, [unknown]>()
+        .mockResolvedValue({});
       transaction.mockImplementation((cb: (tx: unknown) => unknown) =>
         cb({
           participant: { create: participantCreate },
           response: { createMany: responseCreateMany },
+          $queryRaw: txQueryRaw,
+          slotTally: { upsert: slotTallyUpsert },
         }),
       );
-      return { participantCreate, responseCreateMany };
+      return {
+        participantCreate,
+        responseCreateMany,
+        txQueryRaw,
+        slotTallyUpsert,
+      };
     }
 
     it('returns { publicToken } and creates participant + responses in the transaction', async () => {
@@ -280,6 +299,163 @@ describe('PublicService', () => {
       const boom = new Error('boom');
       transaction.mockRejectedValue(boom);
       await expect(service.submitResponses('tok', dto)).rejects.toBe(boom);
+    });
+
+    /** Worked-example tally rows the in-transaction recompute SQL would return. */
+    const workedExampleRows = [
+      {
+        id: 1n,
+        available_count: 3,
+        maybe_count: 0,
+        unavailable_count: 1,
+        score: 6,
+      },
+      {
+        id: 2n,
+        available_count: 2,
+        maybe_count: 2,
+        unavailable_count: 0,
+        score: 6,
+      },
+      {
+        id: 3n,
+        available_count: 2,
+        maybe_count: 1,
+        unavailable_count: 1,
+        score: 5,
+      },
+    ];
+
+    it('upserts one SlotTally per slot via the tx client with the worked-example counts/scores', async () => {
+      pollFindUnique.mockResolvedValue(pollWithSlots);
+      const { slotTallyUpsert } = mockTransaction('abc', workedExampleRows);
+
+      await service.submitResponses('tok', dto);
+
+      expect(slotTallyUpsert).toHaveBeenCalledTimes(3);
+      expect(slotTallyUpsert).toHaveBeenNthCalledWith(1, {
+        where: { pollSlotId: 1n },
+        update: {
+          availableCount: 3,
+          maybeCount: 0,
+          unavailableCount: 1,
+          score: 6,
+        },
+        create: {
+          pollSlotId: 1n,
+          availableCount: 3,
+          maybeCount: 0,
+          unavailableCount: 1,
+          score: 6,
+        },
+      });
+      expect(slotTallyUpsert).toHaveBeenNthCalledWith(2, {
+        where: { pollSlotId: 2n },
+        update: {
+          availableCount: 2,
+          maybeCount: 2,
+          unavailableCount: 0,
+          score: 6,
+        },
+        create: {
+          pollSlotId: 2n,
+          availableCount: 2,
+          maybeCount: 2,
+          unavailableCount: 0,
+          score: 6,
+        },
+      });
+      expect(slotTallyUpsert).toHaveBeenNthCalledWith(3, {
+        where: { pollSlotId: 3n },
+        update: {
+          availableCount: 2,
+          maybeCount: 1,
+          unavailableCount: 1,
+          score: 5,
+        },
+        create: {
+          pollSlotId: 3n,
+          availableCount: 2,
+          maybeCount: 1,
+          unavailableCount: 1,
+          score: 5,
+        },
+      });
+      // Cache writes go through the transaction, never the bare prisma client.
+      expect(prismaSlotTallyUpsert).not.toHaveBeenCalled();
+    });
+
+    it('coerces raw string SUM(...) results to numbers before upserting', async () => {
+      pollFindUnique.mockResolvedValue(pollWithSlots);
+      const { slotTallyUpsert } = mockTransaction('abc', [
+        {
+          id: 1n,
+          available_count: '3',
+          maybe_count: '0',
+          unavailable_count: '1',
+          score: '6',
+        },
+      ]);
+
+      await service.submitResponses('tok', dto);
+
+      const arg = slotTallyUpsert.mock.calls[0][0] as {
+        update: Record<string, unknown>;
+      };
+      expect(arg.update).toEqual({
+        availableCount: 3,
+        maybeCount: 0,
+        unavailableCount: 1,
+        score: 6,
+      });
+      expect(typeof arg.update.score).toBe('number');
+    });
+
+    it('reflects the new winning tally on a subsequent submit', async () => {
+      // Second submit: B overtakes A with available_count 4 / score 8.
+      pollFindUnique.mockResolvedValue(pollWithSlots);
+      const { slotTallyUpsert } = mockTransaction('def', [
+        {
+          id: 1n,
+          available_count: 3,
+          maybe_count: 0,
+          unavailable_count: 1,
+          score: 6,
+        },
+        {
+          id: 2n,
+          available_count: 4,
+          maybe_count: 0,
+          unavailable_count: 0,
+          score: 8,
+        },
+        {
+          id: 3n,
+          available_count: 2,
+          maybe_count: 1,
+          unavailable_count: 1,
+          score: 5,
+        },
+      ]);
+
+      await service.submitResponses('tok', dto);
+
+      expect(slotTallyUpsert).toHaveBeenNthCalledWith(2, {
+        where: { pollSlotId: 2n },
+        update: {
+          availableCount: 4,
+          maybeCount: 0,
+          unavailableCount: 0,
+          score: 8,
+        },
+        create: {
+          pollSlotId: 2n,
+          availableCount: 4,
+          maybeCount: 0,
+          unavailableCount: 0,
+          score: 8,
+        },
+      });
     });
   });
 

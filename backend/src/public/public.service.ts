@@ -189,6 +189,53 @@ export class PublicService {
             availability: answer.availability,
           })),
         });
+
+        // Recompute the persisted `slot_tallies` cache inside the same transaction so it commits
+        // atomically with the participant + responses. This cache is a denormalized source of truth
+        // for the creator view (dashboards / completion flow) and `best`; it is NOT the source for
+        // `GET /api/public/polls/:token/results`, which stays a LIVE computation to avoid stale reads
+        // when a submission races in after a prior commit. Scoring here is kept identical to
+        // `getResults` so the live and cached values never diverge. The LEFT JOIN keeps zero-response
+        // slots present with all-zero tallies; raw SUM(...) results are coerced with `Number(...)`.
+        const tallyRows = await tx.$queryRaw<
+          Array<{
+            id: bigint;
+            available_count: bigint | number | string;
+            maybe_count: bigint | number | string;
+            unavailable_count: bigint | number | string;
+            score: bigint | number | string;
+          }>
+        >(Prisma.sql`
+          SELECT s.id AS id,
+                 SUM(r.availability = 'available')   AS available_count,
+                 SUM(r.availability = 'maybe')       AS maybe_count,
+                 SUM(r.availability = 'unavailable') AS unavailable_count,
+                 (SUM(r.availability = 'available') * 2 + SUM(r.availability = 'maybe')) AS score
+          FROM poll_slots s
+          JOIN poll_dates d ON d.id = s.poll_date_id
+          LEFT JOIN responses r ON r.poll_slot_id = s.id
+          WHERE d.poll_id = ${poll.id}
+          GROUP BY s.id
+        `);
+
+        for (const row of tallyRows) {
+          const availableCount = Number(row.available_count);
+          const maybeCount = Number(row.maybe_count);
+          const unavailableCount = Number(row.unavailable_count);
+          const score = Number(row.score);
+          await tx.slotTally.upsert({
+            where: { pollSlotId: row.id },
+            update: { availableCount, maybeCount, unavailableCount, score },
+            create: {
+              pollSlotId: row.id,
+              availableCount,
+              maybeCount,
+              unavailableCount,
+              score,
+            },
+          });
+        }
+
         return { publicToken: participant.publicToken };
       });
     } catch (err) {
