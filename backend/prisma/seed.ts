@@ -17,8 +17,8 @@
 import { randomBytes } from 'node:crypto';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { Availability, PrismaClient } from '@prisma/client';
+import { buildMariaDbAdapter } from '../src/prisma/mariadb-adapter';
 
 // Single source of truth for env is the repo-root .env (mirrors prisma.config.ts).
 loadEnv({ path: resolve(__dirname, '..', '..', '.env') });
@@ -26,7 +26,8 @@ loadEnv({ path: resolve(__dirname, '..', '..', '.env') });
 const SAMPLE_CREATOR_EMAIL = 'creator@example.com';
 
 /** A URL-safe 22-char token matching the Char(22) public_token columns. */
-const publicToken = (): string => randomBytes(16).toString('base64url').slice(0, 22);
+const publicToken = (): string =>
+  randomBytes(16).toString('base64url').slice(0, 22);
 
 /** A MySQL TIME value — Prisma derives the time-of-day from a 1970-01-01 UTC DateTime. */
 const time = (hhmm: string): Date => new Date(`1970-01-01T${hhmm}:00Z`);
@@ -58,8 +59,18 @@ export async function seed(prisma: PrismaClient): Promise<void> {
               sortOrder: 0,
               slots: {
                 create: [
-                  { label: 'Lunch', startTime: time('12:00'), endTime: time('13:00'), sortOrder: 0 },
-                  { label: 'Dinner', startTime: time('18:00'), endTime: time('19:00'), sortOrder: 1 },
+                  {
+                    label: 'Lunch',
+                    startTime: time('12:00'),
+                    endTime: time('13:00'),
+                    sortOrder: 0,
+                  },
+                  {
+                    label: 'Dinner',
+                    startTime: time('18:00'),
+                    endTime: time('19:00'),
+                    sortOrder: 1,
+                  },
                 ],
               },
             },
@@ -69,7 +80,12 @@ export async function seed(prisma: PrismaClient): Promise<void> {
               slots: {
                 create: [
                   { isAllDay: true, sortOrder: 0 },
-                  { label: 'Morning', startTime: time('10:00'), endTime: time('11:00'), sortOrder: 1 },
+                  {
+                    label: 'Morning',
+                    startTime: time('10:00'),
+                    endTime: time('11:00'),
+                    sortOrder: 1,
+                  },
                 ],
               },
             },
@@ -95,17 +111,32 @@ export async function seed(prisma: PrismaClient): Promise<void> {
       {
         displayName: 'Bob',
         email: 'bob@example.com',
-        availability: [Availability.available, Availability.maybe, Availability.unavailable, Availability.available],
+        availability: [
+          Availability.available,
+          Availability.maybe,
+          Availability.unavailable,
+          Availability.available,
+        ],
       },
       {
         displayName: 'Charlie',
         email: null, // anonymous — no email on file
-        availability: [Availability.available, Availability.unavailable, Availability.maybe, Availability.available],
+        availability: [
+          Availability.available,
+          Availability.unavailable,
+          Availability.maybe,
+          Availability.available,
+        ],
       },
       {
         displayName: 'Diana',
         email: 'diana@example.com',
-        availability: [Availability.maybe, Availability.available, Availability.available, Availability.unavailable],
+        availability: [
+          Availability.maybe,
+          Availability.available,
+          Availability.available,
+          Availability.unavailable,
+        ],
       },
     ];
 
@@ -131,10 +162,12 @@ export async function seed(prisma: PrismaClient): Promise<void> {
 async function main(): Promise<void> {
   const url = process.env['DATABASE_URL'];
   if (!url) {
-    throw new Error('DATABASE_URL is not set — cannot seed (expected in repo-root .env).');
+    throw new Error(
+      'DATABASE_URL is not set — cannot seed (expected in repo-root .env).',
+    );
   }
 
-  const prisma = new PrismaClient({ adapter: new PrismaMariaDb(url) });
+  const prisma = new PrismaClient({ adapter: buildMariaDbAdapter(url) });
   try {
     await seed(prisma);
     console.log(

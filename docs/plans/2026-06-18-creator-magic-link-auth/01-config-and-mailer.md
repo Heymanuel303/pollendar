@@ -73,4 +73,4 @@ Deliver a global, dependency-injected `MailService` exposing `sendMagicLink(emai
 - [x] Transporter is built from `SMTP_HOST`/`SMTP_PORT`/`SMTP_SECURE` and omits `auth` when `SMTP_USER` is empty (Mailpit dev path).
 - [x] `app.use(cookieParser())` is registered in `main.ts` after `setGlobalPrefix('api')` and before `listen`.
 - [x] `npm test -- mail` passes; `npm run lint` reports no errors.
-- [ ] Calling `sendMagicLink` (via the one-off script above) produces a visible email in the Mailpit UI at http://localhost:8025 whose body contains the magic link URL.
+- [x] Calling `sendMagicLink` (via the one-off script above) produces a visible email in the Mailpit UI at http://localhost:8025 whose body contains the magic link URL.
