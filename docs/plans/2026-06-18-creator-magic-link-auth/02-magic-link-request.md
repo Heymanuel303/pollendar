@@ -109,9 +109,9 @@ Add `AuthModule` exposing `POST /api/auth/magic-link` that validates the email D
   8. DB sanity: rows exist in `login_tokens` with a 64-char `token_hash`, a future `expires_at`, null `consumed_at`, and the `request_ip` set; the plain token is NOT stored anywhere.
 
 ## Acceptance
-- [ ] `POST /api/auth/magic-link` returns `200 {"ok":true}` for both new and existing emails (no enumeration).
-- [ ] Invalid/missing email returns `400` from `RequestMagicLinkDto` validation.
-- [ ] A `users` row is upserted by email and a `login_tokens` row is created storing only a 64-char SHA-256 hex `token_hash`, with a future `expires_at` and the `request_ip`; the plain token is never persisted.
-- [ ] Mailpit shows an email containing `APP_URL/auth/callback?token=<43-char base64url token>`.
-- [ ] Exceeding `THROTTLE_LIMIT` requests within the window yields `429`.
-- [ ] `npm run lint` and `npm test -- auth` pass; `auth.service.spec.ts` and `auth.controller.spec.ts` cover the upsert+hash+mail path and the always-200 contract.
+- [x] `POST /api/auth/magic-link` returns `200 {"ok":true}` for both new and existing emails (no enumeration).
+- [x] Invalid/missing email returns `400` from `RequestMagicLinkDto` validation.
+- [x] A `users` row is upserted by email and a `login_tokens` row is created storing only a 64-char SHA-256 hex `token_hash`, with a future `expires_at` and the `request_ip`; the plain token is never persisted.
+- [x] Mailpit shows an email containing `APP_URL/auth/callback?token=<43-char base64url token>`.
+- [x] Exceeding `THROTTLE_LIMIT` requests within the window yields `429`.
+- [x] `npm run lint` and `npm test -- auth` pass; `auth.service.spec.ts` and `auth.controller.spec.ts` cover the upsert+hash+mail path and the always-200 contract.

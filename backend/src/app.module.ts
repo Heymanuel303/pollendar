@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { validate } from './config/env.validation';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -15,10 +18,25 @@ import { PrismaModule } from './prisma/prisma.module';
       envFilePath: ['../.env'],
       validate,
     }),
+    // THROTTLE_TTL is seconds; @nestjs/throttler expects milliseconds.
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => [
+        {
+          ttl: config.get<number>('THROTTLE_TTL')! * 1000,
+          limit: config.get<number>('THROTTLE_LIMIT')!,
+        },
+      ],
+    }),
     PrismaModule,
     MailModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // Global throttler so @Throttle decorators take effect across controllers.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}
