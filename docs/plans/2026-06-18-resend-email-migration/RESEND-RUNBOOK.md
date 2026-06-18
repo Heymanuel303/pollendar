@@ -20,8 +20,8 @@ production sender. The canonical *living* operator runbook is `docs/DEPLOY.md`
 | `heymanuel.ch` added in Resend → Domains | ✅ | step 2 — fill region below |
 | DNS records captured (table below) | ✅ | steps 3–4 — **paste actual values** |
 | DNS records added at provider | ✅ | step 4 |
-| Domain shows **Verified** in Resend | ☐ **PENDING** | step 5 — awaiting DNS propagation |
-| `pollendar-prod-smtp` API key created (sending scope) | ☐ | step 6 |
+| Domain shows **Verified** in Resend | ✅ | step 5 — awaiting DNS propagation |
+| `pollendar-prod-smtp` API key created (sending scope) | ✅ | step 6 |
 | Key stored in `.env.prod` on prod host | ☐ | step 7 — see Secret storage |
 
 **Resend region:** `________` (e.g. `us-east-1` / `eu-west-1`) — does **not**
