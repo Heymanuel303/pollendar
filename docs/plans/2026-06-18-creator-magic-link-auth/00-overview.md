@@ -2,7 +2,7 @@
 
 **Slug:** `creator-magic-link-auth` (folder: `docs/plans/2026-06-18-creator-magic-link-auth/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 Implements **Phase 2** of [`docs/PLAN.md`](../../PLAN.md). Phases 0 (scaffold/infra) and 1 (schema + Prisma + seed) are done.
 
@@ -28,12 +28,12 @@ Passwordless creator sign-in: a creator submits their email, receives an emailed
 - Cookies: httpOnly, `SameSite=Lax`, `Secure` from `COOKIE_SECURE`, domain from `COOKIE_DOMAIN`; access JWT 15m, refresh 30d. Magic link points at `APP_URL/auth/callback?token=<token>`.
 
 ## Acceptance criteria
-- [ ] Requesting a link emails a magic link to Mailpit; the endpoint always returns 200 and is rate-limited.
-- [ ] Clicking through → `POST /auth/verify` consumes the single-use token, creates a session, and sets httpOnly access + refresh cookies.
-- [ ] `GET /auth/me` returns the current creator (id as string) with a valid cookie, 401 without.
-- [ ] `POST /auth/refresh` rotates the refresh token; `POST /auth/logout` revokes the session and clears cookies (idempotent).
-- [ ] Only SHA-256 hex digests are ever stored for login + refresh tokens — raw tokens never hit the DB.
-- [ ] `npm run lint` and `npm test -- auth` / `-- mail` pass.
+- [x] Requesting a link emails a magic link to Mailpit; the endpoint always returns 200 and is rate-limited.
+- [x] Clicking through → `POST /auth/verify` consumes the single-use token, creates a session, and sets httpOnly access + refresh cookies.
+- [x] `GET /auth/me` returns the current creator (id as string) with a valid cookie, 401 without.
+- [x] `POST /auth/refresh` rotates the refresh token; `POST /auth/logout` revokes the session and clears cookies (idempotent).
+- [x] Only SHA-256 hex digests are ever stored for login + refresh tokens — raw tokens never hit the DB.
+- [x] `npm run lint` and `npm test -- auth` / `-- mail` pass.
 
 ## Phases
 1. [01-config-and-mailer](01-config-and-mailer.md) — global nodemailer `MailService.sendMagicLink` → Mailpit; register `cookie-parser` in `main.ts`. · _solo_ ✓
