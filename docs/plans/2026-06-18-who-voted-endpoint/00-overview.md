@@ -2,7 +2,7 @@
 
 **Slug:** `who-voted-endpoint` (folder: `docs/plans/2026-06-18-who-voted-endpoint/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Surface per-participant responses on the public poll surface. Add a new public `GET /api/public/polls/:token/participants-responses` endpoint returning each participant's display name and per-slot answers (never email), plus the frontend client/types/store wiring to consume it. This is the data dependency for the participant matrix (Plan 4 — `participant-matrix`) and is otherwise fully independent.
@@ -25,15 +25,15 @@ Surface per-participant responses on the public poll surface. Add a new public `
 - Optional `?limit&offset` (default 100, cap ~1000); idempotent read, no state change
 
 ## Acceptance criteria
-- [ ] `GET /api/public/polls/:token/participants-responses` returns `{ participants[], total, hasMore }` with `displayName` + per-slot answers
-- [ ] No code path can include `email` in the response (verified adversarially)
-- [ ] Works for open and closed polls with no submit-gate
-- [ ] Frontend store can load and expose participant rows
-- [ ] Backend specs + frontend build/lint green
+- [x] `GET /api/public/polls/:token/participants-responses` returns `{ participants[], total, hasMore }` with `displayName` + per-slot answers
+- [x] No code path can include `email` in the response (verified adversarially)
+- [x] Works for open and closed polls with no submit-gate
+- [x] Frontend store can load and expose participant rows
+- [x] Backend specs + frontend build/lint green
 
 ## Phases
 1. [01-backend-endpoint](01-backend-endpoint.md) — DTO + service + controller route + specs · _workflow_ ✓
-2. [02-frontend-wiring](02-frontend-wiring.md) — client method + types + store action · _solo_
+2. [02-frontend-wiring](02-frontend-wiring.md) — client method + types + store action · _solo_ ✓
 
 ## Open questions
 - Matrix scale: pick the participant-count threshold at which the frontend (Plan 4) switches to pagination/virtualization — the endpoint already supports `limit/offset`.

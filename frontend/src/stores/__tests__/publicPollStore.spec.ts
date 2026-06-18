@@ -3,12 +3,18 @@ import { setActivePinia, createPinia } from 'pinia'
 import { ApiError } from '@/lib/api/client'
 
 // Stub the public-poll api module so the store is exercised against controlled resolutions/rejections.
-const { getPublicPoll, submitResponses, getResults } = vi.hoisted(() => ({
+const { getPublicPoll, submitResponses, getResults, getParticipantResponses } = vi.hoisted(() => ({
   getPublicPoll: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
   submitResponses: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
   getResults: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  getParticipantResponses: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }))
-vi.mock('@/lib/api/public-poll', () => ({ getPublicPoll, submitResponses, getResults }))
+vi.mock('@/lib/api/public-poll', () => ({
+  getPublicPoll,
+  submitResponses,
+  getResults,
+  getParticipantResponses,
+}))
 
 // Stub the participant-token helper to assert persistence without touching real localStorage.
 const { saveParticipantToken } = vi.hoisted(() => ({
@@ -25,7 +31,12 @@ beforeEach(() => {
 
 describe('publicPollStore.load', () => {
   it('populates poll on success and marks the load successful', async () => {
-    getPublicPoll.mockResolvedValue({ id: '1', title: 'Dinner', timezone: 'Europe/Brussels', dates: [] })
+    getPublicPoll.mockResolvedValue({
+      id: '1',
+      title: 'Dinner',
+      timezone: 'Europe/Brussels',
+      dates: [],
+    })
     const store = usePublicPollStore()
 
     await store.load('share-token')
@@ -85,7 +96,10 @@ describe('publicPollStore.submit', () => {
 
 describe('publicPollStore.loadResults', () => {
   it('populates results on success', async () => {
-    getResults.mockResolvedValue({ best: { slotId: '9', date: '2026-06-26', label: 'Early', score: 6 }, slots: [] })
+    getResults.mockResolvedValue({
+      best: { slotId: '9', date: '2026-06-26', label: 'Early', score: 6 },
+      slots: [],
+    })
     const store = usePublicPollStore()
 
     await store.loadResults('share-token')
@@ -101,5 +115,53 @@ describe('publicPollStore.loadResults', () => {
     await store.loadResults('nope')
 
     expect(store.results).toBeNull()
+  })
+})
+
+describe('publicPollStore.loadParticipants', () => {
+  it('calls getParticipantResponses with (token, limit, offset) and populates the rows on success', async () => {
+    getParticipantResponses.mockResolvedValue({
+      participants: [
+        {
+          participantId: '5',
+          displayName: 'Sam',
+          answers: [{ pollSlotId: '9', availability: 'available' }],
+        },
+      ],
+      total: 12,
+      hasMore: true,
+    })
+    const store = usePublicPollStore()
+
+    await store.loadParticipants('share-token', { limit: 10, offset: 0 })
+
+    expect(getParticipantResponses).toHaveBeenCalledWith('share-token', 10, 0)
+    expect(store.participants).toHaveLength(1)
+    expect(store.participants[0]).toMatchObject({ participantId: '5', displayName: 'Sam' })
+    expect(store.participantsTotal).toBe(12)
+    expect(store.participantsHasMore).toBe(true)
+    expect(store.participantsState).toBe('success')
+  })
+
+  it('passes undefined limit/offset when no opts are given', async () => {
+    getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+    const store = usePublicPollStore()
+
+    await store.loadParticipants('share-token')
+
+    expect(getParticipantResponses).toHaveBeenCalledWith('share-token', undefined, undefined)
+  })
+
+  it('clears the rows and is non-fatal (does NOT throw) on a 404', async () => {
+    getParticipantResponses.mockRejectedValue(new ApiError(404, { message: 'Not Found' }))
+    const store = usePublicPollStore()
+
+    await expect(store.loadParticipants('nope')).resolves.toBeUndefined()
+
+    expect(store.participants).toEqual([])
+    expect(store.participantsTotal).toBe(0)
+    expect(store.participantsHasMore).toBe(false)
+    expect(store.participantsState).toBe('error')
+    expect(store.errorCode).toBe(404)
   })
 })

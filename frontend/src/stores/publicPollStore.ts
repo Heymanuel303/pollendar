@@ -1,9 +1,20 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ApiError } from '@/lib/api/client'
-import { getPublicPoll, getResults, submitResponses } from '@/lib/api/public-poll'
+import {
+  getParticipantResponses,
+  getPublicPoll,
+  getResults,
+  submitResponses,
+} from '@/lib/api/public-poll'
 import { saveParticipantToken } from '@/lib/participantToken'
-import type { PollResults, PublicPoll, SubmitResponsesDto } from '@/lib/api/types'
+import type {
+  ParticipantResponsesResult,
+  ParticipantRow,
+  PollResults,
+  PublicPoll,
+  SubmitResponsesDto,
+} from '@/lib/api/types'
 
 /** Lifecycle of a single request, so views can switch declaratively on the state. */
 type RequestState = 'idle' | 'loading' | 'success' | 'error'
@@ -15,6 +26,7 @@ type RequestState = 'idle' | 'loading' | 'success' | 'error'
  * - `load(token)`     → GET the sanitized poll for `/p/:token`.
  * - `submit(token, …)`→ POST the response; on 201 persist the participant's edit token and resolve it.
  * - `loadResults(token)` → GET the live best slot + tallies for the thanks page / bloom.
+ * - `loadParticipants(token, opts?)` → GET the per-participant rows for the matrix view.
  *
  * NOTE: the spec calls the results action `results`, but that collides with the reactive `results`
  * ref it populates (a setup store cannot expose both under one name) — the action is therefore
@@ -28,6 +40,13 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
   const poll = ref<PublicPoll | null>(null)
   /** Live results (best slot + per-slot tallies), or `null` until `loadResults` resolves. */
   const results = ref<PollResults | null>(null)
+  /** Per-participant rows for the share token, or `[]` before/after a failed load. */
+  const participants = ref<ParticipantRow[]>([])
+  /** Unfiltered participant count from the last `loadParticipants` (for pagination UI). */
+  const participantsTotal = ref(0)
+  /** `true` when more rows remain beyond the loaded page. */
+  const participantsHasMore = ref(false)
+  const participantsState = ref<RequestState>('idle')
 
   const loadState = ref<RequestState>('idle')
   const submitState = ref<RequestState>('idle')
@@ -90,6 +109,36 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
     }
   }
 
+  /**
+   * Load the per-participant rows for the matrix view. Optional `limit`/`offset` page the rows.
+   * A failure is non-fatal (the matrix simply has no rows): it records the error and clears state,
+   * but does not throw.
+   */
+  async function loadParticipants(
+    token: string,
+    opts?: { limit?: number; offset?: number },
+  ): Promise<void> {
+    participantsState.value = 'loading'
+    resetError()
+    try {
+      const res: ParticipantResponsesResult = await getParticipantResponses(
+        token,
+        opts?.limit,
+        opts?.offset,
+      )
+      participants.value = res.participants
+      participantsTotal.value = res.total
+      participantsHasMore.value = res.hasMore
+      participantsState.value = 'success'
+    } catch (err) {
+      participants.value = []
+      participantsTotal.value = 0
+      participantsHasMore.value = false
+      applyError(err)
+      participantsState.value = 'error'
+    }
+  }
+
   function applyError(err: unknown): void {
     if (err instanceof ApiError) {
       errorCode.value = err.status
@@ -103,6 +152,10 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
   return {
     poll,
     results,
+    participants,
+    participantsTotal,
+    participantsHasMore,
+    participantsState,
     loadState,
     submitState,
     errorCode,
@@ -110,6 +163,7 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
     load,
     submit,
     loadResults,
+    loadParticipants,
   }
 })
 

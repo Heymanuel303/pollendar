@@ -130,6 +130,39 @@ export interface SubmitResponsesResult {
 }
 
 /**
+ * One participant's answer for a single slot, from
+ * `GET /api/public/polls/:token/participants-responses`. The slot field is `pollSlotId`
+ * (matching the backend `ParticipantAnswer.pollSlotId`, same key as the submission
+ * `ResponseAnswer.pollSlotId`). `pollSlotId` is a `string` — the backend emits raw `bigint`
+ * and the global BigIntSerializerInterceptor stringifies it.
+ */
+export interface ParticipantResponseAnswer {
+  pollSlotId: string
+  availability: Availability
+}
+
+/**
+ * One participant row: their public-safe `displayName` + every per-slot answer.
+ * PRIVACY: `email` is NEVER present — the backend selects `{ id, displayName }` only.
+ * `participantId` is a `string` (stringified `bigint`).
+ */
+export interface ParticipantRow {
+  participantId: string
+  displayName: string
+  answers: ParticipantResponseAnswer[]
+}
+
+/**
+ * Per-participant responses page. From `GET /api/public/polls/:token/participants-responses`.
+ * `total` is the unfiltered participant count for the poll; `hasMore` is `offset + participants.length < total`.
+ */
+export interface ParticipantResponsesResult {
+  participants: ParticipantRow[]
+  total: number
+  hasMore: boolean
+}
+
+/**
  * Ready-to-copy invite text + canonical share URL. From `GET /api/polls/:id/invite-message`.
  * `message` is the backend's minimal one-liner; the frontend `ShareBox` renders the fuller
  * DESIGN.md §7 template, but uses this `shareUrl` as the canonical link (never hard-codes localhost).

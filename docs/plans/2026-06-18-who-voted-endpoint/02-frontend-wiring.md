@@ -129,7 +129,7 @@ Add the API client method in lib/api/public-poll.ts, ParticipantRow/ParticipantR
 - (Optional, if `/test` is run) extend `frontend/src/stores/__tests__/publicPollStore.spec.ts`: add `getParticipantResponses` to the `vi.hoisted` stub + `vi.mock('@/lib/api/public-poll', …)`, then assert `loadParticipants` (a) calls `getParticipantResponses` with `(token, limit, offset)`, (b) populates `participants`/`participantsTotal`/`participantsHasMore` + `participantsState === 'success'` on resolve, and (c) clears them + sets `participantsState === 'error'` (does NOT throw) on an `ApiError(404)`.
 
 ## Acceptance
-- [ ] `getParticipantResponses(token, limit?, offset?)` exists in `public-poll.ts`, hits `/public/polls/:token/participants-responses`, appends `limit`/`offset` only when provided, and is typed `Promise<ParticipantResponsesResult>`.
-- [ ] `ParticipantResponseAnswer` (`slotId`), `ParticipantRow` (`participantId`, `displayName`, `answers`), and `ParticipantResponsesResult` (`participants`, `total`, `hasMore`) exist in `types.ts` with all ids `string` and NO `email` field.
-- [ ] `usePublicPollStore` exposes `participants`, `participantsTotal`, `participantsHasMore`, `participantsState`, and a `loadParticipants` action that populates them on success and clears them (without throwing) on failure — distinct from `load`/`loadResults`.
-- [ ] `npm run build && npm run lint` are green in `frontend/`.
+- [x] `getParticipantResponses(token, limit?, offset?)` exists in `public-poll.ts`, hits `/public/polls/:token/participants-responses`, appends `limit`/`offset` only when provided, and is typed `Promise<ParticipantResponsesResult>`.
+- [x] `ParticipantResponseAnswer` (`slotId`), `ParticipantRow` (`participantId`, `displayName`, `answers`), and `ParticipantResponsesResult` (`participants`, `total`, `hasMore`) exist in `types.ts` with all ids `string` and NO `email` field.
+- [x] `usePublicPollStore` exposes `participants`, `participantsTotal`, `participantsHasMore`, `participantsState`, and a `loadParticipants` action that populates them on success and clears them (without throwing) on failure — distinct from `load`/`loadResults`.
+- [x] `npm run build && npm run lint` are green in `frontend/`.
