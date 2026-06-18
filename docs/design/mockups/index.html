@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <header class="mb-12">
+      <div class="flex items-center gap-3">
+        <span class="pollen-dot h-3.5 w-3.5"></span>
+        <h1 class="font-display text-3xl font-semibold tracking-tight">Pollendar UI — mockups</h1>
+      </div>
+      <p class="mt-2 text-dim font-display">Dusk Calendar design language</p>
+    </header>
+
+    <main class="space-y-12">
+      <section>
+        <h2 class="font-display text-xl font-semibold text-moonlight mb-4">Overview</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a target="_blank" href="00-overview.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Design language</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-semibold text-moonlight mb-4">Foundations</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a target="_blank" href="foundations/colors.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Color &amp; light</span>
+          </a>
+          <a target="_blank" href="foundations/typography.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Typography</span>
+          </a>
+          <a target="_blank" href="foundations/shape-motion.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Shape, depth &amp; motion</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-semibold text-moonlight mb-4">Components</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a target="_blank" href="components/buttons.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Buttons</span>
+          </a>
+          <a target="_blank" href="components/form-fields.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Form fields</span>
+          </a>
+          <a target="_blank" href="components/poll-card.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Poll card</span>
+          </a>
+          <a target="_blank" href="components/availability-grid.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Availability grid</span>
+          </a>
+          <a target="_blank" href="components/best-slot-badge.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Best slot · in bloom</span>
+          </a>
+          <a target="_blank" href="components/results-table.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Results table</span>
+          </a>
+          <a target="_blank" href="components/share-box.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Share box</span>
+          </a>
+          <a target="_blank" href="components/date-slot-editor.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Date &amp; slot editor</span>
+          </a>
+          <a target="_blank" href="components/availability-toggle.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Availability toggle</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="font-display text-xl font-semibold text-moonlight mb-4">Screens</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <a target="_blank" href="screens/landing.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Landing</span>
+          </a>
+          <a target="_blank" href="screens/dashboard.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Dashboard</span>
+          </a>
+          <a target="_blank" href="screens/poll-editor.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Poll editor</span>
+          </a>
+          <a target="_blank" href="screens/public-poll.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Public poll</span>
+          </a>
+          <a target="_blank" href="screens/poll-manage.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Poll manage</span>
+          </a>
+          <a target="_blank" href="screens/public-thanks.html" class="group rounded-2xl border border-line bg-surface p-5 shadow-card hover:bg-surface2 transition-colors">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="font-display text-base font-medium ml-2 align-middle">Thanks</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

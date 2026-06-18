@@ -1,0 +1,173 @@
+<!-- @dsCard group="Foundations" name="Shape, depth & motion" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @keyframes settle { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+  .settle { animation: settle 220ms ease-out both; }
+  @media (prefers-reduced-motion: reduce) { .settle { animation: none; } }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full">
+    <p class="mb-2 text-xs uppercase tracking-widest text-mute">Foundations</p>
+    <h1 class="font-display text-2xl font-semibold tracking-tight">Shape, depth &amp; motion</h1>
+    <p class="mt-1.5 max-w-xl text-sm text-dim">The physical language of Pollendar — corners, elevation, the gold bloom, and how availability settles in like pollen.</p>
+
+    <!-- Radius samples -->
+    <section class="mt-8 rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <p class="text-xs uppercase tracking-widest text-mute">Corner radius</p>
+      <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div class="flex flex-col items-center gap-3">
+          <div class="grid h-20 w-20 place-items-center rounded-lg border border-line bg-canvas font-display text-sm text-dim">lg</div>
+          <span class="text-xs text-mute">.5rem · pills, chips</span>
+        </div>
+        <div class="flex flex-col items-center gap-3">
+          <div class="grid h-20 w-20 place-items-center rounded-xl border border-line bg-canvas font-display text-sm text-dim">xl</div>
+          <span class="text-xs text-mute">.75rem · buttons, fields</span>
+        </div>
+        <div class="flex flex-col items-center gap-3">
+          <div class="grid h-20 w-20 place-items-center rounded-2xl border border-line bg-canvas font-display text-sm text-dim">2xl</div>
+          <span class="text-xs text-mute">1rem · cards</span>
+        </div>
+        <div class="flex flex-col items-center gap-3">
+          <div class="grid h-20 w-20 place-items-center rounded-full border border-line bg-canvas font-display text-sm text-dim">full</div>
+          <span class="text-xs text-mute">avatars, grains</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Elevation + Bloom -->
+    <section class="mt-6 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <p class="text-xs uppercase tracking-widest text-mute">Elevation</p>
+        <div class="mt-4 grid grid-cols-2 gap-4">
+          <div class="flex flex-col items-center gap-3">
+            <div class="grid h-28 w-full place-items-center rounded-2xl border border-line bg-surface text-sm text-dim">Flat</div>
+            <span class="text-xs text-mute">border only · inline groups</span>
+          </div>
+          <div class="flex flex-col items-center gap-3">
+            <div class="grid h-28 w-full place-items-center rounded-2xl border border-line bg-surface text-sm text-moonlight shadow-card">Raised</div>
+            <span class="text-xs text-mute">shadow-card · standalone cards</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <p class="text-xs uppercase tracking-widest text-mute">In bloom</p>
+        <div class="mt-4 flex flex-col items-center gap-4">
+          <div class="bloom-bg w-full rounded-2xl border border-pollen/40 bg-surface2 p-5 shadow-glow">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-display text-base font-semibold text-moonlight">Thu Jun 26 · Early</p>
+                <p class="text-xs text-dim">18:00–20:00 · Europe/Brussels</p>
+              </div>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+            </div>
+            <p class="mt-3 font-display text-sm text-pollen">5 yes · score 10</p>
+          </div>
+          <span class="text-xs text-mute">shadow-glow + .bloom-bg + ✦ — the winning slot</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pollen motif + Motion -->
+    <section class="mt-6 grid gap-6 lg:grid-cols-2">
+      <div class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <p class="text-xs uppercase tracking-widest text-mute">Pollen motif</p>
+        <div class="mt-5 grid grid-cols-2 gap-6">
+          <div class="flex flex-col items-center gap-4">
+            <div class="grid h-20 w-full place-items-center rounded-xl border border-line bg-canvas">
+              <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            </div>
+            <span class="text-xs text-mute">one grain · a yes</span>
+          </div>
+          <div class="flex flex-col items-center gap-4">
+            <div class="grid h-20 w-full place-items-center rounded-xl border border-line bg-canvas">
+              <div class="flex items-center gap-1.5">
+                <span class="pollen-dot inline-block h-2.5 w-2.5 settle" style="animation-delay:0ms"></span>
+                <span class="pollen-dot inline-block h-2.5 w-2.5 settle" style="animation-delay:60ms"></span>
+                <span class="pollen-dot inline-block h-2.5 w-2.5 settle" style="animation-delay:120ms"></span>
+                <span class="pollen-dot inline-block h-2.5 w-2.5 settle" style="animation-delay:180ms"></span>
+                <span class="pollen-dot inline-block h-2.5 w-2.5 settle" style="animation-delay:240ms"></span>
+              </div>
+            </div>
+            <span class="text-xs text-mute"><span class="font-display text-pollen">5</span> yes · a cluster</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <p class="text-xs uppercase tracking-widest text-mute">Motion principles</p>
+        <ul class="mt-4 space-y-3 text-sm text-dim">
+          <li class="flex gap-3">
+            <span class="pollen-dot mt-1.5 inline-block h-2 w-2 shrink-0"></span>
+            <span>Responses <span class="text-moonlight">fade and scale in</span> like grains settling — never slide or bounce.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="pollen-dot mt-1.5 inline-block h-2 w-2 shrink-0"></span>
+            <span>The winning slot <span class="text-pollen">eases into bloom</span> — glow grows on, it doesn't flash.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="pollen-dot mt-1.5 inline-block h-2 w-2 shrink-0"></span>
+            <span>Durations stay between <span class="font-display text-moonlight">150–250ms</span>, ease-out, with gentle stagger.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="pollen-dot mt-1.5 inline-block h-2 w-2 shrink-0"></span>
+            <span><span class="text-moonlight">Reduced motion is respected</span> — everything resolves to its final state, instantly.</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

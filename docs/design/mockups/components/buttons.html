@@ -1,0 +1,166 @@
+<!-- @dsCard group="Components" name="Buttons" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  @media (prefers-reduced-motion: no-preference) { .spin { animation: spin 0.8s linear infinite; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <section class="w-full rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8">
+    <header class="mb-8">
+      <p class="text-xs uppercase tracking-widest text-mute">Components</p>
+      <h1 class="mt-1 font-display text-2xl font-semibold tracking-tight">Buttons</h1>
+      <p class="mt-1 text-sm text-dim">The actions that move a poll forward — from gathering responses to making it bloom.</p>
+    </header>
+
+    <div class="space-y-10">
+
+      <!-- Primary states -->
+      <div>
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Primary &middot; states</p>
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">New poll</button>
+            <span class="text-xs text-mute">Default</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow brightness-110">New poll</button>
+            <span class="text-xs text-mute">Hover</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex translate-y-px items-center justify-center gap-2 rounded-xl bg-pollenDeep px-4 py-2.5 font-medium text-canvas shadow-glow">New poll</button>
+            <span class="text-xs text-mute">Pressed</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button disabled class="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-pollen/40 px-4 py-2.5 font-medium text-canvas/60">New poll</button>
+            <span class="text-xs text-mute">Disabled</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow" aria-busy="true">
+              <svg class="spin h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" stroke-opacity="0.3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+              Creating
+            </button>
+            <span class="text-xs text-mute">Loading</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variants -->
+      <div>
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Variants</p>
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">Submit availability</button>
+            <span class="text-xs text-mute">Primary</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-moonlight transition hover:bg-surface2">Copy link</button>
+            <span class="text-xs text-mute">Secondary</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-medium text-dim transition hover:text-moonlight">Cancel</button>
+            <span class="text-xs text-mute">Ghost</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center gap-2 rounded-xl border border-coral/40 bg-coral/10 px-4 py-2.5 font-medium text-coral transition hover:bg-coral/20">Delete poll</button>
+            <span class="text-xs text-mute">Danger</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sizes -->
+      <div>
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Sizes</p>
+        <div class="flex flex-wrap items-end gap-4">
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-lg bg-pollen px-3 py-1.5 text-sm font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">New poll</button>
+            <span class="text-xs text-mute">sm</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">New poll</button>
+            <span class="text-xs text-mute">md</span>
+          </div>
+          <div class="flex flex-col items-center gap-2">
+            <button class="inline-flex items-center justify-center gap-2 rounded-2xl bg-pollen px-6 py-3.5 text-lg font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">New poll</button>
+            <span class="text-xs text-mute">lg</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icon + label -->
+      <div>
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Icon + label</p>
+        <div class="flex flex-wrap items-center gap-4">
+          <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px"><span aria-hidden="true">＋</span> New poll</button>
+          <button class="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-moonlight transition hover:bg-surface2"><span aria-hidden="true">🔗</span> Copy link</button>
+          <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px"><span class="pollen-dot inline-block h-2.5 w-2.5"></span> Submit availability</button>
+        </div>
+      </div>
+
+      <!-- Complete poll — the bloom moment -->
+      <div>
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Complete poll &middot; in bloom</p>
+        <div class="bloom-bg flex flex-wrap items-center gap-4 rounded-2xl border border-pollen/30 p-5">
+          <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-5 py-3 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px"><span aria-hidden="true">✦</span> Complete poll</button>
+          <div class="text-sm text-dim">
+            Confirms <span class="font-display font-medium text-moonlight">Thu Jun 26 &middot; Early</span>
+            <span class="ml-2 inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+</body>
+</html>

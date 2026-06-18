@@ -1,0 +1,220 @@
+<!-- @dsCard group="Screens" name="Public poll" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+
+  <!-- Top wordmark only (no app nav for public route) -->
+  <header class="border-b border-line/70">
+    <div class="mx-auto flex h-16 max-w-3xl items-center justify-between px-6">
+      <a class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-pollen font-display text-base font-bold text-canvas shadow-glow">P</span>
+        <span class="font-display text-lg font-semibold tracking-tight">Pollendar</span>
+      </a>
+      <span class="text-xs uppercase tracking-widest text-mute">pollendar.app</span>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-6 pb-40 pt-10">
+
+    <!-- Poll intro -->
+    <div class="mb-8">
+      <div class="mb-3 flex items-center gap-2">
+        <span class="rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30">Open</span>
+        <span class="text-xs uppercase tracking-widest text-mute">gathering responses</span>
+      </div>
+      <h1 class="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Team dinner</h1>
+      <p class="mt-3 flex items-center gap-2 text-dim">
+        <span class="grid h-7 w-7 place-items-center rounded-full bg-surface2 text-xs font-medium text-dim ring-1 ring-line">M</span>
+        <span><span class="text-moonlight">Manu</span> is finding a time</span>
+      </p>
+      <p class="mt-4 text-dim">Looking for a good evening next week.</p>
+      <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-mute">
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Times shown in <span class="text-dim">Europe/Brussels</span>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+          Responses close <span class="font-display text-dim">Thu Jun 25, 18:00</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Availability input -->
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <div class="mb-5 flex items-center justify-between">
+        <h2 class="font-display text-lg font-semibold">Your availability</h2>
+        <span class="text-xs uppercase tracking-widest text-mute">Tap each slot</span>
+      </div>
+
+      <!-- Thu Jun 26 -->
+      <div class="mb-6">
+        <div class="mb-3 flex items-baseline gap-2">
+          <h3 class="font-display text-sm font-semibold text-moonlight">Thu Jun 26</h3>
+          <span class="text-xs text-mute">Thursday</span>
+        </div>
+
+        <!-- Early (best slot -> blooms) -->
+        <div class="bloom-bg mb-2 flex flex-col gap-3 rounded-xl border border-pollen/40 bg-canvas p-4 shadow-glow sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex items-center gap-3">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <div>
+              <p class="font-medium text-moonlight">Early</p>
+              <p class="font-display text-sm text-dim">18:00–20:00</p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+          </div>
+          <div class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg bg-yes px-3 py-1.5 text-canvas shadow-glow">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">No</button>
+          </div>
+        </div>
+
+        <!-- Late -->
+        <div class="mb-2 flex flex-col gap-3 rounded-xl border border-line bg-canvas p-4 transition hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-medium text-moonlight">Late</p>
+            <p class="font-display text-sm text-dim">20:00–22:00</p>
+          </div>
+          <div class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg bg-yes px-3 py-1.5 text-canvas shadow-glow">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">No</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fri Jun 27 -->
+      <div class="mb-6">
+        <div class="mb-3 flex items-baseline gap-2">
+          <h3 class="font-display text-sm font-semibold text-moonlight">Fri Jun 27</h3>
+          <span class="text-xs text-mute">Friday</span>
+        </div>
+        <div class="flex flex-col gap-3 rounded-xl border border-line bg-canvas p-4 transition hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-medium text-moonlight">All day</p>
+            <p class="font-display text-sm text-dim">Any time works</p>
+          </div>
+          <div class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">Yes</button>
+            <button class="rounded-lg bg-maybe px-3 py-1.5 text-canvas">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">No</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sat Jun 28 -->
+      <div>
+        <div class="mb-3 flex items-baseline gap-2">
+          <h3 class="font-display text-sm font-semibold text-moonlight">Sat Jun 28</h3>
+          <span class="text-xs text-mute">Saturday</span>
+        </div>
+        <div class="flex flex-col gap-3 rounded-xl border border-line bg-canvas p-4 transition hover:bg-surface2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-medium text-moonlight">Evening</p>
+            <p class="font-display text-sm text-dim">19:00–22:00</p>
+          </div>
+          <div class="inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim hover:text-moonlight">Maybe</button>
+            <button class="rounded-lg bg-no px-3 py-1.5 text-moonlight">No</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Identity -->
+    <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <h2 class="mb-5 font-display text-lg font-semibold">About you</h2>
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-dim">Your name <span class="text-pollen">*</span></label>
+          <input class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" placeholder="e.g. Aïcha" value="" />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-dim">Email <span class="text-mute">— optional</span></label>
+          <input type="email" class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30" placeholder="you@example.com" />
+          <p class="mt-2 text-xs text-mute">Only to notify you of the final time.</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="mt-6 text-center text-xs text-mute">Find the time everyone can make.</p>
+
+  </main>
+
+  <!-- Sticky bottom bar -->
+  <div class="fixed inset-x-0 bottom-0 z-20 border-t border-line/70 bg-canvas/85 backdrop-blur">
+    <div class="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <p class="text-xs uppercase tracking-widest text-mute">Leaning so far</p>
+        <p class="mt-0.5 flex items-center gap-2 text-sm">
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="font-display font-medium text-moonlight">Thu 26 · Early</span>
+          <span class="text-pollen">✦</span>
+        </p>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="hidden text-sm text-mute sm:inline">Takes about a minute.</span>
+        <button class="inline-flex items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">
+          Submit availability
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

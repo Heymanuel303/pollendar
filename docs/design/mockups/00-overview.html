@@ -1,0 +1,179 @@
+<!-- @dsCard group="Overview" name="Pollendar — design language" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full">
+    <p class="mb-6 text-center text-xs uppercase tracking-widest text-mute">Design language · Cover</p>
+
+    <section class="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
+
+      <!-- Brand / hero -->
+      <div class="bloom-bg relative border-b border-line/70 px-8 py-12 sm:px-12 sm:py-14">
+        <div class="flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-pollen font-display text-lg font-bold text-canvas shadow-glow">P</span>
+          <span class="font-display text-xl font-semibold tracking-tight">Pollendar</span>
+          <span class="ml-1 text-xs text-mute">pollendar.app</span>
+        </div>
+
+        <h1 class="mt-7 max-w-2xl font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
+          Availability polling,<br /><span class="text-pollen">in bloom</span>
+        </h1>
+        <p class="mt-4 max-w-xl text-dim">
+          Find the time everyone can make. Responses gather like pollen across a calendar of evenings — and the moment a slot wins, it blooms.
+        </p>
+
+        <!-- constellation of grains -->
+        <div class="mt-8 flex items-center gap-2.5">
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="pollen-dot inline-block h-3 w-3"></span>
+          <span class="pollen-dot inline-block h-2 w-2 opacity-70"></span>
+          <span class="pollen-dot inline-block h-3.5 w-3.5"></span>
+          <span class="pollen-dot inline-block h-2 w-2 opacity-60"></span>
+          <span class="ml-2 inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+        </div>
+      </div>
+
+      <div class="grid gap-px bg-line/50 sm:grid-cols-2">
+
+        <!-- Mood -->
+        <div class="bg-surface p-8">
+          <p class="text-xs uppercase tracking-widest text-mute">The mood</p>
+          <h2 class="mt-2 font-display text-2xl font-semibold tracking-tight">Dusk Calendar</h2>
+          <p class="mt-3 text-dim">
+            A twilight-indigo canvas lit by golden pollen. Calm, focused, and quietly warm — built for planning the evenings that matter.
+          </p>
+          <div class="mt-5 flex items-center gap-2">
+            <span class="h-7 w-7 rounded-lg bg-canvas ring-1 ring-line"></span>
+            <span class="h-7 w-7 rounded-lg bg-surface2 ring-1 ring-line"></span>
+            <span class="h-7 w-7 rounded-lg bg-pollen ring-1 ring-pollen/40"></span>
+            <span class="h-7 w-7 rounded-lg bg-mint/70 ring-1 ring-line"></span>
+            <span class="h-7 w-7 rounded-lg bg-coral/70 ring-1 ring-line"></span>
+          </div>
+        </div>
+
+        <!-- Token legend -->
+        <div class="bg-surface p-8">
+          <p class="text-xs uppercase tracking-widest text-mute">Tokens</p>
+          <div class="mt-3 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm">
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-pollen ring-1 ring-pollen/40"></span><span class="text-dim">pollen · yes</span></div>
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-maybe ring-1 ring-line"></span><span class="text-dim">maybe</span></div>
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-no ring-1 ring-line"></span><span class="text-dim">no</span></div>
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-mint ring-1 ring-line"></span><span class="text-dim">mint · done</span></div>
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-coral ring-1 ring-line"></span><span class="text-dim">coral · danger</span></div>
+            <div class="flex items-center gap-2.5"><span class="h-4 w-4 rounded-full bg-moonlight ring-1 ring-line"></span><span class="text-dim">moonlight</span></div>
+          </div>
+          <div class="mt-5 flex items-end gap-6 border-t border-line/70 pt-4">
+            <div>
+              <p class="font-display text-2xl font-semibold tracking-tight">Aa <span class="text-pollen">123</span></p>
+              <p class="mt-1 text-xs uppercase tracking-widest text-mute">Space Grotesk · display</p>
+            </div>
+            <div>
+              <p class="text-lg">Aa 123</p>
+              <p class="mt-1 text-xs uppercase tracking-widest text-mute">Inter · body</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Principles -->
+      <div class="border-t border-line/70 px-8 py-8 sm:px-12">
+        <p class="text-xs uppercase tracking-widest text-mute">Principles</p>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+          <div class="bloom bloom-bg rounded-2xl border border-pollen/30 bg-surface p-5">
+            <div class="flex items-center gap-2 text-pollen"><span class="pollen-dot inline-block h-2.5 w-2.5"></span><span class="font-display text-base font-semibold">The winner blooms</span></div>
+            <p class="mt-2 text-sm text-dim">The best slot lights up — a firm yes is what makes a time bloom.</p>
+          </div>
+
+          <div class="rounded-2xl border border-line bg-surface p-5 transition hover:bg-surface2">
+            <div class="flex items-center gap-2"><span class="pollen-dot inline-block h-2.5 w-2.5"></span><span class="font-display text-base font-semibold">Pollen, not spreadsheets</span></div>
+            <p class="mt-2 text-sm text-dim">Responses gather as glowing grains, never a grid of chores.</p>
+          </div>
+
+          <div class="rounded-2xl border border-line bg-surface p-5 transition hover:bg-surface2">
+            <div class="flex items-center gap-2"><span class="pollen-dot inline-block h-2.5 w-2.5"></span><span class="font-display text-base font-semibold">One link, no friction</span></div>
+            <p class="mt-2 text-sm text-dim">Share a link, add availability. Takes about a minute.</p>
+          </div>
+
+          <div class="rounded-2xl border border-line bg-surface p-5 transition hover:bg-surface2">
+            <div class="flex items-center gap-2"><span class="pollen-dot inline-block h-2.5 w-2.5"></span><span class="font-display text-base font-semibold">Calm by default</span></div>
+            <p class="mt-2 text-sm text-dim">Dark, quiet, and unhurried — made for planning evenings.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen map -->
+      <div class="border-t border-line/70 px-8 py-7 sm:px-12">
+        <p class="text-xs uppercase tracking-widest text-mute">Screen map</p>
+        <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Landing</span>
+          <span class="text-mute">·</span>
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Dashboard</span>
+          <span class="text-mute">·</span>
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Editor</span>
+          <span class="text-mute">·</span>
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Public poll</span>
+          <span class="text-mute">·</span>
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Manage</span>
+          <span class="text-mute">·</span>
+          <span class="rounded-lg border border-line bg-canvas px-3 py-1.5 text-dim">Thanks</span>
+        </div>
+      </div>
+
+    </section>
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!-- @dsCard group="Components" name="Availability grid (signature)" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full">
+    <p class="mb-4 text-center text-xs uppercase tracking-widest text-mute">Components · Availability grid</p>
+
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <!-- Header -->
+      <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div class="mb-1 flex items-center gap-2.5">
+            <h2 class="font-display text-xl font-semibold tracking-tight">Team dinner</h2>
+            <span class="rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30">Open</span>
+          </div>
+          <p class="text-sm text-dim">5 of 5 responses in · gathering responses until <span class="font-display">Thu Jun 25, 18:00</span> · <span class="text-mute">Europe/Brussels</span></p>
+        </div>
+        <!-- Legend -->
+        <div class="flex items-center gap-4 text-xs text-dim">
+          <span class="flex items-center gap-1.5"><span class="pollen-dot inline-block h-2.5 w-2.5"></span> Yes</span>
+          <span class="flex items-center gap-1.5"><span class="inline-block h-2 w-2 rounded-full ring-1 ring-maybe/60"></span> Maybe</span>
+          <span class="flex items-center gap-1.5"><span class="inline-block h-2 w-2 rounded-full bg-no"></span> No</span>
+        </div>
+      </div>
+
+      <!-- Scrollable grid -->
+      <div class="overflow-x-auto rounded-xl border border-line bg-canvas">
+        <table class="w-full min-w-[640px] border-collapse text-sm">
+          <thead>
+            <!-- Date group row -->
+            <tr class="border-b border-line/70">
+              <th class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left text-xs uppercase tracking-widest text-mute">Who</th>
+              <th colspan="2" class="border-l border-line/70 px-3 py-3 text-center font-display text-sm font-semibold text-moonlight">Thu Jun 26</th>
+              <th class="border-l border-line/70 px-3 py-3 text-center font-display text-sm font-semibold text-moonlight">Fri Jun 27</th>
+              <th class="border-l border-line/70 px-3 py-3 text-center font-display text-sm font-semibold text-moonlight">Sat Jun 28</th>
+            </tr>
+            <!-- Slot row -->
+            <tr class="border-b border-line/70 text-xs text-dim">
+              <th class="sticky left-0 z-10 bg-canvas px-4 py-2 text-left font-normal"></th>
+              <th class="relative border-l border-line/70 px-3 py-2 font-medium">
+                <span class="bloom-bg pointer-events-none absolute inset-0 -z-0"></span>
+                <span class="relative">Early <span class="block text-[10px] font-normal text-mute">18–20</span></span>
+              </th>
+              <th class="border-l border-line/70 px-3 py-2 font-medium">Late <span class="block text-[10px] font-normal text-mute">20–22</span></th>
+              <th class="border-l border-line/70 px-3 py-2 font-medium">All day</th>
+              <th class="border-l border-line/70 px-3 py-2 font-medium">Evening <span class="block text-[10px] font-normal text-mute">19–22</span></th>
+            </tr>
+          </thead>
+          <tbody class="font-display">
+            <!-- Sam: yes yes maybe no -->
+            <tr class="border-b border-line/40">
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left font-sans text-dim">Sam</td>
+              <td class="relative border-l border-line/40 px-3 py-3 text-center"><span class="bloom-bg pointer-events-none absolute inset-0"></span><span class="relative inline-flex"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full ring-1 ring-maybe/60"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full bg-no"></span></td>
+            </tr>
+            <!-- Aïcha: yes maybe yes maybe -->
+            <tr class="border-b border-line/40">
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left font-sans text-dim">Aïcha</td>
+              <td class="relative border-l border-line/40 px-3 py-3 text-center"><span class="bloom-bg pointer-events-none absolute inset-0"></span><span class="relative inline-flex"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full ring-1 ring-maybe/60"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full ring-1 ring-maybe/60"></span></td>
+            </tr>
+            <!-- Tom: yes yes no no -->
+            <tr class="border-b border-line/40">
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left font-sans text-dim">Tom</td>
+              <td class="relative border-l border-line/40 px-3 py-3 text-center"><span class="bloom-bg pointer-events-none absolute inset-0"></span><span class="relative inline-flex"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full bg-no"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full bg-no"></span></td>
+            </tr>
+            <!-- Lena: yes no maybe yes -->
+            <tr class="border-b border-line/40">
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left font-sans text-dim">Lena</td>
+              <td class="relative border-l border-line/40 px-3 py-3 text-center"><span class="bloom-bg pointer-events-none absolute inset-0"></span><span class="relative inline-flex"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full bg-no"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full ring-1 ring-maybe/60"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+            </tr>
+            <!-- Devon: yes yes yes no -->
+            <tr>
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left font-sans text-dim">Devon</td>
+              <td class="relative border-l border-line/40 px-3 py-3 text-center"><span class="bloom-bg pointer-events-none absolute inset-0"></span><span class="relative inline-flex"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="pollen-dot inline-block h-2.5 w-2.5"></span></td>
+              <td class="border-l border-line/40 px-3 py-3 text-center"><span class="inline-block h-2 w-2 rounded-full bg-no"></span></td>
+            </tr>
+          </tbody>
+          <!-- Tally footer -->
+          <tfoot>
+            <tr class="border-t border-line/70 align-top">
+              <td class="sticky left-0 z-10 bg-canvas px-4 py-4 text-left text-xs uppercase tracking-widest text-mute">Tally</td>
+
+              <!-- Thu Early — WINNER / IN BLOOM -->
+              <td class="relative border-l border-line/70 px-3 py-4 text-center">
+                <span class="bloom-bg pointer-events-none absolute inset-0"></span>
+                <span class="bloom pointer-events-none absolute inset-1 rounded-lg"></span>
+                <div class="relative">
+                  <span class="mx-auto mb-2 inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-2.5 py-1 text-[11px] font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+                  <div class="font-display text-2xl font-bold text-pollen">10</div>
+                  <div class="mt-0.5 font-sans text-[11px] text-dim">5 yes · score</div>
+                  <div class="mx-auto mt-2 flex h-1.5 w-16 overflow-hidden rounded-full bg-no/50">
+                    <span class="h-full bg-yes" style="width:100%"></span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Thu Late -->
+              <td class="border-l border-line/70 px-3 py-4 text-center">
+                <div class="mt-7">
+                  <div class="font-display text-2xl font-bold text-moonlight">7</div>
+                  <div class="mt-0.5 font-sans text-[11px] text-dim">3 yes · score</div>
+                  <div class="mx-auto mt-2 flex h-1.5 w-16 overflow-hidden rounded-full bg-no/50">
+                    <span class="h-full bg-yes" style="width:60%"></span>
+                    <span class="h-full bg-maybe" style="width:20%"></span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Fri All day -->
+              <td class="border-l border-line/70 px-3 py-4 text-center">
+                <div class="mt-7">
+                  <div class="font-display text-2xl font-bold text-moonlight">6</div>
+                  <div class="mt-0.5 font-sans text-[11px] text-dim">2 yes · score</div>
+                  <div class="mx-auto mt-2 flex h-1.5 w-16 overflow-hidden rounded-full bg-no/50">
+                    <span class="h-full bg-yes" style="width:40%"></span>
+                    <span class="h-full bg-maybe" style="width:40%"></span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Sat Evening -->
+              <td class="border-l border-line/70 px-3 py-4 text-center">
+                <div class="mt-7">
+                  <div class="font-display text-2xl font-bold text-moonlight">3</div>
+                  <div class="mt-0.5 font-sans text-[11px] text-dim">1 yes · score</div>
+                  <div class="mx-auto mt-2 flex h-1.5 w-16 overflow-hidden rounded-full bg-no/50">
+                    <span class="h-full bg-yes" style="width:20%"></span>
+                    <span class="h-full bg-maybe" style="width:20%"></span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="mt-4 flex items-center gap-2 text-sm text-dim">
+        <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+        <span><span class="font-display text-moonlight">Thu Jun 26 · Early</span> is in bloom — every yes lined up. Find the time everyone can make.</span>
+      </p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

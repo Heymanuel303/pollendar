@@ -1,0 +1,136 @@
+<!-- @dsCard group="Screens" name="Thanks" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+  <header class="border-b border-line/70 bg-canvas/60 backdrop-blur">
+    <div class="mx-auto flex h-16 max-w-2xl items-center justify-center px-6">
+      <a class="flex items-center gap-2.5">
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-pollen font-display text-base font-bold text-canvas shadow-glow">P</span>
+        <span class="font-display text-lg font-semibold tracking-tight">Pollendar</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-2xl px-6 py-12 sm:py-16">
+    <!-- Confirmation hero -->
+    <div class="text-center">
+      <div class="bloom-bg mx-auto grid h-20 w-20 place-items-center rounded-full bg-pollen/15 shadow-glow">
+        <span class="font-display text-3xl text-pollen">✦</span>
+      </div>
+      <h1 class="font-display mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">You're in!</h1>
+      <p class="mt-3 text-dim">Thanks Sam — your availability is saved.</p>
+      <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm text-dim">
+        <span class="pollen-dot inline-block h-2 w-2"></span>
+        <span class="font-display font-medium text-moonlight">Team dinner</span>
+        <span class="text-mute">· Europe/Brussels</span>
+      </div>
+    </div>
+
+    <!-- Best slot bloom -->
+    <section class="bloom-bg mt-10 rounded-2xl border border-pollen/30 bg-surface p-6 shadow-glow">
+      <div class="flex items-center justify-between gap-3">
+        <p class="text-xs uppercase tracking-widest text-mute">Leaning now</p>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+      </div>
+      <div class="mt-3 flex items-end justify-between gap-4">
+        <div>
+          <p class="font-display text-2xl font-semibold tracking-tight">Thu Jun 26 · Early</p>
+          <p class="mt-1 text-sm text-dim">18:00–20:00</p>
+        </div>
+        <div class="text-right">
+          <div class="flex items-center justify-end gap-1">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          </div>
+          <p class="font-display mt-1.5 text-sm font-medium text-pollen">5 yes</p>
+        </div>
+      </div>
+      <p class="mt-4 border-t border-line/60 pt-4 text-sm text-dim">This can still change as more people respond.</p>
+    </section>
+
+    <!-- Share actions -->
+    <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <h2 class="font-display text-base font-semibold">Help find the time everyone can make</h2>
+      <p class="mt-1 text-sm text-dim">Pass it along — it takes about a minute.</p>
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+        <button class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px">
+          <span aria-hidden="true">🔗</span> Copy link
+        </button>
+        <button class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-moonlight transition hover:bg-surface2">
+          <span aria-hidden="true">✉</span> Copy invite
+        </button>
+      </div>
+      <div class="mt-4 truncate rounded-xl border border-line bg-canvas px-4 py-3 text-sm text-dim">
+        https://pollendar.app/p/Vk2pQ8sLrZ0aB7c9dEfGhJ
+      </div>
+    </section>
+
+    <!-- Edit response -->
+    <div class="mt-6 text-center">
+      <a class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-medium text-dim transition hover:text-moonlight">
+        <span aria-hidden="true">✎</span> Edit my response
+      </a>
+    </div>
+
+    <!-- Footer note -->
+    <footer class="mt-12 border-t border-line/60 pt-6 text-center text-sm text-mute">
+      <p>Manu will confirm the final time — we'll email you if you left an address.</p>
+      <p class="mt-3 text-xs">Responses close <span class="font-display text-dim">Thu Jun 25, 18:00</span> · pollendar.app</p>
+    </footer>
+  </main>
+</body>
+</html>

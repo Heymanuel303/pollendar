@@ -1,0 +1,177 @@
+<!-- @dsCard group="Components" name="Results table" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full max-w-3xl">
+    <p class="mb-4 text-xs uppercase tracking-widest text-mute">Components · Results table</p>
+
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <div class="mb-5 flex items-end justify-between gap-4">
+        <div>
+          <h2 class="font-display text-xl font-semibold tracking-tight">Results</h2>
+          <p class="mt-1 text-sm text-dim">Team dinner · gathering responses</p>
+        </div>
+        <span class="rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30">Open</span>
+      </div>
+
+      <!-- Column header -->
+      <div class="grid grid-cols-12 items-center gap-3 px-1 pb-3 text-xs uppercase tracking-widest text-mute">
+        <div class="col-span-5">Slot</div>
+        <div class="col-span-5">Availability</div>
+        <div class="col-span-2 text-right">Score</div>
+      </div>
+
+      <ul class="divide-y divide-line rounded-xl border border-line bg-canvas">
+
+        <!-- WINNER · in bloom -->
+        <li class="bloom-bg grid grid-cols-12 items-center gap-3 rounded-t-xl px-4 py-4 ring-1 ring-pollen/40">
+          <div class="col-span-5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-display text-base font-semibold">Thu Jun 26</span>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+            </div>
+            <p class="mt-0.5 text-sm text-dim">Early · 18:00–20:00</p>
+          </div>
+          <div class="col-span-5">
+            <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-no/60" role="img" aria-label="5 yes, 0 maybe, 0 no">
+              <span class="h-full bg-yes shadow-glow" style="width:100%"></span>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-xs font-medium">
+              <span class="inline-flex items-center gap-1.5 text-pollen"><span class="pollen-dot inline-block h-2.5 w-2.5"></span>5 yes</span>
+              <span class="inline-flex items-center gap-1.5 text-maybe"><span class="inline-block h-2.5 w-2.5 rounded-full bg-maybe/60"></span>0 maybe</span>
+              <span class="inline-flex items-center gap-1.5 text-mute"><span class="inline-block h-2.5 w-2.5 rounded-full bg-no"></span>0 no</span>
+            </div>
+          </div>
+          <div class="col-span-2 text-right">
+            <span class="font-display text-3xl font-bold text-pollen">10</span>
+          </div>
+        </li>
+
+        <!-- Thu Late -->
+        <li class="grid grid-cols-12 items-center gap-3 px-4 py-4 transition hover:bg-surface2">
+          <div class="col-span-5">
+            <span class="font-display text-base font-semibold">Thu Jun 26</span>
+            <p class="mt-0.5 text-sm text-dim">Late · 20:00–22:00</p>
+          </div>
+          <div class="col-span-5">
+            <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-no" role="img" aria-label="3 yes, 1 maybe, 1 no">
+              <span class="h-full bg-yes" style="width:60%"></span>
+              <span class="h-full bg-maybe/70" style="width:20%"></span>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-xs font-medium">
+              <span class="inline-flex items-center gap-1.5 text-pollen"><span class="pollen-dot inline-block h-2.5 w-2.5"></span>3 yes</span>
+              <span class="inline-flex items-center gap-1.5 text-maybe"><span class="inline-block h-2.5 w-2.5 rounded-full bg-maybe/60"></span>1 maybe</span>
+              <span class="inline-flex items-center gap-1.5 text-mute"><span class="inline-block h-2.5 w-2.5 rounded-full bg-no"></span>1 no</span>
+            </div>
+          </div>
+          <div class="col-span-2 text-right">
+            <span class="font-display text-3xl font-bold text-moonlight">7</span>
+          </div>
+        </li>
+
+        <!-- Fri All day -->
+        <li class="grid grid-cols-12 items-center gap-3 px-4 py-4 transition hover:bg-surface2">
+          <div class="col-span-5">
+            <span class="font-display text-base font-semibold">Fri Jun 27</span>
+            <p class="mt-0.5 text-sm text-dim">All day</p>
+          </div>
+          <div class="col-span-5">
+            <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-no" role="img" aria-label="2 yes, 2 maybe, 1 no">
+              <span class="h-full bg-yes" style="width:40%"></span>
+              <span class="h-full bg-maybe/70" style="width:40%"></span>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-xs font-medium">
+              <span class="inline-flex items-center gap-1.5 text-pollen"><span class="pollen-dot inline-block h-2.5 w-2.5"></span>2 yes</span>
+              <span class="inline-flex items-center gap-1.5 text-maybe"><span class="inline-block h-2.5 w-2.5 rounded-full bg-maybe/60"></span>2 maybe</span>
+              <span class="inline-flex items-center gap-1.5 text-mute"><span class="inline-block h-2.5 w-2.5 rounded-full bg-no"></span>1 no</span>
+            </div>
+          </div>
+          <div class="col-span-2 text-right">
+            <span class="font-display text-3xl font-bold text-moonlight">6</span>
+          </div>
+        </li>
+
+        <!-- Sat Evening -->
+        <li class="grid grid-cols-12 items-center gap-3 rounded-b-xl px-4 py-4 transition hover:bg-surface2">
+          <div class="col-span-5">
+            <span class="font-display text-base font-semibold">Sat Jun 28</span>
+            <p class="mt-0.5 text-sm text-dim">Evening · 19:00–22:00</p>
+          </div>
+          <div class="col-span-5">
+            <div class="flex h-2.5 w-full overflow-hidden rounded-full bg-no" role="img" aria-label="1 yes, 1 maybe, 3 no">
+              <span class="h-full bg-yes" style="width:20%"></span>
+              <span class="h-full bg-maybe/70" style="width:20%"></span>
+            </div>
+            <div class="mt-2 flex items-center gap-4 text-xs font-medium">
+              <span class="inline-flex items-center gap-1.5 text-pollen"><span class="pollen-dot inline-block h-2.5 w-2.5"></span>1 yes</span>
+              <span class="inline-flex items-center gap-1.5 text-maybe"><span class="inline-block h-2.5 w-2.5 rounded-full bg-maybe/60"></span>1 maybe</span>
+              <span class="inline-flex items-center gap-1.5 text-mute"><span class="inline-block h-2.5 w-2.5 rounded-full bg-no"></span>3 no</span>
+            </div>
+          </div>
+          <div class="col-span-2 text-right">
+            <span class="font-display text-3xl font-bold text-dim">3</span>
+          </div>
+        </li>
+
+      </ul>
+
+      <p class="mt-4 text-xs text-mute">
+        <span class="font-display text-dim">5</span> participants · best recomputed on every response
+      </p>
+    </section>
+  </div>
+</main>
+</body>
+</html>

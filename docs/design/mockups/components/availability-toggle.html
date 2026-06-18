@@ -1,0 +1,167 @@
+<!-- @dsCard group="Components" name="Availability toggle" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full max-w-2xl space-y-8">
+
+    <header class="space-y-2 text-center">
+      <p class="text-xs uppercase tracking-widest text-mute">Components · Availability toggle</p>
+      <h1 class="font-display text-2xl font-semibold tracking-tight">Yes · Maybe · No</h1>
+      <p class="text-sm text-dim">A firm yes is what makes a time bloom.</p>
+    </header>
+
+    <!-- States -->
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <p class="mb-4 text-xs uppercase tracking-widest text-mute">States</p>
+      <div class="grid gap-4 sm:grid-cols-2">
+
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-dim">None selected</span>
+          <div class="inline-flex w-max rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">No</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-dim">Yes selected</span>
+          <div class="inline-flex w-max rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg bg-yes px-3 py-1.5 text-canvas shadow-glow focus:outline-none">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">No</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-dim">Maybe selected</span>
+          <div class="inline-flex w-max rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Yes</button>
+            <button class="rounded-lg bg-maybe px-3 py-1.5 text-canvas focus:outline-none">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">No</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="text-sm text-dim">No selected</span>
+          <div class="inline-flex w-max rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Maybe</button>
+            <button class="rounded-lg bg-no px-3 py-1.5 text-dim focus:outline-none">No</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- In context -->
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+      <div class="mb-4 flex items-center justify-between">
+        <p class="text-xs uppercase tracking-widest text-mute">In context · your availability</p>
+        <span class="text-xs text-mute">Europe/Brussels</span>
+      </div>
+
+      <ul class="space-y-3">
+
+        <!-- Winning slot — in bloom -->
+        <li class="bloom-bg flex items-center justify-between gap-4 rounded-xl border border-pollen/40 bg-canvas p-4 shadow-glow">
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+              <p class="font-display text-base font-semibold">Thu Jun 26 · Early</p>
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+            </div>
+            <p class="mt-1 text-sm text-dim">18:00–20:00 · everyone's free here</p>
+          </div>
+          <div class="inline-flex shrink-0 rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg bg-yes px-3 py-1.5 text-canvas shadow-glow focus:outline-none">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">No</button>
+          </div>
+        </li>
+
+        <!-- Maybe row -->
+        <li class="flex items-center justify-between gap-4 rounded-xl border border-line bg-canvas p-4">
+          <div class="min-w-0">
+            <p class="font-display text-base font-semibold">Thu Jun 26 · Late</p>
+            <p class="mt-1 text-sm text-dim">20:00–22:00</p>
+          </div>
+          <div class="inline-flex shrink-0 rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Yes</button>
+            <button class="rounded-lg bg-maybe px-3 py-1.5 text-canvas focus:outline-none">Maybe</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">No</button>
+          </div>
+        </li>
+
+        <!-- No row -->
+        <li class="flex items-center justify-between gap-4 rounded-xl border border-line bg-canvas p-4">
+          <div class="min-w-0">
+            <p class="font-display text-base font-semibold">Fri Jun 27 · All day</p>
+            <p class="mt-1 text-sm text-dim">Can't make this one</p>
+          </div>
+          <div class="inline-flex shrink-0 rounded-xl border border-line bg-canvas p-1 text-sm font-medium">
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Yes</button>
+            <button class="rounded-lg px-3 py-1.5 text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Maybe</button>
+            <button class="rounded-lg bg-no px-3 py-1.5 text-dim focus:outline-none">No</button>
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+  </div>
+</main>
+</body>
+</html>

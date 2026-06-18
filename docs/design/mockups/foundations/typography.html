@@ -1,0 +1,183 @@
+<!-- @dsCard group="Foundations" name="Typography" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full max-w-4xl">
+    <p class="mb-6 text-xs uppercase tracking-widest text-mute">Foundations · Typography</p>
+
+    <section class="rounded-2xl border border-line bg-surface p-6 shadow-card sm:p-8">
+      <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="font-display text-2xl font-semibold tracking-tight">Type scale</h2>
+          <p class="mt-1 text-sm text-dim">Space Grotesk for display &amp; numerals, Inter for everything else.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30">Space Grotesk</span>
+          <span class="rounded-full bg-surface2 px-2.5 py-1 text-xs font-medium text-dim ring-1 ring-line">Inter</span>
+        </div>
+      </div>
+
+      <div class="divide-y divide-line/70">
+        <!-- Display -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">Display</p>
+            <p class="mt-1 text-xs text-mute">3rem · 600 · Grotesk</p>
+          </div>
+          <p class="font-display text-5xl font-semibold leading-tight tracking-tight">Find the time everyone can make.</p>
+        </div>
+        <!-- H1 -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">H1</p>
+            <p class="mt-1 text-xs text-mute">2rem · 600 · Grotesk</p>
+          </div>
+          <h1 class="font-display text-3xl font-semibold tracking-tight">Team dinner</h1>
+        </div>
+        <!-- H2 -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">H2</p>
+            <p class="mt-1 text-xs text-mute">1.5rem · 600 · Grotesk</p>
+          </div>
+          <h2 class="font-display text-2xl font-semibold tracking-tight">Gathering responses</h2>
+        </div>
+        <!-- H3 -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">H3</p>
+            <p class="mt-1 text-xs text-mute">1.25rem · 500 · Grotesk</p>
+          </div>
+          <h3 class="font-display text-xl font-medium tracking-tight">Candidate dates</h3>
+        </div>
+        <!-- Body -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">Body</p>
+            <p class="mt-1 text-xs text-mute">1rem · 400 · Inter</p>
+          </div>
+          <p class="text-base text-moonlight">Looking for a good evening next week. Add your availability and we&rsquo;ll find the slot that works for the whole group.</p>
+        </div>
+        <!-- Small -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">Small</p>
+            <p class="mt-1 text-xs text-mute">.875rem · 400 · Inter</p>
+          </div>
+          <p class="text-sm text-dim">Timezone Europe/Brussels · responses close Thu Jun 25, 18:00. Takes about a minute.</p>
+        </div>
+        <!-- Micro -->
+        <div class="grid grid-cols-[7.5rem_1fr] items-baseline gap-4 py-5 sm:grid-cols-[9rem_1fr]">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-mute">Micro</p>
+            <p class="mt-1 text-xs text-mute">.75rem · uppercase · Inter</p>
+          </div>
+          <p class="text-xs uppercase tracking-widest text-mute">Your availability</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Numerals panel -->
+    <div class="mt-6 grid gap-6 sm:grid-cols-2">
+      <section class="bloom-bg relative overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-glow">
+        <div class="mb-4 flex items-center justify-between">
+          <p class="text-xs uppercase tracking-widest text-mute">Tally numeral</p>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+        </div>
+        <div class="flex items-end gap-4">
+          <span class="font-display text-7xl font-semibold leading-none tracking-tight text-pollen">10</span>
+          <div class="pb-2">
+            <p class="font-display text-2xl font-semibold leading-none">5 yes</p>
+            <p class="mt-1 text-sm text-dim">Thu Jun 26 · Early</p>
+          </div>
+        </div>
+        <div class="mt-5 flex items-center gap-1.5">
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          <span class="ml-2 text-xs uppercase tracking-widest text-mute">Best slot</span>
+        </div>
+      </section>
+
+      <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <p class="mb-4 text-xs uppercase tracking-widest text-mute">Numerals in context</p>
+        <ul class="space-y-3">
+          <li class="flex items-center justify-between rounded-xl bg-canvas px-4 py-3">
+            <span class="text-sm text-dim">Score</span>
+            <span class="font-display text-2xl font-semibold">7</span>
+          </li>
+          <li class="flex items-center justify-between rounded-xl bg-canvas px-4 py-3">
+            <span class="text-sm text-dim">Responses</span>
+            <span class="font-display text-2xl font-semibold">5</span>
+          </li>
+          <li class="flex items-center justify-between rounded-xl bg-canvas px-4 py-3">
+            <span class="text-sm text-dim">Closes</span>
+            <span class="font-display text-lg font-medium">Jun 25, 18:00</span>
+          </li>
+        </ul>
+        <p class="mt-4 text-sm text-dim">Every numeral &mdash; scores, counts, dates and times &mdash; is set in <span class="font-display font-medium text-moonlight">Space Grotesk</span>.</p>
+      </section>
+    </div>
+
+    <!-- Rule -->
+    <div class="mt-6 rounded-2xl border border-line bg-surface2 p-5 text-sm text-dim">
+      <span class="font-medium text-moonlight">The rule:</span> headings <span class="text-mute">+</span> all numerals use <span class="font-display font-medium text-pollen">Space Grotesk</span>; body copy uses <span class="font-medium text-moonlight">Inter</span>.
+    </div>
+  </div>
+</main>
+</body>
+</html>

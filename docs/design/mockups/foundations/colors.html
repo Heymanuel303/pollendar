@@ -1,0 +1,200 @@
+<!-- @dsCard group="Foundations" name="Color & light" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full">
+    <p class="text-xs uppercase tracking-widest text-mute">Foundations · Dusk Calendar</p>
+    <h1 class="mt-2 font-display text-3xl font-semibold tracking-tight">Color &amp; light</h1>
+    <p class="mt-2 max-w-2xl text-sm text-dim">The full palette for Pollendar — a calm twilight-indigo canvas lit by golden pollen. Tap a slot to a firm yes and the time blooms.</p>
+
+    <!-- Surfaces & ink -->
+    <section class="mt-10">
+      <h2 class="font-display text-lg font-semibold tracking-tight">Surfaces &amp; ink</h2>
+      <p class="mt-1 text-sm text-dim">Twilight indigos build depth; moonlight inks carry the type.</p>
+      <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl border border-line bg-canvas"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">canvas</p>
+          <p class="font-display text-xs text-mute">#14122B</p>
+          <p class="mt-1 text-xs text-dim">App background · field base</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl border border-line bg-surface"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">surface</p>
+          <p class="font-display text-xs text-mute">#211E40</p>
+          <p class="mt-1 text-xs text-dim">Cards &amp; panels</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl border border-line bg-surface2"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">surface2</p>
+          <p class="font-display text-xs text-mute">#2B2752</p>
+          <p class="mt-1 text-xs text-dim">Hover &amp; raised</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl border border-line bg-line"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">line</p>
+          <p class="font-display text-xs text-mute">#36325E</p>
+          <p class="mt-1 text-xs text-dim">Borders &amp; dividers</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl border border-line bg-moonlight"><span class="font-display text-sm font-semibold text-canvas">Aa</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">moonlight</p>
+          <p class="font-display text-xs text-mute">#F4F2FF</p>
+          <p class="mt-1 text-xs text-dim">Primary text</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl border border-line bg-dim"><span class="font-display text-sm font-semibold text-canvas">Aa</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">dim</p>
+          <p class="font-display text-xs text-mute">#B8B3DE</p>
+          <p class="mt-1 text-xs text-dim">Secondary text</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl border border-line bg-mute"><span class="font-display text-sm font-semibold text-canvas">Aa</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">mute</p>
+          <p class="font-display text-xs text-mute">#7E79AE</p>
+          <p class="mt-1 text-xs text-dim">Micro labels &amp; hints</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pollen accent -->
+    <section class="mt-10">
+      <h2 class="font-display text-lg font-semibold tracking-tight">Pollen accent</h2>
+      <p class="mt-1 text-sm text-dim">The golden grain. It carries the brand — and the firm yes.</p>
+      <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl bg-pollen"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">pollen</p>
+          <p class="font-display text-xs text-mute">#FFC857</p>
+          <p class="mt-1 text-xs text-dim">Brand · primary action</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="h-16 rounded-xl bg-pollenDeep"></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">pollenDeep</p>
+          <p class="font-display text-xs text-mute">#F0A93B</p>
+          <p class="mt-1 text-xs text-dim">Pressed &amp; gradients</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl bg-pollen shadow-glow"><span class="pollen-dot inline-block h-3 w-3"></span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">shadow-glow</p>
+          <p class="font-display text-xs text-mute">pollen halo</p>
+          <p class="mt-1 text-xs text-dim">Active &amp; focused gold</p>
+        </div>
+        <div class="rounded-2xl border border-pollen/40 bg-surface bloom-bg p-3 shadow-glow">
+          <div class="grid h-16 place-items-center rounded-xl bloom-bg">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+          </div>
+          <p class="mt-3 text-sm font-medium text-moonlight">.bloom-bg</p>
+          <p class="font-display text-xs text-mute">radial bloom</p>
+          <p class="mt-1 text-xs text-dim">The winning slot glows</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Availability semantics -->
+    <section class="mt-10">
+      <h2 class="font-display text-lg font-semibold tracking-tight">Availability semantics</h2>
+      <p class="mt-1 text-sm text-dim">A ramp from a firm yes to a quiet no.</p>
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="rounded-2xl border border-pollen/40 bg-surface bloom-bg p-3 shadow-glow">
+          <div class="grid h-16 place-items-center rounded-xl bg-yes shadow-glow"><span class="font-display text-sm font-semibold text-canvas">Yes</span></div>
+          <div class="mt-3 flex items-center justify-between">
+            <p class="text-sm font-medium text-moonlight">yes</p>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-2.5 py-0.5 text-xs font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+          </div>
+          <p class="font-display text-xs text-mute">#FFC857</p>
+          <p class="mt-1 text-xs text-dim">Firm yes — the time that blooms</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl bg-maybe"><span class="font-display text-sm font-semibold text-canvas">Maybe</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">maybe</p>
+          <p class="font-display text-xs text-mute">#B8B3DE</p>
+          <p class="mt-1 text-xs text-dim">Soft lilac — could work</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl border border-line bg-no"><span class="font-display text-sm font-semibold text-dim">No</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">no</p>
+          <p class="font-display text-xs text-mute">#3A3563</p>
+          <p class="mt-1 text-xs text-dim">Recedes — not this one</p>
+        </div>
+      </div>
+      <p class="mt-3 text-sm text-dim"><span class="font-medium text-moonlight">Note:</span> "yes" deliberately equals the pollen brand accent — a firm yes is what makes a time bloom.</p>
+    </section>
+
+    <!-- Status -->
+    <section class="mt-10">
+      <h2 class="font-display text-lg font-semibold tracking-tight">Status</h2>
+      <p class="mt-1 text-sm text-dim">Reserved for outcomes, not availability.</p>
+      <div class="mt-4 grid grid-cols-2 gap-3 sm:max-w-md">
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl bg-mint"><span class="font-display text-sm font-semibold text-canvas">✓</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">mint</p>
+          <p class="font-display text-xs text-mute">#6FE0B0</p>
+          <p class="mt-1 text-xs text-dim">Success · completed</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-surface p-3 shadow-card transition hover:bg-surface2">
+          <div class="grid h-16 place-items-center rounded-xl bg-coral"><span class="font-display text-sm font-semibold text-canvas">!</span></div>
+          <p class="mt-3 text-sm font-medium text-moonlight">coral</p>
+          <p class="font-display text-xs text-mute">#FF7A6B</p>
+          <p class="mt-1 text-xs text-dim">Danger · destructive</p>
+        </div>
+      </div>
+    </section>
+
+    <p class="mt-10 border-t border-line/70 pt-4 text-xs text-mute">Contrast: moonlight, dim, pollen, mint and coral all clear AA on canvas/surface; mute is reserved for non-essential micro labels only.</p>
+  </div>
+</main>
+</body>
+</html>

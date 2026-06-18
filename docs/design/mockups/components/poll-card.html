@@ -1,0 +1,142 @@
+<!-- @dsCard group="Components" name="Poll card" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pollendar</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#14122B', surface: '#211E40', surface2: '#2B2752',
+        line: '#36325E', pollen: '#FFC857', pollenDeep: '#F0A93B',
+        moonlight: '#F4F2FF', dim: '#B8B3DE', mute: '#7E79AE',
+        yes: '#FFC857', maybe: '#B8B3DE', no: '#3A3563',
+        mint: '#6FE0B0', coral: '#FF7A6B',
+      },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Inter', 'ui-sans-serif', 'sans-serif'],
+      },
+      borderRadius: { '2xl': '1rem', '3xl': '1.5rem' },
+      boxShadow: {
+        glow: '0 0 0 1px rgba(255,200,87,.55), 0 0 28px rgba(255,200,87,.32)',
+        card: '0 10px 30px -12px rgba(0,0,0,.55)',
+      },
+    },
+  },
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { color-scheme: dark; }
+  html, body { background-color: #14122B; }
+  body { font-family: 'Inter', ui-sans-serif, sans-serif; -webkit-font-smoothing: antialiased; }
+  .font-display { font-family: 'Space Grotesk', ui-sans-serif, sans-serif; }
+  .bg-dusk {
+    background-color: #14122B;
+    background-image:
+      radial-gradient(900px 520px at 85% -12%, rgba(255,200,87,.10), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgba(124,138,224,.12), transparent 60%);
+  }
+  .pollen-dot { background: radial-gradient(circle at 35% 30%, #FFE6A8, #FFC857 58%, #E0A325); border-radius: 9999px; box-shadow: 0 0 8px rgba(255,200,87,.55); }
+  .bloom { box-shadow: 0 0 0 1px rgba(255,200,87,.55), 0 0 30px rgba(255,200,87,.30); }
+  .bloom-bg { background-image: radial-gradient(130% 120% at 50% 0%, rgba(255,200,87,.16), rgba(255,200,87,0) 70%); }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: #36325E; border-radius: 9999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body class="bg-dusk text-moonlight min-h-screen">
+<main class="mx-auto grid min-h-screen max-w-5xl place-items-center p-10 sm:p-16">
+  <div class="w-full">
+    <p class="mb-6 text-center text-xs uppercase tracking-widest text-mute">Components · Poll card</p>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+
+      <!-- VARIANT 1 — OPEN -->
+      <article class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition duration-200 hover:-translate-y-1 hover:border-pollen/40 hover:bg-surface2 hover:shadow-glow">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h3 class="font-display text-lg font-semibold tracking-tight">Team dinner</h3>
+            <p class="mt-1 text-sm text-dim">
+              <span class="font-display">Jun 26 – 28</span>
+              <span class="text-mute"> · Europe/Brussels</span>
+            </p>
+          </div>
+          <span class="shrink-0 rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30">Open</span>
+        </div>
+
+        <div class="mt-4 flex items-center gap-2.5 text-sm text-dim">
+          <span class="flex items-center gap-1" aria-hidden="true">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          </span>
+          <span><span class="font-display font-medium text-moonlight">5</span> responses</span>
+        </div>
+
+        <!-- best-so-far peek -->
+        <div class="bloom-bg mt-4 flex items-center gap-2 rounded-xl border border-pollen/25 bg-canvas/40 px-3 py-2.5">
+          <span class="text-pollen" aria-hidden="true">✦</span>
+          <p class="text-sm text-dim">
+            Leaning: <span class="font-display font-medium text-moonlight">Thu Jun 26 · Early</span>
+          </p>
+        </div>
+
+        <div class="mt-5 flex items-center gap-2">
+          <button class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px focus:outline-none focus:ring-2 focus:ring-pollen/40">Manage</button>
+          <button class="inline-flex items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-moonlight transition hover:bg-surface2 focus:outline-none focus:ring-2 focus:ring-pollen/40">Share</button>
+          <button aria-label="More options" class="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">⋯</button>
+        </div>
+      </article>
+
+      <!-- VARIANT 2 — COMPLETED -->
+      <article class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition duration-200 hover:-translate-y-1 hover:border-mint/40 hover:bg-surface2">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h3 class="font-display text-lg font-semibold tracking-tight">Book club</h3>
+            <p class="mt-1 text-sm text-dim">
+              <span class="font-display">Final time locked</span>
+              <span class="text-mute"> · Europe/Brussels</span>
+            </p>
+          </div>
+          <span class="shrink-0 rounded-full bg-mint/15 px-2.5 py-1 text-xs font-medium text-mint ring-1 ring-mint/30">Completed</span>
+        </div>
+
+        <div class="mt-4 flex items-center gap-2.5 text-sm text-dim">
+          <span class="flex items-center gap-1" aria-hidden="true">
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+            <span class="pollen-dot inline-block h-2.5 w-2.5"></span>
+          </span>
+          <span><span class="font-display font-medium text-moonlight">3</span> responses</span>
+        </div>
+
+        <!-- locked, blooming final slot -->
+        <div class="bloom bloom-bg mt-4 flex items-center justify-between gap-2 rounded-xl border border-pollen/40 px-3 py-2.5">
+          <p class="text-sm">
+            <span class="font-display font-medium text-moonlight">Sat Jul 5 · 16:00</span>
+          </p>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40">✦ In bloom</span>
+        </div>
+
+        <div class="mt-5 flex items-center gap-2">
+          <button class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-moonlight transition hover:bg-surface2 focus:outline-none focus:ring-2 focus:ring-pollen/40">View results</button>
+          <button class="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">Share</button>
+          <button aria-label="More options" class="inline-flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40">⋯</button>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</main>
+</body>
+</html>
