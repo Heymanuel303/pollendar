@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatDate, formatTime, formatSlotRange, localZoneLabel } from '../timezone'
+import { formatDate, formatDayNumber, formatTime, formatSlotRange, localZoneLabel } from '../timezone'
 import type { PollSlot } from '@/lib/api/types'
 
 function slot(overrides: Partial<PollSlot>): PollSlot {
@@ -28,6 +28,30 @@ describe('formatDate', () => {
   it('renders a YYYY-MM-DD date as a comma-less weekday/month/day label', () => {
     // 2026-06-26 is a Friday; the value is timezone-independent (anchored in UTC).
     expect(formatDate('2026-06-26', 'Europe/Brussels')).toBe('Fri Jun 26')
+  })
+
+  it('accepts a full UTC-midnight ISO instant (the @db.Date wire shape) identically', () => {
+    // GET /api/polls/:id serializes eventDate as "2026-06-19T00:00:00.000Z".
+    // 2026-06-19 is a Friday.
+    expect(formatDate('2026-06-19T00:00:00.000Z')).toBe('Fri Jun 19')
+    expect(formatDate('2026-06-19T00:00:00.000Z')).toBe(formatDate('2026-06-19'))
+  })
+
+  it('degrades gracefully (no throw) on a malformed date value', () => {
+    // A non-date string must never crash the render with a RangeError.
+    expect(() => formatDate('garbage')).not.toThrow()
+    expect(() => formatDayNumber('garbage')).not.toThrow()
+  })
+})
+
+describe('formatDayNumber', () => {
+  it('returns the day-of-month with no leading zero for a YYYY-MM-DD date', () => {
+    expect(formatDayNumber('2026-06-19')).toBe('19')
+  })
+
+  it('returns the same day number for a full ISO instant as for the plain date', () => {
+    expect(formatDayNumber('2026-06-19T00:00:00.000Z')).toBe('19')
+    expect(formatDayNumber('2026-06-19T00:00:00.000Z')).toBe(formatDayNumber('2026-06-19'))
   })
 })
 

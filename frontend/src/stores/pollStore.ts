@@ -1,8 +1,14 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ApiError, get, post } from '@/lib/api/client'
+import { ApiError, get as apiGet, post as apiPost } from '@/lib/api/client'
 import type { CreatePollPayload, CreatedPoll } from '@/types/poll'
-import type { PollDate, PollStatus } from '@/lib/api/types'
+import type {
+  PollDate,
+  PollStatus,
+  Poll as OwnedPoll,
+  PollResults,
+  InviteMessage,
+} from '@/lib/api/types'
 
 /**
  * A poll row as returned by the **list** endpoint `GET /api/polls`
@@ -41,10 +47,10 @@ export interface Poll {
 }
 
 /**
- * Creator-side poll store. Owns the dashboard **list** slice (`list()` → GET `/api/polls`) and poll
- * **create** (`create()` → POST `/api/polls`); the rest of the CRUD surface (`findOne`, `update`,
- * `complete`, `remove`) lands in later phases. The shared fetch client already sends cookie
- * credentials + JSON headers, so the store never touches `fetch`.
+ * Creator-side poll store. Owns the dashboard **list** slice (`list()` → GET `/api/polls`), poll
+ * **create** (`create()` → POST `/api/polls`), and the manage-view detail slice — `get()`,
+ * `loadResults()`, `loadInviteMessage()`, and `complete()`. The shared fetch client already sends
+ * cookie credentials + JSON headers, so the store never touches `fetch`.
  */
 export const usePollStore = defineStore('poll', () => {
   /** True while a `create()` request is in flight (drives the submit button's loading state). */
@@ -60,6 +66,22 @@ export const usePollStore = defineStore('poll', () => {
    *  so a failed create never leaks into the dashboard (and vice versa). */
   const listError = ref<string | null>(null)
 
+  // ── Manage-view detail slice (GET /polls/:id + live results + invite text + complete) ──────────
+  /** The full owned poll (nested dates→slots) for the manage view, or `null` before load / on 404. */
+  const currentPoll = ref<OwnedPoll | null>(null)
+  /** Live aggregate results (best slot + per-slot tallies) for `currentPoll`, or `null`. */
+  const results = ref<PollResults | null>(null)
+  /** The backend invite text + canonical `shareUrl`, or `null`. `ShareBox` builds the full §7 copy. */
+  const invite = ref<InviteMessage | null>(null)
+  /** True while `get()` is in flight (drives the manage view's loading state). */
+  const detailLoading = ref(false)
+  /** `get()` failure as a human-readable message ("Poll not found" on a 404), or `null`. */
+  const detailError = ref<string | null>(null)
+  /** True while `complete()` is in flight (drives the Complete button's loading state). */
+  const completing = ref(false)
+  /** `complete()` failure as a human-readable message (409/400 surfaced cleanly), or `null`. */
+  const completeError = ref<string | null>(null)
+
   /**
    * Create a poll with its nested dates + slots. Resolves the thin {@link CreatedPoll} (id +
    * shareable URL) on a 201. On a non-2xx it records a readable `error` (class-validator `400`
@@ -69,7 +91,7 @@ export const usePollStore = defineStore('poll', () => {
     creating.value = true
     error.value = null
     try {
-      return await post<CreatedPoll>('/polls', payload)
+      return await apiPost<CreatedPoll>('/polls', payload)
     } catch (err) {
       error.value = messageFor(err)
       throw err
@@ -88,7 +110,7 @@ export const usePollStore = defineStore('poll', () => {
     loading.value = true
     listError.value = null
     try {
-      polls.value = await get<Poll[]>('/polls')
+      polls.value = await apiGet<Poll[]>('/polls')
     } catch {
       listError.value = 'Could not load your polls — please try again.'
     } finally {
@@ -96,7 +118,94 @@ export const usePollStore = defineStore('poll', () => {
     }
   }
 
-  return { creating, error, create, polls, loading, listError, list }
+  /**
+   * Load one owned poll (nested dates→slots) via `GET /api/polls/:id`. A 404 (not owned / missing)
+   * records the readable `detailError` "Poll not found" that the view renders as an empty state;
+   * `currentPoll` is reset first so a stale poll never flashes during navigation.
+   */
+  async function get(id: string): Promise<void> {
+    detailLoading.value = true
+    detailError.value = null
+    currentPoll.value = null
+    try {
+      currentPoll.value = await apiGet<OwnedPoll>(`/polls/${id}`)
+    } catch (err) {
+      detailError.value =
+        err instanceof ApiError && err.status === 404
+          ? 'Poll not found'
+          : 'Could not load this poll — please try again.'
+    } finally {
+      detailLoading.value = false
+    }
+  }
+
+  /**
+   * Load the live aggregate results (best slot + per-slot tallies) via the public results endpoint
+   * `GET /api/public/polls/:publicToken/results`. Results are supplementary to the page shell, so a
+   * failure leaves `results` `null` and the view degrades (no bloom) rather than erroring the page.
+   */
+  async function loadResults(publicToken: string): Promise<void> {
+    try {
+      results.value = await apiGet<PollResults>(`/public/polls/${publicToken}/results`)
+    } catch {
+      results.value = null
+    }
+  }
+
+  /**
+   * Load the backend invite text + canonical `shareUrl` via `GET /api/polls/:id/invite-message`.
+   * Supplementary like {@link loadResults}: on failure `invite` stays `null` and `ShareBox` falls
+   * back to building the share URL from the app origin.
+   */
+  async function loadInviteMessage(id: string): Promise<void> {
+    try {
+      invite.value = await apiGet<InviteMessage>(`/polls/${id}/invite-message`)
+    } catch {
+      invite.value = null
+    }
+  }
+
+  /**
+   * Finalize a poll: `POST /api/polls/:id/complete` with `{ finalSlotId }`. On 200 the returned
+   * updated poll (now `status:'completed'` + `finalSlotId` + `completedAt`) replaces `currentPoll`,
+   * and results are re-fetched so the bloom reflects the final state. A 409 (no longer open) and a
+   * 400 (slot not in this poll) are surfaced as readable `completeError`s; both are rethrown so the
+   * view can keep its confirm dialog reactive. Idempotent server-side on an already-completed poll.
+   */
+  async function complete(pollId: string, finalSlotId: string): Promise<void> {
+    completing.value = true
+    completeError.value = null
+    try {
+      currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/complete`, { finalSlotId })
+      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+    } catch (err) {
+      completeError.value = completeMessageFor(err)
+      throw err
+    } finally {
+      completing.value = false
+    }
+  }
+
+  return {
+    creating,
+    error,
+    create,
+    polls,
+    loading,
+    listError,
+    list,
+    currentPoll,
+    results,
+    invite,
+    detailLoading,
+    detailError,
+    completing,
+    completeError,
+    get,
+    loadResults,
+    loadInviteMessage,
+    complete,
+  }
 })
 
 /** Map an API/network failure to a single user-facing sentence. */
@@ -109,6 +218,16 @@ function messageFor(err: unknown): string {
     if (typeof message === 'string' && message !== '') return message
     if (err.status === 409) return 'That conflicts with an existing entry.'
     return 'Could not create the poll. Please try again.'
+  }
+  return 'Could not reach the server — try again.'
+}
+
+/** Map a `complete()` failure to a single user-facing sentence, branching on the documented codes. */
+function completeMessageFor(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 409) return 'Poll is no longer open.'
+    if (err.status === 400) return "That slot isn't part of this poll."
+    return 'Could not complete the poll. Please try again.'
   }
   return 'Could not reach the server — try again.'
 }

@@ -65,10 +65,10 @@ Because Execution is `workflow`:
 - Manual UI check: run `npm run dev`, open `/polls/:id` for a seeded open poll — the layout matches `docs/design/mockups/screens/poll-manage.html` (bloom card, availability grid, results table, participants summary, share box); the winner is highlighted in exactly one place per component; `Copy link` → `Copied ✓` reverts after ~2s; clicking `✦ Complete poll` → confirm → poll flips to `Completed` and the Complete button disappears. Verify Mailpit (http://localhost:8025) receives completion emails for participants who left an email.
 
 ## Acceptance
-- [ ] `pollStore` exposes `get(id)`, `loadResults(publicToken)`, `loadInviteMessage(id)`, and `complete(pollId, finalSlotId)`; all use `credentials:"include"`; the view does no direct fetching.
-- [ ] `/polls/:id` renders `BestSlotBloom`, read-only `AvailabilityGrid`, `ResultsTable`, participants summary, and `ShareBox`, styled to `poll-manage.html` in the Dusk Calendar theme.
-- [ ] The winning slot (`results.best.slotId`) blooms in EXACTLY one place per component: one bloom column in the grid, one bloom row in the table, one bloom card, one bloom badge.
-- [ ] Slots render in `poll.timezone` (shown explicitly) via the shared `Intl.DateTimeFormat` util; `availability` uses backend strings `available|maybe|unavailable`; all ids typed `string`.
-- [ ] `ShareBox` copies the public link and the full §7 invite message; both buttons show mint `Copied ✓` for ~2s then revert; `shareUrl` is built from the app origin, never hard-coded localhost.
-- [ ] The `✦ Complete poll` button shows only when `status==='open'`; confirming calls `complete(id, finalSlotId)`, flips the poll to `completed`, hides the button, and (idempotently) re-completing does nothing/does not re-notify; 409/400 are surfaced cleanly.
-- [ ] `vue-tsc --noEmit` / build is clean and the phase's component + store tests pass.
+- [x] `pollStore` exposes `get(id)`, `loadResults(publicToken)`, `loadInviteMessage(id)`, and `complete(pollId, finalSlotId)`; all use `credentials:"include"`; the view does no direct fetching.
+- [x] `/polls/:id` renders `BestSlotBloom`, read-only `AvailabilityGrid`, `ResultsTable`, participants summary, and `ShareBox`, styled to `poll-manage.html` in the Dusk Calendar theme.
+- [x] The winning slot (`results.best.slotId`) blooms in EXACTLY one place per component: one bloom column in the grid, one bloom row in the table, one bloom card, one bloom badge.
+- [x] Slots render in `poll.timezone` (shown explicitly) via the shared `Intl.DateTimeFormat` util; `availability` uses backend strings `available|maybe|unavailable`; all ids typed `string`.
+- [x] `ShareBox` copies the public link and the full §7 invite message; both buttons show mint `Copied ✓` for ~2s then revert; `shareUrl` is built from the app origin, never hard-coded localhost.
+- [x] The `✦ Complete poll` button shows only when `status==='open'`; confirming calls `complete(id, finalSlotId)`, flips the poll to `completed`, hides the button, and (idempotently) re-completing does nothing/does not re-notify; 409/400 are surfaced cleanly.
+- [x] `vue-tsc --noEmit` / build is clean and the phase's component + store tests pass.

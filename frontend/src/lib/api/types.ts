@@ -69,9 +69,22 @@ export interface Poll {
   publicToken: string
   closesAt: string | null
   finalSlotId: string | null
+  /** Set when `status` becomes `completed` (the moment the creator finalized a slot); else `null`. */
+  completedAt: string | null
   createdAt: string
   updatedAt: string
   dates: PollDate[]
+}
+
+/**
+ * One slot lifted out of the poll's `dates[]` tree, paired with the `eventDate` it belongs to. The
+ * manage view derives a `slotId → SlotMeta` map once so the results components can label a slot
+ * (date + time/all-day + custom label) without re-walking `dates[].slots[]`. The `date` is the
+ * `"YYYY-MM-DD"` `eventDate`; render it with `formatDate` from `@/lib/utils/timezone`.
+ */
+export interface SlotMeta {
+  slot: PollSlot
+  date: string
 }
 
 /** Per-slot tally. From `GET /api/public/polls/:token/results`. */
@@ -114,4 +127,14 @@ export interface SubmitResponsesDto {
 /** Submit result: the participant's own token (distinct from the poll's URL token). */
 export interface SubmitResponsesResult {
   publicToken: string
+}
+
+/**
+ * Ready-to-copy invite text + canonical share URL. From `GET /api/polls/:id/invite-message`.
+ * `message` is the backend's minimal one-liner; the frontend `ShareBox` renders the fuller
+ * DESIGN.md §7 template, but uses this `shareUrl` as the canonical link (never hard-codes localhost).
+ */
+export interface InviteMessage {
+  message: string
+  shareUrl: string
 }

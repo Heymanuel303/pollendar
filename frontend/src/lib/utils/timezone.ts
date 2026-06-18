@@ -11,10 +11,34 @@
 
 import type { PollSlot } from '@/lib/api/types'
 
-/** Format a `"YYYY-MM-DD"` calendar date as e.g. `"Thu Jun 26"`. */
+/**
+ * Split a calendar-date value into `[year, month, day]` numbers.
+ *
+ * Accepts both a bare `"YYYY-MM-DD"` and a full UTC-midnight ISO instant
+ * `"YYYY-MM-DDT…Z"` — the latter is the wire shape of a `@db.Date` column (e.g.
+ * `currentPoll.dates[].eventDate` from `GET /api/polls/:id`), which Prisma serializes as
+ * `"2026-06-19T00:00:00.000Z"`. Only the leading `"YYYY-MM-DD"` portion is parsed: because the
+ * instant is UTC midnight, that portion **is** the intended calendar date, so taking it is
+ * timezone-safe and never shifts the day. Defined once and reused so both shapes are handled
+ * identically by every date helper.
+ */
+function isoDateParts(value: string): [number, number, number] {
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number)
+  // A missing OR malformed (NaN) part would make `Date.UTC` non-finite and throw in `Intl.format`,
+  // so each part falls back to its epoch default. This lets the display helpers degrade gracefully
+  // (never crash the render) on an unparseable date.
+  const part = (n: number | undefined, fallback: number): number =>
+    n !== undefined && Number.isFinite(n) ? n : fallback
+  return [part(year, 1970), part(month, 1) - 1, part(day, 1)]
+}
+
+/**
+ * Format a calendar date as e.g. `"Thu Jun 26"`. Accepts a bare `"YYYY-MM-DD"` or a full
+ * UTC-midnight ISO instant (`"YYYY-MM-DDT…Z"`, the serialized shape of a `@db.Date` field) —
+ * see {@link isoDateParts}.
+ */
 export function formatDate(eventDate: string, _timeZone?: string): string {
-  const [year, month, day] = eventDate.split('-').map(Number)
-  const anchor = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1))
+  const anchor = new Date(Date.UTC(...isoDateParts(eventDate)))
   // "Fri, Jun 26" → "Fri Jun 26" to match the mockup's comma-less style.
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'short',
@@ -103,10 +127,13 @@ export function commonTimezones(): string[] {
     : FALLBACK_TIMEZONES
 }
 
-/** Day-of-month of a `"YYYY-MM-DD"` date, no leading zero — e.g. `"26"` (for the date chip). */
+/**
+ * Day-of-month of a calendar date, no leading zero — e.g. `"26"` (for the date chip). Accepts a bare
+ * `"YYYY-MM-DD"` or a full UTC-midnight ISO instant (the serialized shape of a `@db.Date` field) —
+ * see {@link isoDateParts}.
+ */
 export function formatDayNumber(eventDate: string): string {
-  const [year, month, day] = eventDate.split('-').map(Number)
-  const anchor = new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, day ?? 1))
+  const anchor = new Date(Date.UTC(...isoDateParts(eventDate)))
   return new Intl.DateTimeFormat('en-US', { day: 'numeric', timeZone: 'UTC' }).format(anchor)
 }
 
