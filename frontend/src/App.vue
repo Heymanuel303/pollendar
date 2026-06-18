@@ -14,7 +14,7 @@ const isPublic = computed<boolean>(() => route.meta.public === true)
     <RouterView v-if="isPublic" />
     <template v-else>
       <AppNav />
-      <main class="mx-auto max-w-6xl px-6 py-8">
+      <main class="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
         <RouterView />
       </main>
     </template>

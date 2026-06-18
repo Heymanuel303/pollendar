@@ -34,7 +34,7 @@ Add the `useBreakpoint` composable, the `.pb-with-footer` / safe-area / touch-ta
 - Manual mobile-viewport check (DevTools 375px width): `AppNav` and `<main>` share the same left/right edge alignment, nav padding is tighter on phone and expands at `sm`, and no horizontal scrollbar appears on the shell.
 
 ## Acceptance
-- [ ] `frontend/src/composables/useBreakpoint.ts` exists, exports `useBreakpoint()` returning reactive `{ isPhone, isTablet, isDesktop }`, and the project builds with it imported nowhere yet (tree-shake-safe).
-- [ ] `main.css` defines `.touch-target`, `.safe-bottom`, `.safe-top`, and `.pb-with-footer` as `@utility` rules; `npm run build` emits them as usable Tailwind utilities.
-- [ ] `AppNav.vue` uses `max-w-6xl` with `px-4 sm:px-6`, matching the `App.vue` shell width.
-- [ ] `App.vue` `<main>` uses `px-4 py-6 sm:px-6 sm:py-8`; both `npm run build` and `npm run lint` pass with changes left uncommitted.
+- [x] `frontend/src/composables/useBreakpoint.ts` exists, exports `useBreakpoint()` returning reactive `{ isPhone, isTablet, isDesktop }`, and the project builds with it imported nowhere yet (tree-shake-safe).
+- [x] `main.css` defines `.touch-target`, `.safe-bottom`, `.safe-top`, and `.pb-with-footer` as `@utility` rules; `npm run build` emits them as usable Tailwind utilities.
+- [x] `AppNav.vue` uses `max-w-6xl` with `px-4 sm:px-6`, matching the `App.vue` shell width.
+- [x] `App.vue` `<main>` uses `px-4 py-6 sm:px-6 sm:py-8`; both `npm run build` and `npm run lint` pass with changes left uncommitted.

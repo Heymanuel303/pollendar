@@ -2,7 +2,7 @@
 
 **Slug:** `responsive-foundations` (folder: `docs/plans/2026-06-18-responsive-foundations/`)
 **Created:** 2026-06-18
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Make Pollendar mobile-friendly with a responsive-first single codebase: ship the shared foundations (a `useBreakpoint` composable, safe-area / touch-target / sticky-footer utilities, and a responsive `AppNav` shell), then apply pure-CSS mobile-first responsive passes to the existing screens. No DOM-switching, no backend changes — source: `docs/design/2026-06-18-mobile-friendly-overview.md` (Mobile strategy + workstreams 1–3).
@@ -35,7 +35,7 @@ Make Pollendar mobile-friendly with a responsive-first single codebase: ship the
 - [ ] `cd frontend && npm run build && npm run lint` is green after each phase.
 
 ## Phases
-1. [01-foundations](01-foundations.md) — `useBreakpoint` composable + safe-area/touch-target/`.pb-with-footer` utilities + responsive `AppNav` + tighter mobile shell padding · _solo_
+1. [01-foundations](01-foundations.md) — `useBreakpoint` composable + safe-area/touch-target/`.pb-with-footer` utilities + responsive `AppNav` + tighter mobile shell padding · _solo_ ✓
 2. [02-landing-dashboard](02-landing-dashboard.md) — pure-CSS mobile-first pass over `Landing.vue` and `Dashboard.vue` (heading scale, padding, `md:` grids) · _solo_
 3. [03-voter-manage-chrome](03-voter-manage-chrome.md) — voter form + manage chrome pass: safe-area footer fix, About-you form, `PollManage` chrome, `ShareBox`, `ResultsTable`, `BestSlotBloom`, `AvailabilityToggle`/`SlotRow` touch targets · _workflow_
 

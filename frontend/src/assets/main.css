@@ -56,6 +56,10 @@
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* Safe-area baseline so content never tucks under the notch / home indicator
+     on the sides; top/bottom clearance is handled per-bar via safe-top/-bottom. */
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 :root {
@@ -96,6 +100,30 @@ body {
 /* Set numerals in the display family even inside body (sans) text. */
 @utility num {
   font-family: var(--font-display);
+}
+
+/* ── Responsive / mobile foundations ─────────────────────────────────────────
+   CSS-first Tailwind v4 utilities (no tailwind.config.js). Touch targets meet
+   the 44×44px minimum; safe-area utilities read iOS notch insets.
+   Fixed bottom bars (e.g. PublicPoll's sticky footer) should compose
+   `safe-bottom` so they clear the home indicator on notched devices. */
+@utility touch-target {
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+}
+
+@utility safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Clearance under PublicPoll's fixed sticky footer — replaces a hardcoded
+   `pb-40`, plus the bottom notch inset. */
+@utility pb-with-footer {
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Respect reduced-motion: disable settle/bloom and show the final state. */
