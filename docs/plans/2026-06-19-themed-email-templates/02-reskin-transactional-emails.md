@@ -1,0 +1,55 @@
+# Phase 2: Reskin Transactional Emails
+
+**Plan:** [themed-email-templates](00-overview.md)
+**Depends on:** 01-email-template-foundation.md
+**Execution:** solo
+
+## Context
+Pollendar sends two transactional emails — a passwordless magic-link sign-in and a poll-finalized notification — and today both are bare `<p>`-tag HTML built inline in `MailService` (`backend/src/mail/mail.service.ts`). The plan reskins them as branded HTML matching the app's dark "Dusk Calendar" theme using hand-rolled, inline-styled, table-based template helpers (no new npm dependency, no build step). Phase 1 laid the foundation: `backend/src/mail/templates/tokens.ts` (the dusk hex palette + font stacks as exported constants) and `backend/src/mail/templates/layout.ts` (a `renderLayout(...)` shell with the bulletproof-dark head, hidden preheader, and an `escapeHtml(...)` helper). This phase consumes that foundation to render the two specific emails and rewires `MailService` to delegate to them — without touching either method signature, so the callers at `auth.service.ts:86` and `notifications.service.ts:146` stay untouched.
+
+## Objective
+Add `magic-link.ts` and `poll-completed.ts` renderer functions (each returning `{ subject, html, text }`) built on the Phase 1 layout, refactor `MailService.sendMagicLink` and `sendPollCompleted` to delegate to them without changing their signatures, and update/confirm the affected specs.
+
+## Files to touch
+- `backend/src/mail/templates/magic-link.ts` — NEW. Export `renderMagicLink(link: string): { subject: string; html: string; text: string }`. Builds the dusk-themed sign-in email on top of Phase 1's `renderLayout(...)`. Subject stays `Your Pollendar sign-in link`. HTML-escape `link` for the `href` and any visible URL text.
+- `backend/src/mail/templates/poll-completed.ts` — NEW. Export `renderPollCompleted(pollTitle: string, finalSlotLabel: string, shareUrl: string): { subject: string; html: string; text: string }`. Builds the dusk-themed finalization email. Subject stays `Poll "<pollTitle>" is finalized` (escaped in HTML, raw in `subject` string). HTML-escape `pollTitle`, `finalSlotLabel`, and `shareUrl` everywhere they enter HTML.
+- `backend/src/mail/mail.service.ts` — EDIT. Import the two renderers; replace the inline `subject`/`text`/`html` construction inside `sendMagicLink` and `sendPollCompleted` with a single call to the matching renderer, then pass `{ from, to, subject, text, html }` to `transporter.sendMail(...)`. Keep the `try/catch` + `logger.log`/`logger.error` + rethrow exactly as-is. Method signatures unchanged.
+- `backend/src/mail/mail.service.spec.ts` — EDIT (only if needed). Existing assertions (`html`/`text` contain the link; subject contains the poll title; `html`/`text` contain `shareUrl` and the slot label; `from` is `MAIL_FROM`; rethrow on transport failure) must still pass. Add assertions that the rendered HTML is now themed (e.g. contains a dusk token hex such as `#14122B` or `#FFC857`) and that user-controlled input is HTML-escaped (e.g. a `<` in `pollTitle` renders as `&lt;`).
+- `backend/src/notifications/notifications.service.spec.ts` — CONFIRM ONLY (no edit expected). It mocks `sendPollCompleted` as `jest.fn<Promise<void>, [string, string, string, string]>` and asserts `sendPollCompleted.mock.calls[0][3]` is the share URL. Because the signature is unchanged, this spec must continue to pass untouched.
+
+## Steps
+1. **Read the Phase 1 outputs first.** Open `backend/src/mail/templates/tokens.ts` and `backend/src/mail/templates/layout.ts` to learn the exact exported names. Use whatever Phase 1 named them — the constants for the palette (canvas `#14122B`, surface `#211E40`, surface2 `#2B2752`, line `#36325E`, pollen/brand `#FFC857`, pollenDeep `#F0A93B`, moonlight/text `#F4F2FF`, dim `#B8B3DE`, mute `#7E79AE`, mint `#6FE0B0`, coral `#FF7A6B`), the font stacks (Space Grotesk → Georgia → Arial for headings/numerals; Inter → Arial/Helvetica → sans-serif for body), the `renderLayout(...)` shell, and the `escapeHtml(...)` helper. The Steps below assume those exports exist; adapt the import names to match Phase 1 exactly.
+2. **Create `backend/src/mail/templates/magic-link.ts`.** Add a JSDoc header describing the renderer's role. Export `renderMagicLink(link: string): { subject: string; html: string; text: string }`:
+   - `subject = 'Your Pollendar sign-in link'`.
+   - Build the inner content as table-based, inline-styled HTML on the dusk palette: a "Sign in to Pollendar" heading in the heading font/pollen color, a short body line in the body font/moonlight color, a **bulletproof gold button** (`#FFC857` background, dark `#14122B` text) linking to `escapeHtml(link)` with the MSO/Outlook conditional `<!--[if mso]>...<![endif]-->` VML fallback so Outlook still shows a filled button, and a small "expires shortly / used once / ignore if you didn't request it" note in `dim`/`mute`. Also surface the raw URL as a fallback line (escaped) for clients that strip the button.
+   - Wrap the inner content with Phase 1's `renderLayout({ preheader, content })` (use a preheader like `Your one-time sign-in link for Pollendar`). Result is the `html`.
+   - `text` = plaintext alternative carrying the link unescaped, e.g. `Sign in to Pollendar by opening this link:\n\n${link}\n\nThis link expires shortly and can be used once. If you didn't request it, ignore this email.` (Mirror the current wording so existing/plaintext expectations hold.)
+   - Return `{ subject, html, text }`. Every color/font/spacing must be an inline `style="..."` attribute — no `<style>` block, no class names.
+3. **Create `backend/src/mail/templates/poll-completed.ts`.** Add a JSDoc header. Export `renderPollCompleted(pollTitle: string, finalSlotLabel: string, shareUrl: string): { subject: string; html: string; text: string }`:
+   - `subject = 'Poll "' + pollTitle + '" is finalized'` (raw `pollTitle` in the `subject` string — subjects are not HTML; the spec asserts `subject` contains the title verbatim).
+   - Build inner content: a "Your poll is finalized" heading, the poll title rendered with `escapeHtml(pollTitle)`, a highlighted **final slot** chip/row showing `escapeHtml(finalSlotLabel)` (use mint `#6FE0B0` or pollen accent on surface2 `#2B2752`), and a gold "View the poll" button linking to `escapeHtml(shareUrl)` with the same MSO conditional fallback as the magic-link button, plus an escaped raw-URL fallback line.
+   - Wrap with `renderLayout({ preheader, content })` (preheader like `Your poll has a final time`). Result is the `html`.
+   - `text` = plaintext alternative with raw values, mirroring current wording: `The poll "${pollTitle}" has been finalized.\n\nFinal slot: ${finalSlotLabel}\n\nView the poll: ${shareUrl}`.
+   - Return `{ subject, html, text }`. CRITICAL: `pollTitle`, `finalSlotLabel`, and `shareUrl` are user-controlled (from the DB) — every interpolation into HTML MUST go through `escapeHtml(...)`. `subject` and `text` stay raw.
+4. **Refactor `backend/src/mail/mail.service.ts`.** Add `import { renderMagicLink } from './templates/magic-link';` and `import { renderPollCompleted } from './templates/poll-completed';` (match Phase 1's actual export names if they differ).
+   - In `sendMagicLink(email, link)`: replace the three inline `const subject/text/html = ...` lines with `const { subject, text, html } = renderMagicLink(link);`. Leave the `try { await this.transporter.sendMail({ from: this.from, to: email, subject, text, html }); this.logger.log(...) } catch { this.logger.error(...); throw err; }` block intact.
+   - In `sendPollCompleted(email, pollTitle, finalSlotLabel, shareUrl)`: replace the inline construction with `const { subject, text, html } = renderPollCompleted(pollTitle, finalSlotLabel, shareUrl);`. Keep the surrounding try/catch/log/rethrow intact.
+   - DO NOT change either method signature, the constructor, the `from`/transporter wiring, or the log messages.
+5. **Update `backend/src/mail/mail.service.spec.ts`.** Run the spec first (`npm test -- mail.service`) to confirm the existing assertions still pass post-refactor (`html`/`text` contain the link; subject contains the poll title; `html`/`text` contain `shareUrl` + slot label; `from` equals `MAIL_FROM`; both methods rethrow on transport failure). Then add two small assertions:
+   - In the `sendPollCompleted` test, assert escaping: call with a `pollTitle` like `'<b>x</b>'` (in a new or extended case) and assert `arg.html` contains `&lt;b&gt;` and does NOT contain the raw `<b>` tag, proving user input is escaped.
+   - In one HTML-body test, assert the email is themed, e.g. `expect(arg.html).toContain('#FFC857')` (or another dusk token) and `expect(arg.html.toLowerCase()).toContain('<table')` to prove table-based layout. Do not over-assert exact markup — keep tests resilient to copy tweaks.
+6. **Confirm `backend/src/notifications/notifications.service.spec.ts` is untouched and green.** Since `sendPollCompleted`'s signature is unchanged, run it to verify it still passes without edits.
+7. **Lint and format.** Run `npm run lint` and `npm run format` from `backend/` so the new files match repo style (single quotes, JSDoc headers, etc.).
+
+## Verification
+- From `backend/`: `npm run lint` then `npm run format` — both clean, no unfixable errors in the new template files or the edited service.
+- From `backend/`: `npm test -- mail.service` — all `MailService` cases pass, including the new escaping + themed-HTML assertions.
+- From `backend/`: `npm test -- notifications.service` — passes unchanged (proves the `sendPollCompleted` signature stayed stable for `notifications.service.ts:146`).
+- From `backend/`: `npm test` — full suite green (catches any incidental breakage in `auth`/`notifications` callers).
+- Manual (optional, uses the Phase 1 preview script + Mailpit): with Mailpit running via `docker compose up` and `backend/scripts/preview-emails.ts` from Phase 1 in place, run `npx tsx scripts/preview-emails.ts` from `backend/`, open http://localhost:8025, and confirm both emails render dark with the gold button and that a poll title containing `<` shows escaped, not as live markup. (Optional: extend the preview script to import the new `renderMagicLink`/`renderPollCompleted` so it previews the real bodies instead of the Phase 1 samples.) The unit specs above are the gate for this phase.
+
+## Acceptance
+- [ ] `backend/src/mail/templates/magic-link.ts` and `backend/src/mail/templates/poll-completed.ts` exist, each exporting a renderer that returns `{ subject, html, text }` and builds inline-styled, table-based dusk-themed HTML via Phase 1's `renderLayout(...)`.
+- [ ] `MailService.sendMagicLink` and `sendPollCompleted` delegate to the renderers with their signatures unchanged; `mail.service.ts` no longer contains inline `<p>`-tag HTML.
+- [ ] User-controlled inputs (`pollTitle`, `finalSlotLabel`, `shareUrl`, `link`) are HTML-escaped in the HTML body, verified by a spec asserting `<` becomes `&lt;`.
+- [ ] `npm test -- mail.service` and `npm test -- notifications.service` both pass; the full `npm test` suite is green; `npm run lint` and `npm run format` are clean.
