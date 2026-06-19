@@ -8,12 +8,36 @@ import type { PollSlotInput } from '@/types/poll'
  * the slot list) and a bare `remove` event. `showErrors` (set by the editor after a failed submit)
  * reveals the per-slot validation message: a time-range slot needs both a start and an end.
  */
-const props = defineProps<{ modelValue: PollSlotInput; showErrors?: boolean }>()
+const props = defineProps<{
+  modelValue: PollSlotInput
+  showErrors?: boolean
+  /**
+   * Edit mode, voted/invalidated slot: render label + time range READ-ONLY (no inputs, no remove) and
+   * expose only an Invalidate/Reactivate control. A locked slot keeps its valid persisted times, so it
+   * never shows the incomplete-times validation visual. Absent ⇒ the slot is freely editable.
+   */
+  locked?: boolean
+}>()
 
 const emit = defineEmits<{ 'update:modelValue': [PollSlotInput]; remove: [] }>()
 
 function patch(changes: Partial<PollSlotInput>): void {
   emit('update:modelValue', { ...props.modelValue, ...changes })
+}
+
+/** A locked slot's read-only time range — `"All day"` or `"HH:mm–HH:mm"` (form values are already "HH:mm"). */
+const readonlyTimeLabel = computed<string>(() => {
+  if (props.modelValue.isAllDay || !props.modelValue.startTime) return 'All day'
+  return props.modelValue.endTime
+    ? `${props.modelValue.startTime}–${props.modelValue.endTime}`
+    : props.modelValue.startTime
+})
+
+const isInvalidated = computed<boolean>(() => props.modelValue.invalidatedAt != null)
+
+/** Soft-invalidate / reactivate this slot (immutable round-trip; `new Date()` is fine in the browser). */
+function toggleInvalidation(): void {
+  patch({ invalidatedAt: isInvalidated.value ? null : new Date().toISOString() })
 }
 
 const label = computed<string>({
@@ -46,11 +70,14 @@ function setAllDay(value: boolean): void {
   }
 }
 
-// A time-range slot is incomplete until it has both ends.
+// A time-range slot is incomplete until it has both ends. A locked slot always has valid persisted
+// times, so it never runs this visual.
 const invalid = computed<boolean>(
   () => !isAllDay.value && (!props.modelValue.startTime || !props.modelValue.endTime),
 )
-const showError = computed<boolean>(() => props.showErrors === true && invalid.value)
+const showError = computed<boolean>(
+  () => props.showErrors === true && invalid.value && props.locked !== true,
+)
 
 const timeFieldClass =
   'field-sizing-content min-w-[5.5rem] rounded-md border bg-canvas px-2 py-2.5 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
@@ -62,8 +89,39 @@ const timeStateClass = computed<string>(() =>
 </script>
 
 <template>
-  <div class="rounded-lg border border-line bg-surface px-3 py-2.5 transition hover:bg-surface2">
-    <div class="flex flex-wrap items-center gap-2">
+  <div
+    class="rounded-lg border border-line bg-surface px-3 py-2.5 transition"
+    :class="[locked ? '' : 'hover:bg-surface2', isInvalidated ? 'opacity-60' : '']"
+  >
+    <!-- LOCKED (voted/invalidated): read-only label + time, invalidate/reactivate control only. -->
+    <div v-if="locked" class="flex flex-wrap items-center gap-2">
+      <span class="pollen-dot inline-block h-2.5 w-2.5" aria-hidden="true"></span>
+      <span
+        class="text-sm font-medium"
+        :class="isInvalidated ? 'text-mute line-through' : 'text-moonlight'"
+      >
+        {{ modelValue.label?.trim() || (modelValue.isAllDay ? 'All day' : 'Slot') }}
+      </span>
+      <span class="num text-sm" :class="isInvalidated ? 'text-mute line-through' : 'text-dim'">
+        {{ readonlyTimeLabel }}
+      </span>
+      <span
+        v-if="isInvalidated"
+        class="rounded-full bg-surface2 px-2 py-0.5 text-xs font-medium text-mute ring-1 ring-line"
+        >Invalidated</span
+      >
+      <button
+        type="button"
+        class="touch-target ml-auto inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition"
+        :class="isInvalidated ? 'text-pollen hover:text-pollen/80' : 'text-mute hover:text-coral'"
+        @click="toggleInvalidation"
+      >
+        {{ isInvalidated ? 'Reactivate' : 'Invalidate' }}
+      </button>
+    </div>
+
+    <!-- UNLOCKED (zero-vote / brand-new): freely editable as before. -->
+    <div v-else class="flex flex-wrap items-center gap-2">
       <span class="pollen-dot inline-block h-2.5 w-2.5" aria-hidden="true"></span>
 
       <input

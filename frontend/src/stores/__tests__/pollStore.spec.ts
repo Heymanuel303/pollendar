@@ -163,7 +163,13 @@ describe('pollStore.loadParticipants', () => {
 
 describe('pollStore.update', () => {
   it('PATCHes the payload, swaps in the updated poll, and re-fetches results', async () => {
-    patch.mockResolvedValueOnce({ id: '42', publicToken: 'tok', status: 'open', title: 'New', dates: [] })
+    patch.mockResolvedValueOnce({
+      id: '42',
+      publicToken: 'tok',
+      status: 'open',
+      title: 'New',
+      dates: [],
+    })
     get.mockResolvedValueOnce({ best: null, slots: [] }) // the post-update results refresh
     const store = usePollStore()
 

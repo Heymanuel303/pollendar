@@ -23,8 +23,15 @@ import type { SlotMeta } from '@/lib/api/types'
  */
 const route = useRoute()
 const store = usePollStore()
-const { currentPoll, results, participants, detailLoading, detailError, completing, completeError } =
-  storeToRefs(store)
+const {
+  currentPoll,
+  results,
+  participants,
+  detailLoading,
+  detailError,
+  completing,
+  completeError,
+} = storeToRefs(store)
 
 const id = computed<string>(() => String(route.params.id ?? ''))
 
@@ -139,6 +146,14 @@ const bestLabel = computed<string>(() => {
           </h1>
           <Pill v-if="isCompleted" tone="mint">Completed</Pill>
           <Pill v-else tone="pollen">Open · gathering responses</Pill>
+          <!-- Reuses PollEditor in edit mode. Reachable in any status — the editor (+ the lifecycle
+               phase's reopen control) is the path back to open for cancelled/completed polls. -->
+          <RouterLink
+            :to="{ name: 'poll-edit', params: { id } }"
+            class="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-moonlight transition hover:bg-surface2"
+          >
+            ✎ Edit poll
+          </RouterLink>
         </div>
         <p v-if="currentPoll.description" class="mt-2 max-w-xl text-dim">
           {{ currentPoll.description }}

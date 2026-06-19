@@ -48,3 +48,74 @@ describe('DateCard', () => {
     expect(addBtn.classes()).toContain('touch-target')
   })
 })
+
+/**
+ * Edit-mode locking: a loaded date carrying votes (id + a `hasVotes` slot) becomes invalidate-only —
+ * no add-slot, no remove-date — and surfaces an Invalidate-date control that deactivates the date AND
+ * all its slots. A zero-vote loaded date in edit mode keeps full editability.
+ */
+describe('DateCard — edit mode locking', () => {
+  const VOTED: PollDateInput = {
+    id: 'D1',
+    eventDate: '2026-07-01',
+    invalidatedAt: null,
+    hasVotes: true,
+    slots: [
+      {
+        id: 'S1',
+        startTime: '18:00',
+        endTime: '20:00',
+        isAllDay: false,
+        hasVotes: true,
+        invalidatedAt: null,
+      },
+    ],
+  }
+  const ZERO_VOTE: PollDateInput = {
+    id: 'D2',
+    eventDate: '2026-07-02',
+    invalidatedAt: null,
+    hasVotes: false,
+    slots: [
+      {
+        id: 'S2',
+        startTime: '12:00',
+        endTime: '13:00',
+        isAllDay: false,
+        hasVotes: false,
+        invalidatedAt: null,
+      },
+    ],
+  }
+
+  function mountEdit(modelValue: PollDateInput) {
+    return mount(DateCard, { props: { modelValue, timezone: 'UTC', editMode: true } })
+  }
+
+  it('hides add-slot and remove-date on a voted date, exposing an Invalidate-date control', () => {
+    const wrapper = mountEdit(VOTED)
+    expect(wrapper.findAll('button').some((b) => b.text().includes('Add slot'))).toBe(false)
+    expect(wrapper.find('button[aria-label="Remove date"]').exists()).toBe(false)
+    expect(wrapper.findAll('button').some((b) => b.text() === 'Invalidate date')).toBe(true)
+  })
+
+  it('invalidating the date stamps invalidatedAt on the date AND every slot', async () => {
+    const wrapper = mountEdit(VOTED)
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === 'Invalidate date')!
+      .trigger('click')
+
+    const emitted = wrapper.emitted('update:modelValue')![0]![0] as PollDateInput
+    expect(emitted.invalidatedAt).not.toBeNull()
+    expect(emitted.slots.every((s) => s.invalidatedAt != null)).toBe(true)
+  })
+
+  it('keeps a zero-vote date fully editable in edit mode (add-slot, remove-date, editable slot)', () => {
+    const wrapper = mountEdit(ZERO_VOTE)
+    expect(wrapper.findAll('button').some((b) => b.text().includes('Add slot'))).toBe(true)
+    expect(wrapper.find('button[aria-label="Remove date"]').exists()).toBe(true)
+    // Its slot is unlocked → time inputs are present.
+    expect(wrapper.find('input[aria-label="Start time"]').exists()).toBe(true)
+  })
+})

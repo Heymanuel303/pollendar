@@ -85,3 +85,71 @@ describe('SlotRow', () => {
     expect(start.classes()).toContain('min-w-[5.5rem]')
   })
 })
+
+/**
+ * Edit-mode `locked` slot (a voted or invalidated row): the inputs collapse to a read-only label +
+ * time range, the remove ✕ is hidden, and only an Invalidate / Reactivate control remains.
+ */
+describe('SlotRow — locked (edit mode)', () => {
+  const LOCKED: PollSlotInput = {
+    id: 'S1',
+    isAllDay: false,
+    startTime: '18:00',
+    endTime: '20:00',
+    label: 'Dinner',
+    hasVotes: true,
+    invalidatedAt: null,
+  }
+
+  function mountLocked(modelValue: PollSlotInput = LOCKED) {
+    return mount(SlotRow, { props: { modelValue, locked: true } })
+  }
+
+  it('renders read-only label + time range with no inputs and no remove ✕', () => {
+    const wrapper = mountLocked()
+    expect(wrapper.findAll('input')).toHaveLength(0)
+    expect(wrapper.find('button[aria-label="Remove slot"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Dinner')
+    expect(wrapper.text()).toContain('18:00–20:00')
+  })
+
+  it('renders "All day" read-only for a locked all-day slot', () => {
+    const wrapper = mountLocked({ id: 'S9', isAllDay: true, hasVotes: true, invalidatedAt: null })
+    expect(wrapper.text()).toContain('All day')
+  })
+
+  it('exposes an Invalidate control that stamps invalidatedAt on click', async () => {
+    const wrapper = mountLocked()
+    const invalidate = wrapper.findAll('button').find((b) => b.text() === 'Invalidate')!
+    expect(invalidate).toBeTruthy()
+
+    await invalidate.trigger('click')
+    const emitted = wrapper.emitted('update:modelValue')![0]![0] as PollSlotInput
+    expect(emitted.invalidatedAt).not.toBeNull()
+    expect(typeof emitted.invalidatedAt).toBe('string')
+  })
+
+  it('shows a Reactivate control + "Invalidated" badge for an already-invalidated slot and clears it on click', async () => {
+    const wrapper = mountLocked({ ...LOCKED, invalidatedAt: '2026-06-19T10:00:00.000Z' })
+    expect(wrapper.text()).toContain('Invalidated')
+    const reactivate = wrapper.findAll('button').find((b) => b.text() === 'Reactivate')!
+    expect(reactivate).toBeTruthy()
+
+    await reactivate.trigger('click')
+    const emitted = wrapper.emitted('update:modelValue')![0]![0] as PollSlotInput
+    expect(emitted.invalidatedAt).toBeNull()
+  })
+
+  it('never shows the incomplete-times validation visual when locked', () => {
+    const incomplete: PollSlotInput = {
+      id: 'S2',
+      isAllDay: false,
+      startTime: '18:00',
+      hasVotes: true,
+    }
+    const wrapper = mount(SlotRow, {
+      props: { modelValue: incomplete, locked: true, showErrors: true },
+    })
+    expect(wrapper.text()).not.toContain('Set a start and end time')
+  })
+})

@@ -10,24 +10,52 @@
  * Note: `closesAt` is intentionally absent from {@link CreatePollPayload} — it is **PATCH-only**
  * (`update-poll.dto.ts`), not accepted by `POST /polls`. The editor surfaces it in the UI and sets
  * it via a later `PATCH /polls/:id`.
+ *
+ * The edit flow (`/polls/:id/edit`) reuses {@link PollSlotInput}/{@link PollDateInput} but stamps a
+ * few **form-only** tracking fields onto them at load time — `id` (existing-row marker), `invalidatedAt`
+ * (soft-invalidation), and `hasVotes` (derived vote-lock). These are stripped by the editor's
+ * `buildPayload()` before a `POST /polls` (create never carries them) and mapped into the PATCH
+ * {@link UpdatePollDateInput}/{@link UpdatePollSlotInput} shapes for an edit save.
  */
 
 import type { PollSummary } from '@/lib/api/types'
 
-/** One time slot on a candidate date. Absent `startTime`/`endTime` ⇒ open-ended / all-day. */
+/**
+ * One time slot on a candidate date. Absent `startTime`/`endTime` ⇒ open-ended / all-day.
+ * The trailing `id`/`invalidatedAt`/`hasVotes` are **edit-mode form tracking only** (see file header):
+ * present once a slot is loaded from `GET /polls/:id`, absent for a brand-new slot, and never sent on
+ * a create.
+ */
 export interface PollSlotInput {
   startTime?: string
   endTime?: string
   isAllDay?: boolean
   label?: string
   sortOrder?: number
+  /** Present ⇒ existing row (loaded from the API); absent ⇒ brand-new slot. */
+  id?: string
+  /** Soft-invalidation marker; `null`/absent ⇒ active. */
+  invalidatedAt?: string | null
+  /** Derived at load time from `PollSlot._count.responses > 0`; `true` ⇒ immutable in place (invalidate-only). */
+  hasVotes?: boolean
 }
 
-/** One candidate date (`eventDate` is `"YYYY-MM-DD"`) with at least one slot. */
+/**
+ * One candidate date (`eventDate` is `"YYYY-MM-DD"`) with at least one slot. The trailing
+ * `id`/`invalidatedAt`/`hasVotes` are **edit-mode form tracking only** (see {@link PollSlotInput}). A
+ * date is locked when it has an `id` AND at least one of its slots `hasVotes`; invalidating a date
+ * logically invalidates its slots.
+ */
 export interface PollDateInput {
   eventDate: string
   sortOrder?: number
   slots: PollSlotInput[]
+  /** Present ⇒ existing row (loaded from the API); absent ⇒ brand-new date. */
+  id?: string
+  /** Soft-invalidation marker; `null`/absent ⇒ active. */
+  invalidatedAt?: string | null
+  /** Derived at load time (`slots.some((s) => s.hasVotes)`); `true` ⇒ immutable in place (invalidate-only). */
+  hasVotes?: boolean
 }
 
 /** Body of `POST /api/polls`. `timezone` defaults to `"UTC"` server-side when omitted. */

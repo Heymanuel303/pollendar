@@ -168,6 +168,39 @@ export function formatCloseLabel(iso: string, _timeZone?: string): string {
 }
 
 /**
+ * An ISO instant → a `datetime-local` wall-clock value `"YYYY-MM-DDTHH:mm"`, reading the wall-clock
+ * digits **anchored in UTC** — the inverse of {@link localInputToIso} and consistent with how
+ * {@link formatCloseLabel} renders a close value verbatim (naive, never re-projected through a zone).
+ * Used to hydrate the editor's "Responses close" input from a loaded poll's `closesAt`. Returns `""`
+ * for an unparseable value so the input stays empty rather than showing `NaN`.
+ */
+export function isoToLocalInput(iso: string): string {
+  const anchor = new Date(iso)
+  if (Number.isNaN(anchor.getTime())) return ''
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return (
+    `${String(anchor.getUTCFullYear()).padStart(4, '0')}-${pad(anchor.getUTCMonth() + 1)}-` +
+    `${pad(anchor.getUTCDate())}T${pad(anchor.getUTCHours())}:${pad(anchor.getUTCMinutes())}`
+  )
+}
+
+/**
+ * A `datetime-local` wall-clock value `"YYYY-MM-DDTHH:mm"` → an ISO instant, anchoring the digits in
+ * **UTC** (the inverse of {@link isoToLocalInput}). Returns `null` for an empty value — the editor
+ * sends `closesAt: null` to clear the deadline. Naive-UTC by design so a close value round-trips
+ * through the editor byte-stable and matches {@link formatCloseLabel}'s verbatim rendering.
+ */
+export function localInputToIso(local: string): string | null {
+  if (local === '') return null
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(local)
+  if (!match) return null
+  const [, year, month, day, hour, minute] = match
+  return new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)),
+  ).toISOString()
+}
+
+/**
  * A sensible default `"YYYY-MM-DD"` for a newly added candidate date: the day after
  * `afterIsoDate`, or tomorrow when omitted. Keeps each "+ Add date" one day ahead of the last.
  */

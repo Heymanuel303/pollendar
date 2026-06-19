@@ -19,6 +19,13 @@ const props = defineProps<{
   modelValue: PollDateInput[]
   timezone: string
   showErrors?: boolean
+  /**
+   * Edit mode (`/polls/:id/edit`). The Calendar editor has no per-date controls, so the richest
+   * invalidate/reactivate UX lives in the List editor (`DateCard`/`SlotRow`). The Calendar editor's
+   * only edit-mode job is to NOT destroy voted data: it refuses to remove a locked (voted) day on tap
+   * and skips locked days when bulk-applying a preset. New/zero-vote days behave as in create mode.
+   */
+  editMode?: boolean
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [PollDateInput[]] }>()
@@ -91,6 +98,10 @@ function defaultSlots(): PollSlotInput[] {
 /** Tap a day → toggle its membership, re-emitting the full immutable array (controlled round-trip). */
 function toggleDate(iso: string): void {
   if (selectedSet.value.has(iso)) {
+    // Edit mode: a voted (locked) day must NOT be removed by a tap — its votes are preserved via
+    // invalidation in the List editor, never deletion here. Tapping an unlocked/new day removes it.
+    const existing = props.modelValue.find((d) => d.eventDate.slice(0, 10) === iso)
+    if (props.editMode === true && existing?.id != null && existing.hasVotes === true) return
     emit(
       'update:modelValue',
       props.modelValue.filter((d) => d.eventDate.slice(0, 10) !== iso),
@@ -103,15 +114,20 @@ function toggleDate(iso: string): void {
   emit('update:modelValue', next)
 }
 
-/** Stamp the active preset's slots onto every currently selected date, immutably. */
+/**
+ * Stamp the active preset's slots onto every currently selected date, immutably. In edit mode a
+ * locked (voted) date is skipped so its persisted voted slots are never silently overwritten. Other
+ * fields (`id`/`invalidatedAt`/`hasVotes`/`sortOrder`) are preserved via the spread.
+ */
 function applyToSelected(): void {
   if (selectedCount.value === 0) return
   emit(
     'update:modelValue',
-    props.modelValue.map((d) => ({
-      eventDate: d.eventDate,
-      slots: activeSlots.value.map((s) => ({ ...s })),
-    })),
+    props.modelValue.map((d) =>
+      props.editMode === true && d.id != null && d.hasVotes === true
+        ? d
+        : { ...d, slots: activeSlots.value.map((s) => ({ ...s })) },
+    ),
   )
 }
 

@@ -87,9 +87,21 @@ const { isPhone } = useBreakpoint()
 
 /** Read-only name lists for one slot, partitioned by answer — Yes / Maybe / No (mobile chips). */
 const GROUPS = [
-  { kind: 'available' as Availability, label: 'Yes', chip: 'bg-yes/15 text-yes ring-1 ring-yes/40' },
-  { kind: 'maybe' as Availability, label: 'Maybe', chip: 'bg-maybe/15 text-maybe ring-1 ring-maybe/40' },
-  { kind: 'unavailable' as Availability, label: 'No', chip: 'bg-no/15 text-moonlight ring-1 ring-no/50' },
+  {
+    kind: 'available' as Availability,
+    label: 'Yes',
+    chip: 'bg-yes/15 text-yes ring-1 ring-yes/40',
+  },
+  {
+    kind: 'maybe' as Availability,
+    label: 'Maybe',
+    chip: 'bg-maybe/15 text-maybe ring-1 ring-maybe/40',
+  },
+  {
+    kind: 'unavailable' as Availability,
+    label: 'No',
+    chip: 'bg-no/15 text-moonlight ring-1 ring-no/50',
+  },
 ]
 
 /** Number of name chips shown before collapsing the remainder into a `+N more` control. */
@@ -203,10 +215,7 @@ function overflowCount(slotId: string, kind: Availability): number {
               >
                 {{ group.label }}
               </h5>
-              <div
-                v-if="namesForSlot(slot.id, group.kind).length > 0"
-                class="flex flex-wrap gap-2"
-              >
+              <div v-if="namesForSlot(slot.id, group.kind).length > 0" class="flex flex-wrap gap-2">
                 <span
                   v-for="name in visibleNames(slot.id, group.kind)"
                   :key="name"
@@ -225,7 +234,10 @@ function overflowCount(slotId: string, kind: Availability): number {
                   +{{ overflowCount(slot.id, group.kind) }} more
                 </button>
                 <button
-                  v-else-if="isGroupExpanded(slot.id, group.kind) && namesForSlot(slot.id, group.kind).length > CHIP_LIMIT"
+                  v-else-if="
+                    isGroupExpanded(slot.id, group.kind) &&
+                    namesForSlot(slot.id, group.kind).length > CHIP_LIMIT
+                  "
                   type="button"
                   class="touch-target inline-flex items-center rounded-full border border-line px-3 py-1 text-sm text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40"
                   :aria-expanded="true"
@@ -243,7 +255,11 @@ function overflowCount(slotId: string, kind: Availability): number {
     </div>
 
     <!-- Desktop: scrollable per-participant grid. -->
-    <div v-else class="overflow-x-auto rounded-xl border border-line bg-canvas" data-testid="matrix-table">
+    <div
+      v-else
+      class="overflow-x-auto rounded-xl border border-line bg-canvas"
+      data-testid="matrix-table"
+    >
       <table class="w-full min-w-[640px] border-collapse text-sm">
         <thead>
           <!-- Date-group row -->
@@ -336,7 +352,11 @@ function overflowCount(slotId: string, kind: Availability): number {
           </tr>
 
           <!-- One read-only row per participant. -->
-          <tr v-for="row in participants" :key="row.participantId" class="border-b border-line/70 last:border-b-0">
+          <tr
+            v-for="row in participants"
+            :key="row.participantId"
+            class="border-b border-line/70 last:border-b-0"
+          >
             <td
               class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left align-middle text-moonlight"
             >

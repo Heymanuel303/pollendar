@@ -49,7 +49,7 @@ Let a poll creator edit a poll after it is live **without destroying participant
 2. [02-backend-poll-mutation-api](02-backend-poll-mutation-api.md) — vote-preserving diff `update()`, `cancel`/`reopen`, enriched detail read, edit DTOs/routes · _workflow_ ✓
 3. [03-backend-public-gating](03-backend-public-gating.md) — exclude invalidated rows from public view/results/tally; gate submission on open-status · _workflow_ ✓
 4. [04-frontend-store-and-types](04-frontend-store-and-types.md) — `pollStore` `update`/`remove`/`cancel`/`reopen` + `invalidatedAt`/vote-count types + `UpdatePollPayload` · _solo_ ✓
-5. [05-frontend-editor-edit-mode](05-frontend-editor-edit-mode.md) — `/polls/:id/edit` reusing `PollEditor.vue`: load, lock voted rows, invalidate/add, PATCH · _solo_
+5. [05-frontend-editor-edit-mode](05-frontend-editor-edit-mode.md) — `/polls/:id/edit` reusing `PollEditor.vue`: load, lock voted rows, invalidate/add, PATCH · _solo_ ✓
 6. [06-frontend-lifecycle-controls](06-frontend-lifecycle-controls.md) — manage-view Edit/Cancel/Reopen/Delete + status pills; participant cancelled/closed state · _solo_
 
 **Execution order:** 1 → (2 ‖ 3 in parallel, both depend only on 1) → 4 (depends on 2's contract; 3 ships the participant behavior) → (5 ‖ 6 in parallel, both depend on 4; 6's Edit link targets 5's route).

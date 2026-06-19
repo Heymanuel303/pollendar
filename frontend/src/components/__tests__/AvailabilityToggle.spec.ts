@@ -84,8 +84,6 @@ describe('AvailabilityToggle', () => {
 
   it('applies a muted, non-interactive treatment to the group when disabled', () => {
     const group = mountToggle(null, true).wrapper.get('[role="group"]')
-    expect(group.classes()).toEqual(
-      expect.arrayContaining(['opacity-60', 'cursor-not-allowed']),
-    )
+    expect(group.classes()).toEqual(expect.arrayContaining(['opacity-60', 'cursor-not-allowed']))
   })
 })

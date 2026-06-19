@@ -14,6 +14,9 @@ const props = defineProps<{
   modelValue: PollDateInput[]
   timezone: string
   showErrors?: boolean
+  /** Edit mode (`/polls/:id/edit`): forwarded to each {@link DateCard} so voted dates lock to
+   *  invalidate-only. Adding brand-new dates stays available (see `addDate`). Absent ⇒ create mode. */
+  editMode?: boolean
 }>()
 
 const emit = defineEmits<{ 'update:modelValue': [PollDateInput[]] }>()
@@ -70,6 +73,7 @@ function addDate(): void {
         :model-value="date"
         :timezone="timezone"
         :show-errors="showErrors"
+        :edit-mode="editMode"
         @update:model-value="updateDate(index, $event)"
         @remove="removeDate(index)"
       />

@@ -21,9 +21,7 @@ const customEnd = ref<string>('')
 function slotMatchesPreset(slot: PollSlotInput, preset: SlotPreset): boolean {
   if (preset.isAllDay) return slot.isAllDay === true
   return (
-    slot.isAllDay !== true &&
-    slot.startTime === preset.startTime &&
-    slot.endTime === preset.endTime
+    slot.isAllDay !== true && slot.startTime === preset.startTime && slot.endTime === preset.endTime
   )
 }
 

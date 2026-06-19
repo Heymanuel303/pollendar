@@ -27,6 +27,15 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      // Reuses PollEditor.vue in edit mode (it branches on the presence of `route.params.id`).
+      // `/polls/:id/edit` is a distinct path segment from `/polls/:id`, so there is no ambiguity
+      // with `poll-manage` and ordering relative to it does not matter.
+      path: '/polls/:id/edit',
+      name: 'poll-edit',
+      component: () => import('@/views/PollEditor.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/polls/:id',
       name: 'poll-manage',
       component: () => import('@/views/PollManage.vue'),

@@ -11,7 +11,15 @@ function slot(
   startTime: string | null,
   endTime: string | null,
 ): PollSlot {
-  return { id, startTime, endTime, isAllDay: startTime === null, label, sortOrder: 0, invalidatedAt: null }
+  return {
+    id,
+    startTime,
+    endTime,
+    isAllDay: startTime === null,
+    label,
+    sortOrder: 0,
+    invalidatedAt: null,
+  }
 }
 
 const DATES: PollDate[] = [
