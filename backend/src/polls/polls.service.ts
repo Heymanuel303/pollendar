@@ -38,6 +38,25 @@ function slotKey(slot: CreatePollSlotDto | UpdatePollSlotDto): string {
 }
 
 /**
+ * The canonical "owned poll detail" shape: the poll with its nested dates → slots (both ordered by
+ * sortOrder, each slot carrying its response count). EVERY endpoint that returns an owned poll to
+ * the client — read, edit, and the lifecycle transitions (cancel/reopen/complete) — must use this.
+ * The frontend's `OwnedPoll` contract requires `dates`; a flat row would wipe `currentPoll.dates`
+ * and leave the availability grid + who's-coming matrix blank until a full page reload.
+ */
+const pollDetailInclude = {
+  dates: {
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      slots: {
+        orderBy: { sortOrder: 'asc' },
+        include: { _count: { select: { responses: true } } },
+      },
+    },
+  },
+} satisfies Prisma.PollInclude;
+
+/**
  * Creator-owned poll CRUD (create + read for this phase). Ownership is enforced by scoping every
  * read on `userId`, so a non-owned poll is indistinguishable from a missing one (returns 404).
  */
@@ -103,17 +122,7 @@ export class PollsService {
   async findOneForUser(userId: bigint, id: bigint) {
     const poll = await this.prisma.poll.findFirst({
       where: { id, userId },
-      include: {
-        dates: {
-          orderBy: { sortOrder: 'asc' },
-          include: {
-            slots: {
-              orderBy: { sortOrder: 'asc' },
-              include: { _count: { select: { responses: true } } },
-            },
-          },
-        },
-      },
+      include: pollDetailInclude,
     });
     if (!poll) {
       throw new NotFoundException();
@@ -173,17 +182,7 @@ export class PollsService {
 
       return tx.poll.findUnique({
         where: { id: pollId },
-        include: {
-          dates: {
-            orderBy: { sortOrder: 'asc' },
-            include: {
-              slots: {
-                orderBy: { sortOrder: 'asc' },
-                include: { _count: { select: { responses: true } } },
-              },
-            },
-          },
-        },
+        include: pollDetailInclude,
       });
     });
   }
@@ -487,7 +486,10 @@ export class PollsService {
    */
   async cancel(pollId: bigint) {
     return this.prisma.$transaction(async (tx) => {
-      const poll = await tx.poll.findUnique({ where: { id: pollId } });
+      const poll = await tx.poll.findUnique({
+        where: { id: pollId },
+        include: pollDetailInclude,
+      });
       if (!poll) {
         throw new NotFoundException('Poll not found');
       }
@@ -502,6 +504,7 @@ export class PollsService {
       return tx.poll.update({
         where: { id: pollId },
         data: { status: PollStatus.cancelled },
+        include: pollDetailInclude,
       });
     });
   }
@@ -512,7 +515,10 @@ export class PollsService {
    */
   async reopen(pollId: bigint) {
     return this.prisma.$transaction(async (tx) => {
-      const poll = await tx.poll.findUnique({ where: { id: pollId } });
+      const poll = await tx.poll.findUnique({
+        where: { id: pollId },
+        include: pollDetailInclude,
+      });
       if (!poll) {
         throw new NotFoundException('Poll not found');
       }
@@ -522,6 +528,7 @@ export class PollsService {
       return tx.poll.update({
         where: { id: pollId },
         data: { status: PollStatus.open, finalSlotId: null, completedAt: null },
+        include: pollDetailInclude,
       });
     });
   }
@@ -549,7 +556,10 @@ export class PollsService {
   async complete(pollId: bigint, finalSlotId: bigint) {
     const result = await this.prisma.$transaction(async (tx) => {
       // Defensive: PollOwnershipGuard already loaded + ownership-checked the poll.
-      const poll = await tx.poll.findUnique({ where: { id: pollId } });
+      const poll = await tx.poll.findUnique({
+        where: { id: pollId },
+        include: pollDetailInclude,
+      });
       if (!poll) {
         throw new NotFoundException('Poll not found');
       }
@@ -576,6 +586,7 @@ export class PollsService {
           finalSlotId,
           completedAt: new Date(),
         },
+        include: pollDetailInclude,
       });
       return { poll: updated, transitioned: true };
     });

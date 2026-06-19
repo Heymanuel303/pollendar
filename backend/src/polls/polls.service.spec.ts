@@ -19,7 +19,7 @@ const BASE64URL_22 = /^[A-Za-z0-9_-]{22}$/;
 const pollCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const pollFindMany = jest.fn();
 const pollFindFirst = jest.fn<Promise<unknown>, [unknown]>();
-const pollFindUnique = jest.fn();
+const pollFindUnique = jest.fn<Promise<unknown>, [unknown]>();
 const pollUpdate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const pollDelete = jest.fn();
 const pollDateDeleteMany = jest.fn();
@@ -737,10 +737,26 @@ describe('PollsService', () => {
     });
   });
 
+  /**
+   * Regression guard for the cancel/reopen-stale-UI bug: every owned-poll-returning path must
+   * request the nested dates → slots scaffold. A flat row wipes `currentPoll.dates` on the client,
+   * leaving the availability grid + who's-coming matrix blank until a full page reload.
+   */
+  const expectDetailInclude = (call: unknown): void => {
+    const include = (
+      call as {
+        include?: { dates?: { include?: { slots?: { include?: unknown } } } };
+      }
+    ).include;
+    expect(include?.dates?.include?.slots?.include).toEqual({
+      _count: { select: { responses: true } },
+    });
+  };
+
   describe('cancel', () => {
-    it('transitions an open poll to cancelled', async () => {
+    it('transitions an open poll to cancelled (returning the nested dates scaffold)', async () => {
       pollFindUnique.mockResolvedValue({ id: 5n, status: 'open' });
-      pollUpdate.mockResolvedValue({ id: 5n, status: 'cancelled' });
+      pollUpdate.mockResolvedValue({ id: 5n, status: 'cancelled', dates: [] });
 
       const result = await service.cancel(5n);
 
@@ -748,17 +764,19 @@ describe('PollsService', () => {
         pollUpdate.mock.calls[0][0] as { data: { status: string } }
       ).data;
       expect(patch.status).toBe('cancelled');
-      expect(result).toEqual({ id: 5n, status: 'cancelled' });
+      expectDetailInclude(pollUpdate.mock.calls[0][0]);
+      expect(result).toEqual({ id: 5n, status: 'cancelled', dates: [] });
     });
 
-    it('is idempotent for an already-cancelled poll (no second update)', async () => {
-      const poll = { id: 5n, status: 'cancelled' };
+    it('is idempotent for an already-cancelled poll (no second update) and still returns dates', async () => {
+      const poll = { id: 5n, status: 'cancelled', dates: [] };
       pollFindUnique.mockResolvedValue(poll);
 
       const result = await service.cancel(5n);
 
       expect(result).toBe(poll);
       expect(pollUpdate).not.toHaveBeenCalled();
+      expectDetailInclude(pollFindUnique.mock.calls[0][0]);
     });
 
     it('rejects cancelling a completed poll with 409', async () => {
@@ -778,9 +796,9 @@ describe('PollsService', () => {
   });
 
   describe('reopen', () => {
-    it('transitions a cancelled poll to open', async () => {
+    it('transitions a cancelled poll to open (returning the nested dates scaffold)', async () => {
       pollFindUnique.mockResolvedValue({ id: 5n, status: 'cancelled' });
-      pollUpdate.mockResolvedValue({ id: 5n, status: 'open' });
+      pollUpdate.mockResolvedValue({ id: 5n, status: 'open', dates: [] });
 
       const result = await service.reopen(5n);
 
@@ -788,7 +806,8 @@ describe('PollsService', () => {
         pollUpdate.mock.calls[0][0] as { data: { status: string } }
       ).data;
       expect(patch.status).toBe('open');
-      expect(result).toEqual({ id: 5n, status: 'open' });
+      expectDetailInclude(pollUpdate.mock.calls[0][0]);
+      expect(result).toEqual({ id: 5n, status: 'open', dates: [] });
     });
 
     it('clears finalSlotId + completedAt when reopening a completed poll', async () => {
@@ -807,14 +826,15 @@ describe('PollsService', () => {
       expect(patch.completedAt).toBeNull();
     });
 
-    it('is idempotent for an already-open poll (no second update)', async () => {
-      const poll = { id: 5n, status: 'open' };
+    it('is idempotent for an already-open poll (no second update) and still returns dates', async () => {
+      const poll = { id: 5n, status: 'open', dates: [] };
       pollFindUnique.mockResolvedValue(poll);
 
       const result = await service.reopen(5n);
 
       expect(result).toBe(poll);
       expect(pollUpdate).not.toHaveBeenCalled();
+      expectDetailInclude(pollFindUnique.mock.calls[0][0]);
     });
 
     it('throws 404 when the poll is missing', async () => {
@@ -840,13 +860,14 @@ describe('PollsService', () => {
   });
 
   describe('complete', () => {
-    it('transitions an open poll to completed and fans out notifications', async () => {
+    it('transitions an open poll to completed and fans out notifications (returning the nested dates scaffold)', async () => {
       pollFindUnique.mockResolvedValue({ id: 5n, status: 'open' });
       pollSlotFindUnique.mockResolvedValue({ id: 9n, date: { pollId: 5n } });
       pollUpdate.mockResolvedValue({
         id: 5n,
         status: 'completed',
         finalSlotId: 9n,
+        dates: [],
       });
 
       const result = await service.complete(5n, 9n);
@@ -859,8 +880,14 @@ describe('PollsService', () => {
       expect(patch.status).toBe('completed');
       expect(patch.finalSlotId).toBe(9n);
       expect(patch.completedAt).toBeInstanceOf(Date);
+      expectDetailInclude(pollUpdate.mock.calls[0][0]);
       expect(notifyPollCompleted).toHaveBeenCalledWith(5n);
-      expect(result).toEqual({ id: 5n, status: 'completed', finalSlotId: 9n });
+      expect(result).toEqual({
+        id: 5n,
+        status: 'completed',
+        finalSlotId: 9n,
+        dates: [],
+      });
     });
 
     it('rejects a slot from another poll with 400 and does not update', async () => {
@@ -874,15 +901,20 @@ describe('PollsService', () => {
       expect(notifyPollCompleted).not.toHaveBeenCalled();
     });
 
-    it('is idempotent: an already-completed poll is not re-updated or re-notified', async () => {
-      pollFindUnique.mockResolvedValue({ id: 5n, status: 'completed' });
+    it('is idempotent: an already-completed poll is not re-updated or re-notified (still returns dates)', async () => {
+      pollFindUnique.mockResolvedValue({
+        id: 5n,
+        status: 'completed',
+        dates: [],
+      });
       pollSlotFindUnique.mockResolvedValue({ id: 9n, date: { pollId: 5n } });
 
       const result = await service.complete(5n, 9n);
 
-      expect(result).toEqual({ id: 5n, status: 'completed' });
+      expect(result).toEqual({ id: 5n, status: 'completed', dates: [] });
       expect(pollUpdate).not.toHaveBeenCalled();
       expect(notifyPollCompleted).not.toHaveBeenCalled();
+      expectDetailInclude(pollFindUnique.mock.calls[0][0]);
     });
   });
 
