@@ -73,6 +73,9 @@ describe('MailService', () => {
     expect(arg.from).toBe('Pollendar <no-reply@pollendar.local>');
     expect(arg.html).toContain(link);
     expect(arg.text).toContain(link);
+    // Themed, table-based dusk HTML (gold CTA token + a layout table).
+    expect(arg.html).toContain('#FFC857');
+    expect(arg.html.toLowerCase()).toContain('<table');
   });
 
   it('sendPollCompleted sends to the address with the slot label and share URL', async () => {
@@ -93,6 +96,25 @@ describe('MailService', () => {
     expect(arg.html).toContain('Mon Jun 22, 10:00');
     expect(arg.text).toContain(shareUrl);
     expect(arg.text).toContain('Mon Jun 22, 10:00');
+    // Themed, table-based dusk HTML.
+    expect(arg.html).toContain('#FFC857');
+    expect(arg.html.toLowerCase()).toContain('<table');
+  });
+
+  it('sendPollCompleted HTML-escapes a user-controlled poll title', async () => {
+    await service.sendPollCompleted(
+      'guest@example.com',
+      '<b>x</b>',
+      'Mon Jun 22, 10:00',
+      'http://localhost:5173/p/abc123token0000000000',
+    );
+
+    const arg = sendMail.mock.calls[0][0];
+    // Markup in the title is escaped in the HTML body, never rendered live.
+    expect(arg.html).toContain('&lt;b&gt;');
+    expect(arg.html).not.toContain('<b>x</b>');
+    // Subjects are not HTML, so the title stays verbatim there.
+    expect(arg.subject).toContain('<b>x</b>');
   });
 
   it('sendPollCompleted re-throws when the transport fails', async () => {

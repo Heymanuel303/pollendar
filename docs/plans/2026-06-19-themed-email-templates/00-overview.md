@@ -2,7 +2,7 @@
 
 **Slug:** `themed-email-templates` (folder: `docs/plans/2026-06-19-themed-email-templates/`)
 **Created:** 2026-06-19
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Reskin Pollendar's two transactional emails — the passwordless magic-link sign-in and the
@@ -44,13 +44,13 @@ still renders correctly in light-mode inboxes.
 - All backend commands run from `backend/`.
 
 ## Acceptance criteria
-- [ ] Both emails render with the dusk dark theme (violet canvas/surface card, pollen-gold CTA)
+- [x] Both emails render with the dusk dark theme (violet canvas/surface card, pollen-gold CTA)
       in Mailpit at http://localhost:8025.
-- [ ] `MailService.sendMagicLink` / `sendPollCompleted` delegate to the new renderers with
+- [x] `MailService.sendMagicLink` / `sendPollCompleted` delegate to the new renderers with
       **unchanged signatures**; `mail.service.ts` no longer contains inline `<p>`-tag HTML.
-- [ ] User-controlled input is HTML-escaped (a `<` in a poll title renders as `&lt;`), proven
+- [x] User-controlled input is HTML-escaped (a `<` in a poll title renders as `&lt;`), proven
       by a unit spec.
-- [ ] `npm test` (full suite), `npm run lint`, and `npm run format` are all green from `backend/`;
+- [x] `npm test` (full suite), `npm run lint`, and `npm run format` are all green from `backend/`;
       `notifications.service.spec.ts` passes untouched.
 
 ## Phases
@@ -59,7 +59,7 @@ still renders correctly in light-mode inboxes.
    preheader + `escapeHtml`), `layout.spec.ts`, and a tsx Mailpit preview script · _solo_ ✓
 2. [02-reskin-transactional-emails](02-reskin-transactional-emails.md) — `magic-link.ts` +
    `poll-completed.ts` renderers returning `{ subject, html, text }` on the Phase 1 layout,
-   `MailService` rewired to delegate (signatures intact), specs updated · _solo_
+   `MailService` rewired to delegate (signatures intact), specs updated · _solo_ ✓
 
 ## Open questions
 - None.

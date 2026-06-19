@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { renderMagicLink } from './templates/magic-link';
+import { renderPollCompleted } from './templates/poll-completed';
 
 /**
  * Transports outbound mail via nodemailer. In dev it points at Mailpit (no auth);
@@ -33,9 +35,7 @@ export class MailService {
   }
 
   async sendMagicLink(email: string, link: string): Promise<void> {
-    const subject = 'Your Pollendar sign-in link';
-    const text = `Sign in to Pollendar by opening this link:\n\n${link}\n\nThis link expires shortly and can be used once. If you didn't request it, ignore this email.`;
-    const html = `<p>Sign in to Pollendar by opening this link:</p>\n<p><a href="${link}">Sign in to Pollendar</a></p>\n<p>This link expires shortly and can be used once. If you didn't request it, ignore this email.</p>`;
+    const { subject, text, html } = renderMagicLink(link);
 
     try {
       await this.transporter.sendMail({
@@ -61,9 +61,11 @@ export class MailService {
     finalSlotLabel: string,
     shareUrl: string,
   ): Promise<void> {
-    const subject = `Poll "${pollTitle}" is finalized`;
-    const text = `The poll "${pollTitle}" has been finalized.\n\nFinal slot: ${finalSlotLabel}\n\nView the poll: ${shareUrl}`;
-    const html = `<p>The poll "${pollTitle}" has been finalized.</p>\n<p>Final slot: <strong>${finalSlotLabel}</strong></p>\n<p><a href="${shareUrl}">View the poll</a></p>`;
+    const { subject, text, html } = renderPollCompleted(
+      pollTitle,
+      finalSlotLabel,
+      shareUrl,
+    );
 
     try {
       await this.transporter.sendMail({

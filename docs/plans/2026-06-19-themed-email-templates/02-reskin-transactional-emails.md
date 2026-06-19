@@ -49,7 +49,7 @@ Add `magic-link.ts` and `poll-completed.ts` renderer functions (each returning `
 - Manual (optional, uses the Phase 1 preview script + Mailpit): with Mailpit running via `docker compose up` and `backend/scripts/preview-emails.ts` from Phase 1 in place, run `npx tsx scripts/preview-emails.ts` from `backend/`, open http://localhost:8025, and confirm both emails render dark with the gold button and that a poll title containing `<` shows escaped, not as live markup. (Optional: extend the preview script to import the new `renderMagicLink`/`renderPollCompleted` so it previews the real bodies instead of the Phase 1 samples.) The unit specs above are the gate for this phase.
 
 ## Acceptance
-- [ ] `backend/src/mail/templates/magic-link.ts` and `backend/src/mail/templates/poll-completed.ts` exist, each exporting a renderer that returns `{ subject, html, text }` and builds inline-styled, table-based dusk-themed HTML via Phase 1's `renderLayout(...)`.
-- [ ] `MailService.sendMagicLink` and `sendPollCompleted` delegate to the renderers with their signatures unchanged; `mail.service.ts` no longer contains inline `<p>`-tag HTML.
-- [ ] User-controlled inputs (`pollTitle`, `finalSlotLabel`, `shareUrl`, `link`) are HTML-escaped in the HTML body, verified by a spec asserting `<` becomes `&lt;`.
-- [ ] `npm test -- mail.service` and `npm test -- notifications.service` both pass; the full `npm test` suite is green; `npm run lint` and `npm run format` are clean.
+- [x] `backend/src/mail/templates/magic-link.ts` and `backend/src/mail/templates/poll-completed.ts` exist, each exporting a renderer that returns `{ subject, html, text }` and builds inline-styled, table-based dusk-themed HTML via Phase 1's `renderLayout(...)`.
+- [x] `MailService.sendMagicLink` and `sendPollCompleted` delegate to the renderers with their signatures unchanged; `mail.service.ts` no longer contains inline `<p>`-tag HTML.
+- [x] User-controlled inputs (`pollTitle`, `finalSlotLabel`, `shareUrl`, `link`) are HTML-escaped in the HTML body, verified by a spec asserting `<` becomes `&lt;`.
+- [x] `npm test -- mail.service` and `npm test -- notifications.service` both pass; the full `npm test` suite is green; `npm run lint` and `npm run format` are clean.
