@@ -2,7 +2,7 @@
 
 **Slug:** `themed-email-templates` (folder: `docs/plans/2026-06-19-themed-email-templates/`)
 **Created:** 2026-06-19
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Reskin Pollendar's two transactional emails — the passwordless magic-link sign-in and the
@@ -56,7 +56,7 @@ still renders correctly in light-mode inboxes.
 ## Phases
 1. [01-email-template-foundation](01-email-template-foundation.md) — dusk tokens, bulletproof
    table-based dark-email layout helper (shell + heading + paragraph + gold CTA + footer +
-   preheader + `escapeHtml`), `layout.spec.ts`, and a tsx Mailpit preview script · _solo_
+   preheader + `escapeHtml`), `layout.spec.ts`, and a tsx Mailpit preview script · _solo_ ✓
 2. [02-reskin-transactional-emails](02-reskin-transactional-emails.md) — `magic-link.ts` +
    `poll-completed.ts` renderers returning `{ subject, html, text }` on the Phase 1 layout,
    `MailService` rewired to delegate (signatures intact), specs updated · _solo_

@@ -44,7 +44,7 @@ Create a reusable branded email shell — a dusk-theme tokens module, a table-ba
 - Manual: ensure Mailpit is up (`docker compose up -d` from repo root if needed), then from `backend/` run `npx tsx scripts/preview-emails.ts`. Open http://localhost:8025 and confirm: both emails arrive; the dark dusk canvas/surface render; the gold CTA button shows with dark text; headings use the display fallback font; and the spicy sample title renders as literal text (e.g. `<b>"Q3"</b>` visible as characters, NOT bold/injected) — proving `escapeHtml` works.
 
 ## Acceptance
-- [ ] `backend/src/mail/templates/tokens.ts` and `backend/src/mail/templates/layout.ts` exist, export the named helpers/tokens above, contain zero `<style>` blocks and zero font `@import`/`<link>`, and do not import `MailService` or NestJS.
-- [ ] `npm test -- layout` passes, including the escaping assertion (raw `<script>` never appears in `escapeHtml`/`ctaButton`/`renderShell` output).
-- [ ] `npx tsx scripts/preview-emails.ts` delivers both sample emails to Mailpit and they render at http://localhost:8025 with the dusk theme, a gold bulletproof CTA, and the user-supplied sample title escaped to literal text.
-- [ ] `npm run lint` and `npm run format` are clean; no existing source file (mail.service.ts, auth.service.ts, notifications.service.ts, or their specs) was modified.
+- [x] `backend/src/mail/templates/tokens.ts` and `backend/src/mail/templates/layout.ts` exist, export the named helpers/tokens above, contain zero `<style>` blocks and zero font `@import`/`<link>`, and do not import `MailService` or NestJS.
+- [x] `npm test -- layout` passes, including the escaping assertion (raw `<script>` never appears in `escapeHtml`/`ctaButton`/`renderShell` output).
+- [x] `npx tsx scripts/preview-emails.ts` delivers both sample emails to Mailpit and they render at http://localhost:8025 with the dusk theme, a gold bulletproof CTA, and the user-supplied sample title escaped to literal text.
+- [x] `npm run lint` and `npm run format` are clean; no existing source file (mail.service.ts, auth.service.ts, notifications.service.ts, or their specs) was modified.
