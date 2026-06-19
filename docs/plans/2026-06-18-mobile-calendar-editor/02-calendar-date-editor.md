@@ -50,11 +50,11 @@ Reused / depended-on (NOT edited this phase):
 - Manual UI check at a phone-width viewport (DevTools 375px): the month grid renders 7 columns with no horizontal scroll, each day cell is a ≥44px tap target, tapping multiple days highlights them and the "N selected" count updates live, prev/next month navigation does not lose selection, and "Apply to N selected" stamps the chosen preset's slots onto every highlighted day. Toggle off a day and confirm it drops from the count.
 
 ## Acceptance
-- [ ] `frontend/src/components/CalendarDateEditor.vue` exists, is fully controlled (`v-model` over `PollDateInput[]`), and shares `DateSlotEditor.vue`'s exact prop/emit signature (drop-in interchangeable).
-- [ ] Tapping a day toggles its membership in the emitted `modelValue` (add on first tap, remove on second); selection state is derived from `modelValue`, never a parallel local ref.
-- [ ] Month nav (prev/next) is presentation-only — it changes the visible month without emitting and without losing selected dates outside the visible month.
-- [ ] The "N selected" badge reflects `modelValue.length` live; the `showErrors` empty-state message matches `DateSlotEditor`'s coral "Add at least one candidate date."
-- [ ] Bulk-apply writes the active `SlotPresetChips` preset's slots onto **every** selected date, immutably, preserving each `eventDate`.
-- [ ] Every emitted `PollDateInput` is `{ eventDate: '<YYYY-MM-DD>', slots }` — no `sortOrder`, no `closesAt` — so feeding it through the unchanged `buildPayload()` yields a `CreatePollPayload.dates[]` byte-identical to the List flow's.
-- [ ] Day cells use the `.touch-target` utility (≥44×44px); `isPhone` only adjusts layout density, never the emitted payload.
-- [ ] `CalendarDateEditor.spec.ts` passes; `npm run build` and `npm run lint` are green with changes left uncommitted.
+- [x] `frontend/src/components/CalendarDateEditor.vue` exists, is fully controlled (`v-model` over `PollDateInput[]`), and shares `DateSlotEditor.vue`'s exact prop/emit signature (drop-in interchangeable).
+- [x] Tapping a day toggles its membership in the emitted `modelValue` (add on first tap, remove on second); selection state is derived from `modelValue`, never a parallel local ref.
+- [x] Month nav (prev/next) is presentation-only — it changes the visible month without emitting and without losing selected dates outside the visible month.
+- [x] The "N selected" badge reflects `modelValue.length` live; the `showErrors` empty-state message matches `DateSlotEditor`'s coral "Add at least one candidate date."
+- [x] Bulk-apply writes the active `SlotPresetChips` preset's slots onto **every** selected date, immutably, preserving each `eventDate`.
+- [x] Every emitted `PollDateInput` is `{ eventDate: '<YYYY-MM-DD>', slots }` — no `sortOrder`, no `closesAt` — so feeding it through the unchanged `buildPayload()` yields a `CreatePollPayload.dates[]` byte-identical to the List flow's.
+- [x] Day cells use the `.touch-target` utility (≥44×44px); `isPhone` only adjusts layout density, never the emitted payload.
+- [x] `CalendarDateEditor.spec.ts` passes; `npm run build` and `npm run lint` are green with changes left uncommitted.
