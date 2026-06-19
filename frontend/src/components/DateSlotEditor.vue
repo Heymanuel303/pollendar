@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import DateCard from '@/components/DateCard.vue'
-import { nextCandidateDate } from '@/lib/utils/timezone'
 import type { PollDateInput } from '@/types/poll'
 
 /**
@@ -39,15 +38,6 @@ function removeDate(index: number): void {
     'update:modelValue',
     props.modelValue.filter((_, i) => i !== index),
   )
-}
-
-function addDate(): void {
-  const last = props.modelValue[props.modelValue.length - 1]
-  const eventDate = nextCandidateDate(last?.eventDate)
-  emit('update:modelValue', [
-    ...props.modelValue,
-    { eventDate, slots: [{ startTime: '18:00', endTime: '20:00', isAllDay: false }] },
-  ])
 }
 </script>
 
