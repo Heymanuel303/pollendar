@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import DateSlotEditor from '@/components/DateSlotEditor.vue'
+import CalendarDateEditor from '@/components/CalendarDateEditor.vue'
+import { useBreakpoint } from '@/composables/useBreakpoint'
+import { getEditorView, saveEditorView, type EditorView } from '@/lib/editorViewPreference'
 import Field from '@/components/ui/Field.vue'
 import Input from '@/components/ui/Input.vue'
 import Pill from '@/components/ui/Pill.vue'
@@ -32,6 +35,14 @@ const dates = ref<PollDateInput[]>([
     slots: [{ startTime: '18:00', endTime: '20:00', isAllDay: false }],
   },
 ])
+
+// Calendar | List view toggle over the SAME `dates` ref above — both editors bind it, so the array
+// never diverges (the load-bearing invariant behind the byte-identical payload guarantee). A stored
+// preference wins; otherwise default to Calendar on phone, List on desktop. `isPhone.value` is read
+// once at setup: a later resize must not clobber an explicit toggle.
+const { isPhone } = useBreakpoint()
+const editorView = ref<EditorView>(getEditorView() ?? (isPhone.value ? 'calendar' : 'list'))
+watch(editorView, (view) => saveEditorView(view))
 
 // Flipped true on the first submit attempt so inline errors only appear after the creator tries.
 const submitted = ref(false)
@@ -157,7 +168,48 @@ async function submit(): Promise<void> {
           </form>
         </section>
 
-        <DateSlotEditor v-model="dates" :timezone="timezone" :show-errors="submitted" />
+        <div>
+          <div class="mb-3 flex justify-end">
+            <div
+              class="inline-flex rounded-lg border border-line bg-canvas p-0.5 text-xs font-medium"
+              role="group"
+              aria-label="Editor view"
+            >
+              <button
+                type="button"
+                :class="
+                  editorView === 'calendar'
+                    ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
+                    : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
+                "
+                :aria-pressed="editorView === 'calendar'"
+                @click="editorView = 'calendar'"
+              >
+                Calendar
+              </button>
+              <button
+                type="button"
+                :class="
+                  editorView === 'list'
+                    ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
+                    : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
+                "
+                :aria-pressed="editorView === 'list'"
+                @click="editorView = 'list'"
+              >
+                List
+              </button>
+            </div>
+          </div>
+
+          <CalendarDateEditor
+            v-if="editorView === 'calendar'"
+            v-model="dates"
+            :timezone="timezone"
+            :show-errors="submitted"
+          />
+          <DateSlotEditor v-else v-model="dates" :timezone="timezone" :show-errors="submitted" />
+        </div>
       </div>
 
       <!-- RIGHT: sticky preview -->

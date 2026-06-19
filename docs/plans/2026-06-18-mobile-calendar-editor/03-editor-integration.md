@@ -81,10 +81,10 @@ Wire a Calendar|List segmented toggle into PollEditor.vue over the SHARED dates 
 - Sanity-check payload identity: build a poll via Calendar, note the dates; switch to List (same dates appear), click **Create poll** — the POST body is the same `CreatePollPayload` you'd get from the pure-List flow (no `sortOrder`, no `closesAt`).
 
 ## Acceptance
-- [ ] `frontend/src/lib/editorViewPreference.ts` exists, wraps `localStorage` in try/catch (key `pollendar:editor-view`), and returns `'calendar' | 'list' | null`.
-- [ ] `PollEditor.vue` renders a `Calendar | List` segmented toggle; `CalendarDateEditor` and `DateSlotEditor` are mutually exclusive (`v-if`/`v-else`) and both `v-model`-bound to the one `dates` ref.
-- [ ] Default view is Calendar on phone (`isPhone`) and List on desktop when no preference is stored; an explicit choice persists across reloads.
-- [ ] Toggling views never re-seeds or drops dates/slots (the single `dates` ref is shared, not cloned).
-- [ ] Per-date override still works through the reused `DateCard`/`SlotRow` in the List view.
-- [ ] `buildPayload()`, `isValid()`, `submit()`, and `pollStore.create()` are unchanged; the emitted `CreatePollPayload` is identical regardless of which view authored `dates` (no `sortOrder`, no `closesAt`).
-- [ ] `cd frontend && npm run build` and `npm run lint` are green with the tree left uncommitted.
+- [x] `frontend/src/lib/editorViewPreference.ts` exists, wraps `localStorage` in try/catch (key `pollendar:editor-view`), and returns `'calendar' | 'list' | null`.
+- [x] `PollEditor.vue` renders a `Calendar | List` segmented toggle; `CalendarDateEditor` and `DateSlotEditor` are mutually exclusive (`v-if`/`v-else`) and both `v-model`-bound to the one `dates` ref.
+- [x] Default view is Calendar on phone (`isPhone`) and List on desktop when no preference is stored; an explicit choice persists across reloads.
+- [x] Toggling views never re-seeds or drops dates/slots (the single `dates` ref is shared, not cloned).
+- [x] Per-date override still works through the reused `DateCard`/`SlotRow` in the List view.
+- [x] `buildPayload()`, `isValid()`, `submit()`, and `pollStore.create()` are unchanged; the emitted `CreatePollPayload` is identical regardless of which view authored `dates` (no `sortOrder`, no `closesAt`).
+- [x] `cd frontend && npm run build` and `npm run lint` are green with the tree left uncommitted.

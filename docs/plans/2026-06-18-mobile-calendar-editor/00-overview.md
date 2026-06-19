@@ -34,7 +34,7 @@ Replace the one-date-at-a-time candidate-times editor with a calendar multi-sele
 ## Phases
 1. [01-slot-presets](01-slot-presets.md) — `slotPresets` constant + `SlotPresetChips` · _solo_ ✓
 2. [02-calendar-date-editor](02-calendar-date-editor.md) — month grid + multi-select + bulk-apply · _solo_ ✓
-3. [03-editor-integration](03-editor-integration.md) — `Calendar|List` toggle + reuse List/override + localStorage · _solo_
+3. [03-editor-integration](03-editor-integration.md) — `Calendar|List` toggle + reuse List/override + localStorage · _solo_ ✓
 4. [04-responsive-preview](04-responsive-preview.md) — bottom-sheet preview + touch targets · _solo_
 
 ## Open questions
