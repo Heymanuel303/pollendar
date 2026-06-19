@@ -37,8 +37,8 @@ Add a fixed app-wide `slotPresets` constant (`lib/slotPresets.ts`) and a `SlotPr
 - Manual UI check (deferred to Phase 3 integration, since the component is not yet mounted): on a phone-width viewport each chip is ≥44×44px (`.touch-target`), active chips show the `bg-yes shadow-glow` state, and the custom range adds a single time slot.
 
 ## Acceptance
-- [ ] `frontend/src/lib/slotPresets.ts` exports `slotPresets` (Morning / Afternoon / Evening / All day, ranges pinned) and a `presetToSlot()` returning a fresh `PollSlotInput` with `sortOrder` unset.
-- [ ] `frontend/src/components/SlotPresetChips.vue` is controlled (`v-model` of `PollSlotInput[]`), emits full immutable array replacements, and never mutates its prop in place.
-- [ ] Each preset chip toggles one slot on/off by **value** match; the custom row emits a `{ startTime, endTime, isAllDay: false }` slot; "All day" emits `{ isAllDay: true }`.
-- [ ] No file under `PollEditor.vue`, `pollStore`, DTOs, or the backend is touched; `useBreakpoint.ts` is not created.
-- [ ] `npm run build` and `npm run lint` pass; `SlotPresetChips.spec.ts` passes.
+- [x] `frontend/src/lib/slotPresets.ts` exports `slotPresets` (Morning / Afternoon / Evening / All day, ranges pinned) and a `presetToSlot()` returning a fresh `PollSlotInput` with `sortOrder` unset.
+- [x] `frontend/src/components/SlotPresetChips.vue` is controlled (`v-model` of `PollSlotInput[]`), emits full immutable array replacements, and never mutates its prop in place.
+- [x] Each preset chip toggles one slot on/off by **value** match; the custom row emits a `{ startTime, endTime, isAllDay: false }` slot; "All day" emits `{ isAllDay: true }`.
+- [x] No file under `PollEditor.vue`, `pollStore`, DTOs, or the backend is touched; `useBreakpoint.ts` is not created.
+- [x] `npm run build` and `npm run lint` pass; `SlotPresetChips.spec.ts` passes.
