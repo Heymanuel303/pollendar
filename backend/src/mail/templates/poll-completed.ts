@@ -1,5 +1,5 @@
 /**
- * Renderer for the poll-finalized notification email.
+ * Renderer for the "Pollendar picked a time" notification email.
  *
  * Builds the Dusk Calendar branded, inline-styled, table-based HTML on top of the
  * Phase 1 layout helpers ({@link renderShell}, {@link heading}, {@link paragraph},
@@ -21,10 +21,10 @@ import {
 } from './layout';
 
 /**
- * Render the dusk-themed poll-finalized notification email.
+ * Render the dusk-themed "Pollendar picked a time" notification email.
  *
  * @param pollTitle The poll's title. Raw in `subject`/`text`, escaped in HTML.
- * @param finalSlotLabel The chosen final slot's human label. Escaped in HTML.
+ * @param finalSlotLabel The top-pick slot's human label. Escaped in HTML.
  * @param shareUrl The public poll URL. Raw in `text`, escaped in HTML.
  * @returns The `{ subject, html, text }` multipart payload for nodemailer.
  */
@@ -33,13 +33,13 @@ export function renderPollCompleted(
   finalSlotLabel: string,
   shareUrl: string,
 ): { subject: string; html: string; text: string } {
-  const subject = `Poll "${pollTitle}" is finalized`;
+  const subject = `Pollendar picked a time for "${pollTitle}"`;
 
   const safeTitle = escapeHtml(pollTitle);
   const safeSlot = escapeHtml(finalSlotLabel);
   const safeShareUrl = escapeHtml(shareUrl);
 
-  // Highlighted final-slot chip on surface2 with a mint accent.
+  // Highlighted top-pick chip on surface2 with a mint accent.
   const slotChip =
     `<table role="presentation" cellpadding="0" cellspacing="0" border="0" ` +
     `style="margin:0 0 24px 0;"><tr><td bgcolor="${DUSK.surface2}" ` +
@@ -47,14 +47,14 @@ export function renderPollCompleted(
     `border-left:4px solid ${DUSK.mint};">` +
     `<p style="margin:0 0 2px 0; font-family:${FONT_BODY}; font-size:12px; ` +
     `letter-spacing:0.08em; text-transform:uppercase; color:${DUSK.mute};">` +
-    `Final slot</p>` +
+    `Top pick</p>` +
     `<p style="margin:0; font-family:${FONT_DISPLAY}; font-size:18px; ` +
     `font-weight:700; color:${DUSK.mint};">${safeSlot}</p>` +
     `</td></tr></table>`;
 
   const bodyHtml =
-    heading('Your poll is finalized') +
-    paragraph(`The poll <strong>${safeTitle}</strong> has a final time.`) +
+    heading('Pollendar picked a time') +
+    paragraph(`The poll <strong>${safeTitle}</strong> now has a chosen time.`) +
     slotChip +
     ctaButton('View the poll', shareUrl) +
     `<p style="margin:0; padding:0; font-family:${FONT_BODY}; ` +
@@ -64,13 +64,13 @@ export function renderPollCompleted(
     `word-break:break-all;">${safeShareUrl}</a></p>`;
 
   const html = renderShell({
-    preheaderText: 'Your poll has a final time',
+    preheaderText: 'Pollendar picked a time for your poll',
     bodyHtml,
   });
 
   const text =
-    `The poll "${pollTitle}" has been finalized.\n\n` +
-    `Final slot: ${finalSlotLabel}\n\nView the poll: ${shareUrl}`;
+    `Pollendar picked a time for the poll "${pollTitle}".\n\n` +
+    `Top pick: ${finalSlotLabel}\n\nView the poll: ${shareUrl}`;
 
   return { subject, html, text };
 }

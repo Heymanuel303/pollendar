@@ -36,7 +36,7 @@ export function renderMagicLink(link: string): {
   const bodyHtml =
     heading('Sign in to Pollendar') +
     paragraph(
-      'Tap the button below to sign in. This link is for you alone — no ' +
+      'Tap the button below to sign in. This link is for you alone. No ' +
         'password required.',
     ) +
     ctaButton('Sign in to Pollendar', link) +

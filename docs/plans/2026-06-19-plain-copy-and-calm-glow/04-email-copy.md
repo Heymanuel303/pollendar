@@ -3,6 +3,7 @@
 **Plan:** [plain-copy-and-calm-glow](00-overview.md)
 **Depends on:** 03-straightforward-app-copy.md
 **Execution:** solo
+**Status:** completed
 
 ## Context
 The overall feature makes Pollendar feel calmer and less AI-written: the glow/bloom visual effect is dialed to near-flat, and UI plus email copy is rewritten into a plain, direct voice (the winning-slot label becomes "Top pick", never "In bloom"). The poll-completed email currently reads in a formal, AI-flavoured register ("is finalized", "has a final time", "has been finalized", "Final slot"), and the magic-link body uses an em dash inside a sentence. This phase rewrites the backend email prose and subjects into the plain voice and aligns the poll-completed email with the "Top pick" terminology, without touching the dusk dark-email layout markup, CSS class names, test IDs, or any logic.
@@ -102,11 +103,11 @@ This renderer has THREE output parts plus a chip label plus a doc-comment, all o
 - Manual email check (optional, dev): with Mailpit running, `cd backend && npx tsx scripts/preview-emails.ts`, then open http://localhost:8025 and confirm the poll-completed email shows the chip label "Top pick", the heading "Pollendar picked a time", and no "In bloom"/"finalized" wording; the spicy sample title still renders as literal characters (escaping intact).
 
 ## Acceptance
-- [ ] The poll-completed email's visible chip label reads "Top pick" (not "Final slot"), and its subject, heading, body paragraph, preheader, and plain-text block read in the plain voice with no "finalized"/"final time" phrasing.
-- [ ] The magic-link email body contains no em dash and stays plain and accurate.
-- [ ] `backend/src/mail/mail.service.ts` and `backend/src/notifications/notifications.service.ts` are unchanged (they hold no copy).
-- [ ] `cd backend && npm run lint` and `cd backend && npm test` both pass with no spec edits required beyond what step 9 describes.
-- [ ] The grep checks above pass: no banned bloom/finalized wording in `backend/src/mail`/`backend/src/notifications` (except the intentional `layout.spec.ts:83` test-data line) and no em dash in `magic-link.ts`.
+- [x] The poll-completed email's visible chip label reads "Top pick" (not "Final slot"), and its subject, heading, body paragraph, preheader, and plain-text block read in the plain voice with no "finalized"/"final time" phrasing.
+- [x] The magic-link email body contains no em dash and stays plain and accurate.
+- [x] `backend/src/mail/mail.service.ts` and `backend/src/notifications/notifications.service.ts` are unchanged (they hold no copy).
+- [x] `cd backend && npm run lint` and `cd backend && npm test` both pass with no spec edits required beyond what step 9 describes.
+- [x] The grep checks above pass: no banned bloom/finalized wording in `backend/src/mail`/`backend/src/notifications` (except the intentional `layout.spec.ts:83` test-data line) and no em dash in `magic-link.ts`.
 
 ---
 
