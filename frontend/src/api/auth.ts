@@ -36,3 +36,12 @@ export function getMe(): Promise<AuthUser> {
 export function logout(): Promise<{ ok: true }> {
   return post<{ ok: true }>('/auth/logout')
 }
+
+/**
+ * `POST /api/auth/refresh`. Rotates the refresh session and reissues both httpOnly cookies. 200 →
+ * the session is alive; a 401 (missing/expired/rotated refresh cookie) rejects with {@link ApiError}.
+ * The client wrapper calls this transparently on a mid-session 401 — components rarely call it directly.
+ */
+export function refresh(): Promise<{ ok: true }> {
+  return post<{ ok: true }>('/auth/refresh')
+}

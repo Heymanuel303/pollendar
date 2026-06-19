@@ -64,6 +64,9 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   await auth.bootstrap()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
+    // The access token may have lapsed while the long-lived refresh cookie is still valid (e.g. a
+    // full reload after the access TTL elapsed). Try one refresh before bouncing to the landing page.
+    if (await auth.tryRefresh()) return
     return { name: 'landing' }
   }
 })

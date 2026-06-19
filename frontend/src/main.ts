@@ -14,10 +14,22 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
+import { setUnauthorizedHandler } from '@/lib/api/client'
+import { useAuthStore } from '@/stores/authStore'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
+
+// When a mid-session request can't be refreshed (the refresh cookie is gone/expired), drop the
+// local session so `isAuthenticated` doesn't stay stale-true, and — only if the user is currently
+// on an authed route — send them to the landing page for a clean re-login.
+setUnauthorizedHandler(() => {
+  useAuthStore().clearSession()
+  if (router.currentRoute.value.meta.requiresAuth) {
+    void router.push({ name: 'landing' })
+  }
+})
 
 app.mount('#app')

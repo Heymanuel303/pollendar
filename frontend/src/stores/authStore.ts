@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import * as authApi from '@/api/auth'
-import { ApiError } from '@/lib/api/client'
+import { ApiError, refreshSession } from '@/lib/api/client'
 import type { AuthUser } from '@/types/auth'
 
 /** App-load lifecycle of the session probe: idle → loading (during `/auth/me`) → ready. */
@@ -66,6 +66,31 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Drop the in-memory session without calling the server. Used when a transparent refresh fails
+   * (the refresh cookie is already gone) so `isAuthenticated` can't get stuck stale-true on an
+   * authed page after the session has actually died.
+   */
+  function clearSession(): void {
+    user.value = null
+  }
+
+  /**
+   * Revive an expired access token from the refresh cookie, then re-probe `/auth/me`. Returns
+   * whether a session was restored. The router guard calls this when an authed route is entered
+   * with no in-memory session (e.g. a full reload after the access token lapsed) so a still-valid
+   * refresh cookie restores the session instead of bouncing the user to the landing page.
+   */
+  async function tryRefresh(): Promise<boolean> {
+    try {
+      await refreshSession()
+    } catch {
+      return false
+    }
+    await me()
+    return isAuthenticated.value
+  }
+
+  /**
    * One-time session restore on app load: runs the `/auth/me` probe exactly once across repeated
    * calls (the guard fires `beforeEach`, but the cookie only needs reading once per app load).
    */
@@ -84,6 +109,8 @@ export const useAuthStore = defineStore('auth', () => {
     verify,
     me,
     logout,
+    clearSession,
+    tryRefresh,
     bootstrap,
   }
 })

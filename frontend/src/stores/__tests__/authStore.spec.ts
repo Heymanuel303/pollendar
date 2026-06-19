@@ -11,6 +11,13 @@ const api = vi.hoisted(() => ({
 }))
 vi.mock('@/api/auth', () => api)
 
+// Partial-mock the client: keep the real `ApiError`, stub only the single-flight `refreshSession`.
+const client = vi.hoisted(() => ({ refreshSession: vi.fn<() => Promise<void>>() }))
+vi.mock('@/lib/api/client', async (importActual) => ({
+  ...(await importActual<typeof import('@/lib/api/client')>()),
+  refreshSession: client.refreshSession,
+}))
+
 import { useAuthStore } from '../authStore'
 
 beforeEach(() => {
@@ -89,5 +96,38 @@ describe('authStore', () => {
     await store.logout()
 
     expect(store.user).toBeNull()
+  })
+
+  it('tryRefresh restores the session when the refresh cookie is still valid', async () => {
+    client.refreshSession.mockResolvedValue()
+    api.getMe.mockResolvedValue({ id: '1', email: 'a@b.com', displayName: null })
+    const store = useAuthStore()
+
+    await expect(store.tryRefresh()).resolves.toBe(true)
+
+    expect(client.refreshSession).toHaveBeenCalledOnce()
+    expect(store.isAuthenticated).toBe(true)
+  })
+
+  it('tryRefresh returns false (and never probes /auth/me) when the refresh fails', async () => {
+    client.refreshSession.mockRejectedValue(new ApiError(401, null))
+    const store = useAuthStore()
+
+    await expect(store.tryRefresh()).resolves.toBe(false)
+
+    expect(api.getMe).not.toHaveBeenCalled()
+    expect(store.user).toBeNull()
+  })
+
+  it('clearSession drops the in-memory user without calling the server', async () => {
+    api.getMe.mockResolvedValue({ id: '1', email: 'a@b.com', displayName: null })
+    const store = useAuthStore()
+    await store.me()
+    expect(store.user).not.toBeNull()
+
+    store.clearSession()
+
+    expect(store.user).toBeNull()
+    expect(api.logout).not.toHaveBeenCalled()
   })
 })
