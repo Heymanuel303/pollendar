@@ -77,6 +77,5 @@ function reset() {
     <p v-if="error" class="mt-3 flex items-center gap-1.5 text-sm text-coral">
       <span aria-hidden="true">⚠</span>{{ error }}
     </p>
-    <p v-else-if="!sent" class="mt-3 text-sm text-mute">{{ helperText }}</p>
   </div>
 </template>
