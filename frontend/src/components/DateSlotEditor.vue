@@ -82,13 +82,5 @@ function addDate(): void {
         <span aria-hidden="true">⚠</span>Add at least one candidate date.
       </p>
     </div>
-
-    <button
-      type="button"
-      class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-canvas px-4 py-3 font-medium text-dim transition hover:border-pollen/40 hover:text-pollen"
-      @click="addDate"
-    >
-      <span class="text-lg leading-none text-pollen">+</span> Add date
-    </button>
   </section>
 </template>
