@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ApiError, get as apiGet, post as apiPost } from '@/lib/api/client'
+import { getParticipantResponses } from '@/lib/api/public-poll'
 import type { CreatePollPayload, CreatedPoll } from '@/types/poll'
 import type {
   PollDate,
@@ -8,7 +9,12 @@ import type {
   Poll as OwnedPoll,
   PollResults,
   InviteMessage,
+  ParticipantResponsesResult,
+  ParticipantRow,
 } from '@/lib/api/types'
+
+/** Lifecycle of a single request, so views can switch declaratively on the state. */
+type RequestState = 'idle' | 'loading' | 'success' | 'error'
 
 /**
  * A poll row as returned by the **list** endpoint `GET /api/polls`
@@ -71,6 +77,15 @@ export const usePollStore = defineStore('poll', () => {
   const currentPoll = ref<OwnedPoll | null>(null)
   /** Live aggregate results (best slot + per-slot tallies) for `currentPoll`, or `null`. */
   const results = ref<PollResults | null>(null)
+  /** Per-participant rows (who voted + per-slot picks) for the owner-mode matrix, or `[]`.
+   *  PRIVACY: rows carry `displayName` only — never email. */
+  const participants = ref<ParticipantRow[]>([])
+  /** Unfiltered participant count from the last `loadParticipants` (for any future pagination UI). */
+  const participantsTotal = ref(0)
+  /** `true` when more rows remain beyond the loaded page. */
+  const participantsHasMore = ref(false)
+  /** Lifecycle of the last `loadParticipants` — the matrix degrades to empty on `'error'`. */
+  const participantsState = ref<RequestState>('idle')
   /** The backend invite text + canonical `shareUrl`, or `null`. `ShareBox` builds the full §7 copy. */
   const invite = ref<InviteMessage | null>(null)
   /** True while `get()` is in flight (drives the manage view's loading state). */
@@ -153,6 +168,37 @@ export const usePollStore = defineStore('poll', () => {
   }
 
   /**
+   * Load the per-participant rows (who voted + per-slot picks) for the owner-mode matrix via the
+   * public participants endpoint (`getParticipantResponses` → `GET /api/public/polls/:token/
+   * participants-responses`), keyed by `currentPoll.publicToken`. Optional `limit`/`offset` page the
+   * rows. Supplementary like {@link loadResults}: on failure the rows clear and `participantsState`
+   * goes `'error'` (the matrix simply shows no responses) — it does NOT throw, so the manage page
+   * still renders. PRIVACY: rows carry `displayName` only — never email.
+   */
+  async function loadParticipants(
+    token: string,
+    opts?: { limit?: number; offset?: number },
+  ): Promise<void> {
+    participantsState.value = 'loading'
+    try {
+      const res: ParticipantResponsesResult = await getParticipantResponses(
+        token,
+        opts?.limit,
+        opts?.offset,
+      )
+      participants.value = res.participants
+      participantsTotal.value = res.total
+      participantsHasMore.value = res.hasMore
+      participantsState.value = 'success'
+    } catch {
+      participants.value = []
+      participantsTotal.value = 0
+      participantsHasMore.value = false
+      participantsState.value = 'error'
+    }
+  }
+
+  /**
    * Load the backend invite text + canonical `shareUrl` via `GET /api/polls/:id/invite-message`.
    * Supplementary like {@link loadResults}: on failure `invite` stays `null` and `ShareBox` falls
    * back to building the share URL from the app origin.
@@ -196,6 +242,10 @@ export const usePollStore = defineStore('poll', () => {
     list,
     currentPoll,
     results,
+    participants,
+    participantsTotal,
+    participantsHasMore,
+    participantsState,
     invite,
     detailLoading,
     detailError,
@@ -203,6 +253,7 @@ export const usePollStore = defineStore('poll', () => {
     completeError,
     get,
     loadResults,
+    loadParticipants,
     loadInviteMessage,
     complete,
   }

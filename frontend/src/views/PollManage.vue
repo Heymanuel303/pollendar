@@ -5,7 +5,7 @@ import { storeToRefs } from 'pinia'
 import { usePollStore } from '@/stores/pollStore'
 import BestSlotBloom from '@/components/BestSlotBloom.vue'
 import AvailabilityGrid from '@/components/AvailabilityGrid.vue'
-import ResultsTable from '@/components/ResultsTable.vue'
+import ParticipantMatrix from '@/components/ParticipantMatrix.vue'
 import BestSlotBadge from '@/components/BestSlotBadge.vue'
 import ShareBox from '@/components/ShareBox.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -23,7 +23,7 @@ import type { SlotMeta } from '@/lib/api/types'
  */
 const route = useRoute()
 const store = usePollStore()
-const { currentPoll, results, detailLoading, detailError, completing, completeError } =
+const { currentPoll, results, participants, detailLoading, detailError, completing, completeError } =
   storeToRefs(store)
 
 const id = computed<string>(() => String(route.params.id ?? ''))
@@ -34,6 +34,7 @@ onMounted(async () => {
   if (currentPoll.value) {
     await Promise.all([
       store.loadResults(currentPoll.value.publicToken),
+      store.loadParticipants(currentPoll.value.publicToken),
       store.loadInviteMessage(id.value),
     ])
   }
@@ -47,11 +48,6 @@ const slotMetaById = computed<Record<string, SlotMeta>>(() => {
   }
   return map
 })
-
-/** slotIds in poll display order (dates → slots, both already `sortOrder`-ordered by the API). */
-const order = computed<string[]>(() =>
-  (currentPoll.value?.dates ?? []).flatMap((date) => date.slots.map((slot) => slot.id)),
-)
 
 const best = computed(() => results.value?.best ?? null)
 const bestMeta = computed<SlotMeta | null>(() =>
@@ -184,12 +180,12 @@ const bestLabel = computed<string>(() => {
             :results="results"
             :timezone="currentPoll.timezone"
           />
-          <ResultsTable
-            v-if="results"
-            :results="results"
-            :slot-meta-by-id="slotMetaById"
-            :order="order"
+          <ParticipantMatrix
+            :dates="currentPoll.dates"
             :timezone="currentPoll.timezone"
+            :participants="participants"
+            :winning-slot-id="best?.slotId ?? null"
+            :owner="true"
           />
         </div>
 

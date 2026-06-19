@@ -13,6 +13,13 @@ vi.mock('@/lib/api/client', async (importOriginal) => {
   return { ...actual, get, post }
 })
 
+// `loadParticipants` delegates to the public-poll client (NOT the raw `get`), so stub that wrapper.
+const { getParticipantResponses } = vi.hoisted(() => ({
+  getParticipantResponses:
+    vi.fn<(token: string, limit?: number, offset?: number) => Promise<unknown>>(),
+}))
+vi.mock('@/lib/api/public-poll', () => ({ getParticipantResponses }))
+
 import { ApiError } from '@/lib/api/client'
 import { usePollStore } from '../pollStore'
 
@@ -109,5 +116,45 @@ describe('pollStore.get', () => {
 
     expect(store.currentPoll).toBeNull()
     expect(store.detailError).toBe('Poll not found')
+  })
+})
+
+describe('pollStore.loadParticipants', () => {
+  it('loads the per-participant rows via getParticipantResponses and records success', async () => {
+    getParticipantResponses.mockResolvedValueOnce({
+      participants: [{ participantId: 'p1', displayName: 'Ada', answers: [] }],
+      total: 1,
+      hasMore: false,
+    })
+    const store = usePollStore()
+
+    await store.loadParticipants('tok')
+
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
+    expect(store.participants).toEqual([{ participantId: 'p1', displayName: 'Ada', answers: [] }])
+    expect(store.participantsTotal).toBe(1)
+    expect(store.participantsHasMore).toBe(false)
+    expect(store.participantsState).toBe('success')
+  })
+
+  it('passes through limit/offset pagination opts', async () => {
+    getParticipantResponses.mockResolvedValueOnce({ participants: [], total: 0, hasMore: false })
+    const store = usePollStore()
+
+    await store.loadParticipants('tok', { limit: 50, offset: 100 })
+
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', 50, 100)
+  })
+
+  it('clears state and records error on failure WITHOUT rejecting (non-fatal)', async () => {
+    getParticipantResponses.mockRejectedValueOnce(new Error('boom'))
+    const store = usePollStore()
+
+    await expect(store.loadParticipants('tok')).resolves.toBeUndefined()
+
+    expect(store.participants).toEqual([])
+    expect(store.participantsTotal).toBe(0)
+    expect(store.participantsHasMore).toBe(false)
+    expect(store.participantsState).toBe('error')
   })
 })
