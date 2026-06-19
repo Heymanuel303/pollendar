@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { usePublicPollStore } from '@/stores/publicPollStore'
 import PollSlotRow from '@/components/PollSlotRow.vue'
+import ParticipantMatrix from '@/components/ParticipantMatrix.vue'
 import { formatDate } from '@/lib/utils/timezone'
 import { getViewMode, saveViewMode, type ViewMode } from '@/lib/viewMode'
 import type { Availability, ResponseAnswer, SubmitResponsesDto } from '@/lib/api/types'
@@ -16,7 +17,8 @@ import type { Availability, ResponseAnswer, SubmitResponsesDto } from '@/lib/api
 const route = useRoute()
 const router = useRouter()
 const store = usePublicPollStore()
-const { poll, results, loadState, submitState, errorCode, errorMessage } = storeToRefs(store)
+const { poll, results, participants, loadState, submitState, errorCode, errorMessage } =
+  storeToRefs(store)
 
 const token = computed<string>(() => String(route.params.publicToken ?? ''))
 
@@ -36,6 +38,8 @@ onMounted(async () => {
   view.value = getViewMode(token.value) ?? 'vote'
   // Results drive which slot "blooms" + the footer's leaning label. Best-effort; non-fatal if absent.
   await store.loadResults(token.value)
+  // Per-participant rows feed the Results-tab matrix. Non-fatal: the matrix simply shows no rows.
+  await store.loadParticipants(token.value)
 })
 
 watch(view, (mode) => saveViewMode(token.value, mode))
@@ -289,11 +293,17 @@ async function onSubmit(): Promise<void> {
             </p>
           </section>
 
-          <!-- ParticipantMatrix mounts here in phase 2 -->
-          <div
-            class="mt-6 rounded-2xl border border-dashed border-line bg-surface p-6 text-center text-dim"
-          >
-            Per-person results coming soon
+          <!-- Per-participant matrix: rows incl. the voter's own editable "You" row. -->
+          <div class="mt-6">
+            <ParticipantMatrix
+              :dates="poll.dates"
+              :timezone="poll.timezone"
+              :participants="participants"
+              :winning-slot-id="bestSlotId"
+              :answers="answers"
+              :editable="isOpen"
+              @update:answers="(id, v) => (answers[id] = v)"
+            />
           </div>
         </div>
       </template>

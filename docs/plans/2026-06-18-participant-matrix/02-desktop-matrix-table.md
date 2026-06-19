@@ -95,9 +95,9 @@ Build ParticipantMatrix.vue desktop table: rows = participants (including the cu
 - Manual desktop check: open a poll's Results tab — the name column stays pinned while scrolling slot columns horizontally; the winning slot column shows the bloom wash; the "You" row's tri-state toggles edit the same `answers` the Vote tab uses (and re-tapping an active option clears it); participant rows show yes/maybe/no glyphs and NO email anywhere; on a closed poll the matrix still renders with the "You" row read-only.
 
 ## Acceptance
-- [ ] `frontend/src/components/ParticipantMatrix.vue` exists and renders a desktop `<table>` with a sticky left name column (`sticky left-0 z-10 bg-canvas`), date-group + slot sub-header rows, one row per `participants` prop, and a leading editable "You" row.
-- [ ] The "You" row uses `<AvailabilityToggle>` (or read-only glyphs when `editable=false`) and emits `update:answers` so it edits the same `answers` map the Vote tab uses; re-tapping the active option clears it.
-- [ ] Each participant cell shows the correct yes/maybe/no glyph (or `—` for no answer), shows `displayName` only, and exposes NO `email`.
-- [ ] The winning slot column (`slot.id === winningSlotId`) carries `bloom-bg` with a `matrix-bloom` test hook, and no new bloom animation bypasses the `prefers-reduced-motion` guard.
-- [ ] `PublicPoll.vue` mounts `<ParticipantMatrix>` in the Results tab, calls `store.loadParticipants(token.value)`, and the matrix stays visible (You row read-only) on a closed poll.
-- [ ] `npm run build` and `npm run lint` are green in `frontend/`.
+- [x] `frontend/src/components/ParticipantMatrix.vue` exists and renders a desktop `<table>` with a sticky left name column (`sticky left-0 z-10 bg-canvas`), date-group + slot sub-header rows, one row per `participants` prop, and a leading editable "You" row.
+- [x] The "You" row uses `<AvailabilityToggle>` (or read-only glyphs when `editable=false`) and emits `update:answers` so it edits the same `answers` map the Vote tab uses; re-tapping the active option clears it.
+- [x] Each participant cell shows the correct yes/maybe/no glyph (or `—` for no answer), shows `displayName` only, and exposes NO `email`.
+- [x] The winning slot column (`slot.id === winningSlotId`) carries `bloom-bg` with a `matrix-bloom` test hook, and no new bloom animation bypasses the `prefers-reduced-motion` guard.
+- [x] `PublicPoll.vue` mounts `<ParticipantMatrix>` in the Results tab, calls `store.loadParticipants(token.value)`, and the matrix stays visible (You row read-only) on a closed poll.
+- [x] `npm run build` and `npm run lint` are green in `frontend/`.
