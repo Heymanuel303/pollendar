@@ -81,6 +81,20 @@ export class PollsController {
     return this.polls.complete(this.parseId(id), this.parseId(dto.finalSlotId));
   }
 
+  /** Cancel an owned, open poll (`open → cancelled`); idempotent if already cancelled. */
+  @Post(':id/cancel')
+  @UseGuards(PollOwnershipGuard)
+  cancel(@Param('id') id: string) {
+    return this.polls.cancel(this.parseId(id));
+  }
+
+  /** Reopen an owned cancelled/completed poll (`→ open`); idempotent if already open. */
+  @Post(':id/reopen')
+  @UseGuards(PollOwnershipGuard)
+  reopen(@Param('id') id: string) {
+    return this.polls.reopen(this.parseId(id));
+  }
+
   /** Copy-paste invite message with the public share link for an owned poll. */
   @Get(':id/invite-message')
   @UseGuards(PollOwnershipGuard)

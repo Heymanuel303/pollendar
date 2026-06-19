@@ -16,6 +16,8 @@ describe('PollsController', () => {
   const update = jest.fn();
   const remove = jest.fn();
   const complete = jest.fn();
+  const cancel = jest.fn();
+  const reopen = jest.fn();
   const buildInviteMessage = jest.fn();
 
   const config: Partial<ConfigService> = {
@@ -40,6 +42,8 @@ describe('PollsController', () => {
       update,
       remove,
       complete,
+      cancel,
+      reopen,
       buildInviteMessage,
     ].forEach((m) => m.mockReset());
 
@@ -55,6 +59,8 @@ describe('PollsController', () => {
             update,
             remove,
             complete,
+            cancel,
+            reopen,
             buildInviteMessage,
           },
         },
@@ -149,6 +155,34 @@ describe('PollsController', () => {
         NotFoundException,
       );
       expect(complete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cancel', () => {
+    it('parses the path id and delegates to service.cancel', () => {
+      const cancelled = { id: 3n, status: 'cancelled' };
+      cancel.mockReturnValue(cancelled);
+      expect(controller.cancel('3')).toBe(cancelled);
+      expect(cancel).toHaveBeenCalledWith(3n);
+    });
+
+    it('throws 404 for a non-numeric id (parseId throws before the service)', () => {
+      expect(() => controller.cancel('nope')).toThrow(NotFoundException);
+      expect(cancel).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('reopen', () => {
+    it('parses the path id and delegates to service.reopen', () => {
+      const reopened = { id: 3n, status: 'open' };
+      reopen.mockReturnValue(reopened);
+      expect(controller.reopen('3')).toBe(reopened);
+      expect(reopen).toHaveBeenCalledWith(3n);
+    });
+
+    it('throws 404 for a non-numeric id (parseId throws before the service)', () => {
+      expect(() => controller.reopen('nope')).toThrow(NotFoundException);
+      expect(reopen).not.toHaveBeenCalled();
     });
   });
 
