@@ -2,7 +2,8 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { apiFetch, ApiError, API_BASE, setUnauthorizedHandler } from '../client'
 
 type Res = { ok: boolean; status: number; bodyText?: string }
-const asResponse = (r: Res) => ({ ok: r.ok, status: r.status, text: async () => r.bodyText ?? '' }) as Response
+const asResponse = (r: Res) =>
+  ({ ok: r.ok, status: r.status, text: async () => r.bodyText ?? '' }) as Response
 
 function mockFetch(opts: Res) {
   const fn = vi
@@ -84,7 +85,7 @@ describe('apiFetch — transparent session refresh', () => {
 
   it('de-duplicates concurrent 401s into a single /auth/refresh (single-flight)', async () => {
     let refreshCalls = 0
-    const fn = vi.fn(async (url: string) => {
+    const fn = vi.fn<(url: string) => Promise<Response>>(async (url: string) => {
       if (url === '/api/auth/refresh') {
         refreshCalls += 1
         return asResponse({ ok: true, status: 200, bodyText: '{"ok":true}' })
@@ -104,7 +105,7 @@ describe('apiFetch — transparent session refresh', () => {
   })
 
   it('surfaces the 401 and notifies the unauthorized handler when the refresh itself fails', async () => {
-    const onUnauthorized = vi.fn()
+    const onUnauthorized = vi.fn<() => void>()
     setUnauthorizedHandler(onUnauthorized)
     mockFetchSequence([
       { ok: false, status: 401, bodyText: '' }, // GET /polls → 401
@@ -125,5 +126,55 @@ describe('apiFetch — transparent session refresh', () => {
 
     expect(err.status).toBe(401)
     expect(fetchFn).toHaveBeenCalledTimes(1) // no /auth/refresh attempted
+  })
+
+  // The README's session-probe exemption: a 401 on any of these auth endpoints means the session is
+  // simply absent/over (refreshing would recurse or waste a call), so the wrapper must surface the 401
+  // verbatim without firing /auth/refresh. Covers the full NON_REFRESHABLE set, not just /auth/me.
+  it.each(['/auth/refresh', '/auth/verify', '/auth/magic-link', '/auth/logout', '/auth/me'])(
+    'does not refresh-retry the exempt endpoint %s on a 401',
+    async (path) => {
+      const fetchFn = mockFetch({ ok: false, status: 401, bodyText: '' })
+
+      const err = (await apiFetch(path, { method: 'POST' }).catch((e) => e)) as ApiError
+
+      expect(err).toBeInstanceOf(ApiError)
+      expect(err.status).toBe(401)
+      expect(fetchFn).toHaveBeenCalledTimes(1) // no second call → /auth/refresh never attempted
+    },
+  )
+
+  it('exempts an exact subpath of an auth endpoint (/auth/verify/extra) from refresh-retry', async () => {
+    const fetchFn = mockFetch({ ok: false, status: 401, bodyText: '' })
+
+    const err = (await apiFetch('/auth/verify/extra').catch((e) => e)) as ApiError
+
+    expect(err.status).toBe(401)
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('exempts an auth endpoint carrying a query string (/auth/verify?token=x) from refresh-retry', async () => {
+    const fetchFn = mockFetch({ ok: false, status: 401, bodyText: '' })
+
+    const err = (await apiFetch('/auth/verify?token=x').catch((e) => e)) as ApiError
+
+    expect(err.status).toBe(401)
+    expect(fetchFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('does NOT exempt a mere prefix-collision path (/auth/method) — it still refresh-retries on a 401', async () => {
+    // `/auth/method` only *starts with* the substring "/auth/me"; it is a distinct endpoint, not the
+    // exempt `/auth/me` probe, so a 401 there must trigger the normal refresh-and-replay.
+    const fetchFn = mockFetchSequence([
+      { ok: false, status: 401, bodyText: '' }, // GET /auth/method → access token lapsed
+      { ok: true, status: 200, bodyText: JSON.stringify({ ok: true }) }, // POST /auth/refresh
+      { ok: true, status: 200, bodyText: JSON.stringify({ ok: true }) }, // /auth/method replay
+    ])
+
+    const result = await apiFetch('/auth/method')
+
+    expect(result).toEqual({ ok: true })
+    expect(fetchFn).toHaveBeenCalledTimes(3)
+    expect(fetchFn.mock.calls[1]?.[0]).toBe('/api/auth/refresh')
   })
 })

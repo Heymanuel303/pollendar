@@ -44,10 +44,18 @@ async function parseBody(res: Response): Promise<unknown> {
  * `authStore.bootstrap()` handles, and auto-refreshing it would add a wasted call to every
  * anonymous public-poll visit. Session restore for those cases lives in the router guard.
  */
-const NON_REFRESHABLE = ['/auth/refresh', '/auth/verify', '/auth/magic-link', '/auth/logout', '/auth/me']
+const NON_REFRESHABLE = [
+  '/auth/refresh',
+  '/auth/verify',
+  '/auth/magic-link',
+  '/auth/logout',
+  '/auth/me',
+]
 
 function isRefreshable(path: string): boolean {
-  return !NON_REFRESHABLE.some((p) => path === p || path.startsWith(`${p}?`) || path.startsWith(`${p}/`))
+  return !NON_REFRESHABLE.some(
+    (p) => path === p || path.startsWith(`${p}?`) || path.startsWith(`${p}/`),
+  )
 }
 
 /** In-flight refresh shared across concurrent 401s (see {@link refreshSession}); null when idle. */

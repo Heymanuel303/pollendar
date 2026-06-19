@@ -2,7 +2,7 @@
 
 **Slug:** `store-data-refresh-convention` (folder: `docs/plans/2026-06-19-store-data-refresh-convention/`)
 **Created:** 2026-06-19
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Standardize how the Vue frontend's Pinia stores refresh data after a state change, so every action across the app follows one predictable shape. Today it is inconsistent: `pollStore.complete`/`update` refresh only `loadResults` (invite text + participant rows go stale, and the dashboard `polls[]` row keeps its old status), while `cancel`/`reopen` call an un-awaited `refreshPoll` that routes through `get()` — nulling `currentPoll` and re-fetching the entity the server just returned (a skeleton flash + a wasted round-trip, with the button spinner clearing before data is fresh).
@@ -31,17 +31,17 @@ The standard — three mutually exclusive shapes:
 - Each phase ends on a green `format` / `lint` / `type-check` / `test:unit` run.
 
 ## Acceptance criteria
-- [ ] Every store exposes exactly one public cold-load orchestrator per detail view and no ad-hoc one-off refresher (`pollStore.refreshPoll` removed); exactly one private derived refresher per store that every in-place mutation awaits.
-- [ ] `complete`/`update`/`cancel`/`reopen` assign the returned entity, `await hydrateDerived()`, and write-through the `polls[]` row; no `loadResults`-only refresh, no floating promise.
-- [ ] Every detail view's `onMounted` calls only its orchestrator via the existing route-id computed (no `route.params.id as string`, no hand-chained loaders).
-- [ ] `authStore`/`router`/`main.ts`/`AuthCallback.vue` confirmed conforming under the documented session-probe exemption.
-- [ ] `frontend/README.md` documents the three shapes + uniformity rules + the session-probe carve-out.
-- [ ] `npm run format`, `npm run lint`, `npm run type-check`, `npm run test:unit -- run` all green.
+- [x] Every store exposes exactly one public cold-load orchestrator per detail view and no ad-hoc one-off refresher (`pollStore.refreshPoll` removed); exactly one private derived refresher per store that every in-place mutation awaits.
+- [x] `complete`/`update`/`cancel`/`reopen` assign the returned entity, `await hydrateDerived()`, and write-through the `polls[]` row; no `loadResults`-only refresh, no floating promise.
+- [x] Every detail view's `onMounted` calls only its orchestrator via the existing route-id computed (no `route.params.id as string`, no hand-chained loaders).
+- [x] `authStore`/`router`/`main.ts`/`AuthCallback.vue` confirmed conforming under the documented session-probe exemption.
+- [x] `frontend/README.md` documents the three shapes + uniformity rules + the session-probe carve-out.
+- [x] `npm run format`, `npm run lint`, `npm run type-check`, `npm run test:unit -- run` all green.
 
 ## Phases
 1. [01-pollstore-refresh-convention](01-pollstore-refresh-convention.md) — reference implementation in `pollStore` + `PollManage`/`PollEditor`: `hydrateDerived`/`patchListRow`/`loadDetail`, uniform shape-A mutations, drop `refreshPoll`, update specs · _solo_ ✓
 2. [02-public-store-refresh-convention](02-public-store-refresh-convention.md) — mirror the convention in `publicPollStore` + `PublicPoll`/`PublicThanks` (single cold-load orchestrator, new `PublicThanks.spec.ts`) · _solo_ ✓
-3. [03-codify-and-extend-convention](03-codify-and-extend-convention.md) — authoritative `README` section, then fan-out conformance audit across `authStore` + every store-consuming view/router/entry point, fixing stragglers · _workflow_
+3. [03-codify-and-extend-convention](03-codify-and-extend-convention.md) — authoritative `README` section, then fan-out conformance audit across `authStore` + every store-consuming view/router/entry point, fixing stragglers · _workflow_ ✓
 
 ## Open questions
 - **List-cache write-through (`patchListRow`)** is included by default (Phase 1, rule A5) so the dashboard reflects status changes without relying on a re-mount refetch. If you'd rather keep the store thinner and lean on `Dashboard.vue`'s existing `onMounted(list())`, drop step 2 + the write-through calls from Phase 1 — the rest of the convention is unaffected.

@@ -213,6 +213,17 @@ describe('PollEditor — edit mode', () => {
     return wrapper.findAll('button').find((b) => b.text() === text)
   }
 
+  /**
+   * Add a brand-new candidate date by tapping its day cell in the Calendar editor — the "+ Add date"
+   * button was removed in favour of the tap-to-select calendar (commit 65b0d61). The cell is the
+   * `<button aria-label="YYYY-MM-DD">` rendered by {@link CalendarDateEditor}.
+   */
+  async function tapDay(wrapper: ReturnType<typeof mountEditor>, iso: string) {
+    const cell = wrapper.findAll('button').find((b) => b.attributes('aria-label') === iso)
+    if (!cell) throw new Error(`No calendar day cell for "${iso}"`)
+    await cell.trigger('click')
+  }
+
   it('loads the owned poll via pollStore.loadDetail and pre-populates the form', async () => {
     const { wrapper, loadDetailSpy } = await mountEditMode()
 
@@ -283,14 +294,14 @@ describe('PollEditor — edit mode', () => {
 
   it('allows adding a brand-new date (no id) in edit mode', async () => {
     const { wrapper } = await mountEditMode()
-    const addDate =
-      buttonByText(wrapper, '+ Add date') ??
-      wrapper.findAll('button').find((b) => b.text().includes('Add date'))!
-    await addDate.trigger('click')
+    // Tap an unselected day (fixture has 2026-06-26 + 2026-06-27) to add a brand-new candidate date.
+    await tapDay(wrapper, '2026-06-28')
 
     const dates = editorDates(wrapper)
     expect(dates).toHaveLength(3)
-    expect(dates[2]!.id).toBeUndefined()
+    // The brand-new date is sorted in by eventDate and carries no id.
+    const added = dates.find((d) => d.eventDate.slice(0, 10) === '2026-06-28')!
+    expect(added.id).toBeUndefined()
   })
 
   it('submits via pollStore.update (PATCH) — ids + invalidatedAt + closesAt round-trip, new rows omit id', async () => {
@@ -302,11 +313,8 @@ describe('PollEditor — edit mode', () => {
       .findAll('button')
       .find((b) => b.text() === 'Invalidate')!
       .trigger('click')
-    // Add a brand-new date so the payload carries an id-less row.
-    await (
-      buttonByText(wrapper, '+ Add date') ??
-      wrapper.findAll('button').find((b) => b.text().includes('Add date'))!
-    ).trigger('click')
+    // Add a brand-new date (tap an unselected day) so the payload carries an id-less row.
+    await tapDay(wrapper, '2026-06-28')
 
     await buttonByText(wrapper, 'Save changes')!.trigger('click')
     await flushPromises()

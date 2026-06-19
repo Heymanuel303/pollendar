@@ -20,10 +20,10 @@ Vite reads `VITE_`-prefixed vars from `.env`. Copy the example and adjust if nee
 cp .env.example .env
 ```
 
-| Var             | Dev default              | Purpose                                                        |
-| --------------- | ------------------------ | ------------------------------------------------------------- |
-| `VITE_API_BASE` | `/api`                   | API base. `/api` is proxied to the backend by the dev server (`vite.config.ts`) so the auth cookie stays **same-origin** — no CORS in dev. |
-| `VITE_APP_URL`  | `http://localhost:5173`  | Public origin of this SPA; used to build share / invite links (never hard-coded). |
+| Var             | Dev default             | Purpose                                                                                                                                    |
+| --------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VITE_API_BASE` | `/api`                  | API base. `/api` is proxied to the backend by the dev server (`vite.config.ts`) so the auth cookie stays **same-origin** — no CORS in dev. |
+| `VITE_APP_URL`  | `http://localhost:5173` | Public origin of this SPA; used to build share / invite links (never hard-coded).                                                          |
 
 `.env*` is gitignored except `.env.example`. For production, create a `.env.production` that points
 at the prod origins (see **Production notes** below) — Vite bakes those values into `dist/` at build time.
@@ -34,6 +34,55 @@ at the prod origins (see **Production notes** below) — Vite bakes those values
 npm install
 npm run dev          # Vite dev server on :5173 (binds --host; /api proxied to the backend)
 ```
+
+## State management & data refresh
+
+State lives in setup-style Pinia stores: `ref`-based state (never getters), consumed in templates via
+`storeToRefs`. Each request keeps its own lifecycle ref typed `RequestState`
+(`'idle' | 'loading' | 'success' | 'error'`) plus an error ref, and failures map to a single
+user-facing sentence through the message helpers (`messageFor`, `completeMessageFor`,
+`updateMessageFor`, `removeMessageFor`, `lifecycleMessageFor`). Those stay — this convention governs
+**refresh orchestration only**, not error handling.
+
+Every state-changing flow is EXACTLY one of three shapes:
+
+- **A) Mutation that returns the updated entity** — `POST /:id/complete|cancel|reopen`, `PATCH /:id`.
+  Assign the server-returned entity straight into the current-entity ref
+  (`currentPoll.value = await apiPost(...)`), then `await` the ONE private derived-slice refresher
+  (`hydrateDerived()`) that re-hydrates the derived slices — live results/tallies, participant rows,
+  invite text — in parallel, each loader swallowing its own error (they are supplementary). NEVER call
+  the cold-load getter after a mutation: it nulls the entity the server just returned (a wasted
+  round-trip) and flashes the loading skeleton. Keep the loading/error refs `await`ed so the `finally`
+  that clears the in-flight flag runs AFTER the derived refresh resolves — no floating promise, so the
+  button spinner clears only once the data is fresh. If a list cache also holds the entity (the
+  dashboard `polls[]`), write-through patch the matching row from the returned entity via
+  `patchListRow`, mapping the heavier detail-entity fields into the lighter list-row shape.
+
+- **B) Cold load** — component mount / route navigation. ONE public orchestrator (`loadDetail()`) that
+  resets the current-entity ref to `null` (the skeleton is correct here), fetches the entity, then
+  `await`s the SAME derived refresher from shape A. Detail views call ONLY this one orchestrator in
+  `onMounted`, using the view's existing route-id computed — never a raw `route.params.id as string`,
+  and never the individual loaders chained by hand.
+
+- **C) Delete / navigate-away** — `DELETE`, submit-then-redirect, create-then-redirect. Prune local
+  caches (drop the row from any list, clear the detail slice) and navigate. No refetch — nothing is
+  left to re-hydrate.
+
+Uniformity rules:
+
+- Exactly ONE private derived refresher per store; every in-place mutation calls it — never an ad-hoc
+  subset. Add a slice once inside `hydrateDerived` and every mutation stays correct.
+- Exactly ONE public cold-load orchestrator per detail view; `onMounted` calls only it.
+- Views never orchestrate multi-call refreshes and never call raw getters/loaders directly to refresh.
+- No ad-hoc one-off refreshers on a store's public surface — the former `pollStore.refreshPoll` is gone.
+- Views clear their error ref BEFORE opening a dialog so a stale message never flashes (`PollManage`
+  does this in `openConfirm` / `openCancelConfirm` / `openReopenConfirm` / `openDeleteConfirm`).
+
+**Session-probe exemption.** `authStore` only probes/clears the session (`bootstrap`, `tryRefresh`,
+`me`, `clearSession`, `logout`, `verify`, `requestLink`); it owns no entity or derived slices, so it
+does NOT use the `RequestState`/derived-refresher machinery and stays simple. Do not retrofit the
+three-shape pattern onto it — the same carve-out covers the session probes in `router/index.ts`
+(`bootstrap`/`tryRefresh`) and the `clearSession()` prune in `main.ts`'s unauthorized handler.
 
 ## Build
 

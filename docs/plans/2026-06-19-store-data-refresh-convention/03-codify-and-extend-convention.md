@@ -177,15 +177,15 @@ Run from the `frontend/` directory:
   view does NOT flash a stale error; magic-link verify + logout still work (authStore unchanged).
 
 ## Acceptance
-- [ ] `frontend/README.md` has a `## State management & data refresh` section that authoritatively documents
+- [x] `frontend/README.md` has a `## State management & data refresh` section that authoritatively documents
       the three mutation shapes (A in-place + single `hydrateDerived` refresher, B single cold-load
       orchestrator, C delete/navigate-away prune), the uniformity rules, and the `authStore` session-probe
       exemption.
-- [ ] No store on its public surface exposes an ad-hoc one-off refresher (no `pollStore.refreshPoll`); each
+- [x] No store on its public surface exposes an ad-hoc one-off refresher (no `pollStore.refreshPoll`); each
       store has exactly one private derived-slice refresher that every in-place mutation awaits.
-- [ ] Every detail view's `onMounted` calls exactly ONE cold-load orchestrator (via its route-id computed),
+- [x] Every detail view's `onMounted` calls exactly ONE cold-load orchestrator (via its route-id computed),
       not a hand-chained set of loaders or a raw `route.params.id as string`
       (`PollManage`, `PollEditor`, `PublicPoll`, `PublicThanks`).
-- [ ] `authStore.ts`, `router/index.ts`, `main.ts`, and `AuthCallback.vue` are confirmed conforming under the
+- [x] `authStore.ts`, `router/index.ts`, `main.ts`, and `AuthCallback.vue` are confirmed conforming under the
       documented session-probe carve-out (no RequestState/derived machinery forced on them).
-- [ ] `npm run format`, `npm run lint`, `npm run type-check`, and `npm run test:unit -- run` all pass.
+- [x] `npm run format`, `npm run lint`, `npm run type-check`, and `npm run test:unit -- run` all pass.

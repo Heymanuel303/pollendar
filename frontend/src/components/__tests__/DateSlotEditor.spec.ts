@@ -41,17 +41,6 @@ function buttonByText(wrapper: Wrapper, text: string) {
 }
 
 describe('DateSlotEditor', () => {
-  it('"+ Add date" emits the array grown by one date with a single default slot', async () => {
-    const wrapper = mountEditor(oneDate())
-
-    await buttonByText(wrapper, 'Add date').trigger('click')
-
-    const model = lastModel(wrapper)
-    expect(model).toHaveLength(2)
-    expect(model[1]?.slots).toHaveLength(1)
-    expect(model[1]?.slots[0]?.isAllDay).toBe(false)
-  })
-
   it('"+ Add slot" grows the date\'s slots and the badge reflects the new totals', async () => {
     const wrapper = mountEditor(oneDate())
 
