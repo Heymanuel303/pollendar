@@ -235,4 +235,75 @@ describe('Poll lifecycle (e2e)', () => {
     expect(body.status).toBe('completed');
     expect(typeof body.id).toBe('string');
   });
+
+  it('recalculates the public best slot after the current winner is invalidated', async () => {
+    const poll = await createPoll('Best recalc on invalidate');
+
+    await request(server())
+      .post(`/api/public/polls/${poll.publicToken}/responses`)
+      .send({
+        displayName: 'Voter',
+        answers: [{ pollSlotId: poll.slotIds[0], availability: 'available' }],
+      })
+      .expect(201);
+
+    const before = await request(server())
+      .get(`/api/public/polls/${poll.publicToken}/results`)
+      .expect(200);
+    expect((before.body as ResultsBody).best?.slotId).toBe(poll.slotIds[0]);
+
+    // Read the creator detail (Phase 2 enriches this with date/slot ids as strings).
+    interface DetailBody {
+      dates: { id: string; slots: { id: string }[] }[];
+    }
+    const detailRes = await request(server())
+      .get(`/api/polls/${poll.id}`)
+      .set('Cookie', session.cookieHeader)
+      .expect(200);
+    const detail = detailRes.body as DetailBody;
+    const dateId = detail.dates[0].id;
+    expect(detail.dates[0].slots).toHaveLength(2);
+    for (const slot of detail.dates[0].slots) {
+      expect(typeof slot.id).toBe('string');
+    }
+
+    // Invalidate the voted winner (slotIds[0]); slotIds[1] stays active.
+    await request(server())
+      .patch(`/api/polls/${poll.id}`)
+      .set('Cookie', session.cookieHeader)
+      .send({
+        dates: [
+          {
+            id: dateId,
+            eventDate: '2026-07-01',
+            sortOrder: 0,
+            slots: [
+              {
+                id: poll.slotIds[0],
+                label: 'Morning',
+                startTime: '09:00',
+                sortOrder: 0,
+                invalidatedAt: '2026-06-19T12:00:00.000Z',
+              },
+              {
+                id: poll.slotIds[1],
+                label: 'Afternoon',
+                startTime: '13:00',
+                sortOrder: 1,
+              },
+            ],
+          },
+        ],
+      })
+      .expect(200);
+
+    const after = await request(server())
+      .get(`/api/public/polls/${poll.publicToken}/results`)
+      .expect(200);
+    const afterBody = after.body as ResultsBody;
+    expect(afterBody.best?.slotId).toBe(poll.slotIds[1]);
+    expect(afterBody.slots.every((s) => s.slotId !== poll.slotIds[0])).toBe(
+      true,
+    );
+  });
 });

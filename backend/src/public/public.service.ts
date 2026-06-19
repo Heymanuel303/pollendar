@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Availability, Prisma } from '@prisma/client';
+import { Availability, PollStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { generatePublicToken } from '../polls/public-token.util';
 import { PublicPoll } from './dto/public-poll.dto';
@@ -33,8 +33,14 @@ export class PublicService {
       where: { publicToken: token },
       include: {
         dates: {
+          where: { invalidatedAt: null },
           orderBy: { sortOrder: 'asc' },
-          include: { slots: { orderBy: { sortOrder: 'asc' } } },
+          include: {
+            slots: {
+              where: { invalidatedAt: null },
+              orderBy: { sortOrder: 'asc' },
+            },
+          },
         },
       },
     });
@@ -104,6 +110,8 @@ export class PublicService {
       JOIN poll_dates d ON d.id = s.poll_date_id
       LEFT JOIN responses r ON r.poll_slot_id = s.id
       WHERE d.poll_id = ${poll.id}
+        AND d.invalidated_at IS NULL
+        AND s.invalidated_at IS NULL
       GROUP BY s.id, d.event_date, s.start_time, s.label
       ORDER BY score DESC,
                available_count DESC,
@@ -239,10 +247,18 @@ export class PublicService {
   ): Promise<{ publicToken: string }> {
     const poll = await this.prisma.poll.findUnique({
       where: { publicToken: token },
-      include: { dates: { include: { slots: true } } },
+      include: {
+        dates: {
+          where: { invalidatedAt: null },
+          include: { slots: { where: { invalidatedAt: null } } },
+        },
+      },
     });
     if (!poll) {
       throw new NotFoundException();
+    }
+    if (poll.status !== PollStatus.open) {
+      throw new ConflictException('This poll is no longer accepting responses');
     }
 
     const validSlotIds = new Set(
@@ -305,6 +321,8 @@ export class PublicService {
           JOIN poll_dates d ON d.id = s.poll_date_id
           LEFT JOIN responses r ON r.poll_slot_id = s.id
           WHERE d.poll_id = ${poll.id}
+            AND d.invalidated_at IS NULL
+            AND s.invalidated_at IS NULL
           GROUP BY s.id
         `);
 

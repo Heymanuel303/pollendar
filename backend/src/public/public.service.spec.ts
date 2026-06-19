@@ -80,8 +80,14 @@ describe('PublicService', () => {
         where: { publicToken: 'tok' },
         include: {
           dates: {
+            where: { invalidatedAt: null },
             orderBy: { sortOrder: 'asc' },
-            include: { slots: { orderBy: { sortOrder: 'asc' } } },
+            include: {
+              slots: {
+                where: { invalidatedAt: null },
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
           },
         },
       });
@@ -137,6 +143,7 @@ describe('PublicService', () => {
     const pollWithSlots = {
       id: 3n,
       publicToken: 'tok',
+      status: 'open',
       dates: [{ id: 10n, slots: [{ id: 100n }, { id: 101n }] }],
     };
 
@@ -257,6 +264,73 @@ describe('PublicService', () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws 409 for a cancelled poll, before any transaction', async () => {
+      pollFindUnique.mockResolvedValue({
+        ...pollWithSlots,
+        status: 'cancelled',
+      });
+      await expect(service.submitResponses('tok', dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws 409 for a completed poll, before any transaction', async () => {
+      pollFindUnique.mockResolvedValue({
+        ...pollWithSlots,
+        status: 'completed',
+      });
+      await expect(service.submitResponses('tok', dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('throws 400 for a now-invalidated slot (filtered out of the include)', async () => {
+      // slot 101 is omitted as if invalidated; the include filter is the source of truth.
+      pollFindUnique.mockResolvedValue({
+        id: 3n,
+        publicToken: 'tok',
+        status: 'open',
+        dates: [{ id: 10n, slots: [{ id: 100n }] }],
+      });
+      await expect(
+        service.submitResponses('tok', {
+          displayName: 'Ada',
+          answers: [{ pollSlotId: '101', availability: 'available' }],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(transaction).not.toHaveBeenCalled();
+    });
+
+    it('passes the invalidation filter to the findUnique include at both levels', async () => {
+      pollFindUnique.mockResolvedValue(pollWithSlots);
+      mockTransaction('abc');
+
+      await service.submitResponses('tok', dto);
+
+      expect(pollFindUnique).toHaveBeenCalledWith({
+        where: { publicToken: 'tok' },
+        include: {
+          dates: {
+            where: { invalidatedAt: null },
+            include: { slots: { where: { invalidatedAt: null } } },
+          },
+        },
+      });
+    });
+
+    it('recomputes tallies with SQL excluding invalidated dates/slots', async () => {
+      pollFindUnique.mockResolvedValue(pollWithSlots);
+      const { txQueryRaw } = mockTransaction('abc');
+
+      await service.submitResponses('tok', dto);
+
+      const sql = (txQueryRaw.mock.calls[0][0] as Prisma.Sql).strings.join('');
+      expect(sql).toContain('d.invalidated_at IS NULL');
+      expect(sql).toContain('s.invalidated_at IS NULL');
     });
 
     it('maps P2002 on the participant email constraint to a 409', async () => {
@@ -535,6 +609,17 @@ describe('PublicService', () => {
       expect(typeof result.slots[0].score).toBe('number');
     });
 
+    it('excludes invalidated dates/slots via the raw-query WHERE', async () => {
+      pollFindUnique.mockResolvedValue({ id: 1n });
+      queryRaw.mockResolvedValue(sortedRows);
+
+      await service.getResults('tok');
+
+      const sql = (queryRaw.mock.calls[0][0] as Prisma.Sql).strings.join('');
+      expect(sql).toContain('d.invalidated_at IS NULL');
+      expect(sql).toContain('s.invalidated_at IS NULL');
+    });
+
     it('includes zero-response slots with all-zero tallies', async () => {
       pollFindUnique.mockResolvedValue({ id: 1n });
       queryRaw.mockResolvedValue(sortedRows);
@@ -703,6 +788,23 @@ describe('PublicService', () => {
 
       expect(result.participants).toHaveLength(1);
       expect(result.participants[0].answers).toHaveLength(1);
+    });
+
+    it('does NOT filter on invalidated_at (historical audit trail intact)', async () => {
+      pollFindUnique.mockResolvedValue({ id: 3n });
+      participantCount.mockResolvedValue(1);
+      queryRaw.mockResolvedValue([
+        {
+          participant_id: 1n,
+          display_name: 'Ada',
+          poll_slot_id: 100n,
+          availability: 'available',
+        },
+      ]);
+
+      await service.getParticipantResponses('tok');
+
+      expect(capturedSql()).not.toContain('invalidated_at');
     });
 
     it('derives total/hasMore from the count and defaults take to 100', async () => {
