@@ -76,6 +76,18 @@ describe('PublicThanks', () => {
     const wrapper = await mountThanks(RESULTS)
     expect(wrapper.text()).toContain('Top pick')
     expect(wrapper.text()).toContain('Dinner')
+    // The card label harmonises with PublicPoll's footer ("Top pick so far", not "Leaning now").
+    expect(wrapper.text()).toContain('Top pick so far')
+    expect(wrapper.text()).not.toContain('Leaning now')
+  })
+
+  it('renders plain, present-tense share + footer copy with no comma splices', async () => {
+    const wrapper = await mountThanks(RESULTS)
+
+    expect(wrapper.text()).toContain('Pass it along. It takes about a minute.')
+    expect(wrapper.text()).toContain(
+      "The organizer confirms the final time. We'll email you if you left an address.",
+    )
   })
 
   it('hides the bloom section but keeps the share section when there is no best slot', async () => {

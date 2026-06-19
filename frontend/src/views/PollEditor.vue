@@ -119,7 +119,7 @@ const breadcrumbLabel = computed<string>(() => (isEdit.value ? 'Edit' : 'New pol
 const headingLabel = computed<string>(() => (isEdit.value ? 'Edit poll' : 'Create a poll'))
 const subheadingLabel = computed<string>(() =>
   isEdit.value
-    ? 'Add or adjust times, or deactivate ones that no longer work, votes are kept.'
+    ? 'Add or adjust times, or deactivate ones that no longer work. Existing votes are kept.'
     : 'Find the time everyone can make. Takes about a minute.',
 )
 const actionLabel = computed<string>(() => {

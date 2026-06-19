@@ -104,7 +104,7 @@ describe('PublicPoll, closed (cancelled) state', () => {
     expect(hasSubmitBar(wrapper)).toBe(false)
 
     // Results still render (a best exists → not the empty fallback).
-    expect(wrapper.text()).toContain('Leaning so far')
+    expect(wrapper.text()).toContain('Top pick so far')
     expect(wrapper.text()).not.toContain('No responses yet.')
   })
 })
@@ -114,10 +114,35 @@ describe('PublicPoll, open state', () => {
     const wrapper = await mountWithPoll(makePublicPoll({ status: 'open' }))
 
     expect(wrapper.text()).toContain('Open')
+    // Plain status subtext: "collecting", not "gathering".
+    expect(wrapper.text()).toContain('collecting responses')
+    expect(wrapper.text()).not.toContain('gathering responses')
     expect(hasSubmitBar(wrapper)).toBe(true)
     expect(wrapper.findComponent(PollSlotRow).props('disabled')).toBe(false)
     expect(nameInput(wrapper).disabled).toBe(false)
     expect(emailInput(wrapper).disabled).toBe(false)
+  })
+
+  it('labels the email field "(optional)" with parentheses, not an em dash', async () => {
+    const wrapper = await mountWithPoll(makePublicPoll({ status: 'open' }))
+    const label = wrapper.find('label[for="participant-email"]')
+
+    expect(label.text()).toContain('(optional)')
+    expect(label.text()).not.toContain('—')
+  })
+
+  it('shows the split-sentence empty fallback when there are no responses yet', async () => {
+    getPublicPoll.mockResolvedValue(makePublicPoll({ status: 'open' }))
+    getResults.mockResolvedValue({ best: null, slots: [] })
+    getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+    const wrapper = mount(PublicPoll, {
+      global: { stubs: { RouterLink: RouterLinkStub, ParticipantMatrix: true } },
+    })
+    await flushPromises()
+
+    // Comma splice is split into two sentences.
+    expect(wrapper.text()).toContain('No responses yet. Be the first.')
+    expect(wrapper.text()).not.toContain('No responses yet, be the first')
   })
 
   it('drives a single cold load that fetches poll + results + participants once', async () => {

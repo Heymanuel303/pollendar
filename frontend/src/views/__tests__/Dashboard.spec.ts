@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { nextTick } from 'vue'
 import { mount, RouterLinkStub, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 
@@ -62,6 +63,24 @@ describe('Dashboard', () => {
     expect(wrapper.findComponent(EmptyState).exists()).toBe(true)
     expect(wrapper.findAllComponents(PollCard)).toHaveLength(0)
     expect(wrapper.text()).toContain('New polls show up here')
+    // Plain, direct empty-state body (no "gather"/metaphor wording).
+    expect(wrapper.text()).toContain(
+      "Create one to collect everyone's availability. Takes about a minute.",
+    )
+  })
+
+  it('renders the plain subheading and a "Loading your polls…" line while the cold load is in flight', async () => {
+    // Leave the GET pending so `loading` stays true and the loading branch (not empty/grid) renders.
+    get.mockReturnValue(new Promise(() => {}))
+    const wrapper = mountDashboard()
+    await nextTick() // let onMounted's list() flip `loading` and Vue flush the re-render
+
+    expect(wrapper.text()).toContain(
+      'Find a time everyone can make. See all your polls in one place.',
+    )
+    expect(wrapper.text()).toContain('Loading your polls…')
+    // Old "gathering" voice is gone.
+    expect(wrapper.text()).not.toContain('Gathering your polls')
   })
 
   it('renders one PollCard per returned poll, newest-first (no re-sort), when polls exist', async () => {

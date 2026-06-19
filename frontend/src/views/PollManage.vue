@@ -16,7 +16,7 @@ import { formatCloseLabel, formatDate } from '@/lib/utils/timezone'
 import type { SlotMeta } from '@/lib/api/types'
 
 /**
- * Creator-facing manage view (`/polls/:id`): who responded, which slot is in bloom, the share box,
+ * Creator-facing manage view (`/polls/:id`): who responded, which slot is the top pick, the share box,
  * and the complete-poll flow. Thin by contract, all fetching lives in {@link usePollStore}; this
  * view only derives display shapes (a `slotId → SlotMeta` map walked once) and owns the
  * complete-confirm dialog. `finalSlotId`/`completedAt` are creator-only and never leave this view.
@@ -200,7 +200,7 @@ const bestLabel = computed<string>(() => {
           </h1>
           <Pill v-if="isCompleted" tone="mint">Completed</Pill>
           <Pill v-else-if="isCancelled" tone="neutral">Cancelled</Pill>
-          <Pill v-else tone="pollen">Open · gathering responses</Pill>
+          <Pill v-else tone="pollen">Open · collecting responses</Pill>
           <!-- Reuses PollEditor in edit mode. Hidden for cancelled polls (not editable in place —
                reopen first); shown for open + completed. -->
           <RouterLink
@@ -259,7 +259,7 @@ const bestLabel = computed<string>(() => {
         @complete="openConfirm"
       />
       <div v-else class="mb-8 rounded-2xl border border-line bg-surface p-6 text-dim shadow-card">
-        This poll is cancelled. Reopen it to keep gathering responses.
+        This poll is cancelled. Reopen it to keep collecting responses.
       </div>
 
       <!-- Two-column body -->

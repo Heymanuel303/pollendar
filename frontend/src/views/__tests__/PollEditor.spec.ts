@@ -232,6 +232,10 @@ describe('PollEditor, edit mode', () => {
     expect(wrapper.get('h1').text()).toBe('Edit poll')
     expect(buttonByText(wrapper, 'Save changes')).toBeTruthy()
     expect(buttonByText(wrapper, 'Create poll')).toBeFalsy()
+    // Edit subheading is split into two sentences (no comma splice).
+    expect(wrapper.text()).toContain(
+      'Add or adjust times, or deactivate ones that no longer work. Existing votes are kept.',
+    )
     // Title hydrated onto the form input; timezone threaded to the editor.
     expect((wrapper.get('input').element as HTMLInputElement).value).toBe('Team dinner')
     expect(wrapper.findComponent(DateSlotEditor).props('timezone')).toBe('Europe/Brussels')

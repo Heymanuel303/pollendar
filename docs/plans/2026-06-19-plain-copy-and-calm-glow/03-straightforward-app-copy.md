@@ -71,7 +71,7 @@ Rewrite the remaining non-winning-slot UI copy across all frontend views and com
 - Spot-check that the phase-2 winning-slot label survives unchanged: `grep -rn "Top pick" frontend/src` still shows the phase-2 results/badge usages, and `frontend/src/views/__tests__/PublicThanks.spec.ts` still asserts the winning-slot label `'Top pick'` (set in phase 2) — do not change it.
 
 ## Acceptance
-- [ ] All in-scope UI copy reads in a plain, direct voice; `grep` for `gathering responses`, `Leaning so far`, `Leaning now`, `like pollen`, and `, in bloom` over `frontend/src` (excluding tests) returns nothing.
-- [ ] No em dash (—) appears inside running prose anywhere in `frontend/src/**/*.vue`; the email optional label reads `Email (optional)`.
-- [ ] `PollManage.spec.ts` asserts `Open · collecting responses` and `PublicPoll.spec.ts` asserts `Top pick so far`; `PublicThanks.spec.ts`'s winning-slot assertion (`Top pick`, set in phase 2) is left untouched.
-- [ ] `cd frontend && npm run lint && npm run type-check && npm run test:unit` all pass; no CSS class, component name, `data-testid`, prop, or route was changed.
+- [x] All in-scope UI copy reads in a plain, direct voice; `grep` for `gathering responses`, `Leaning so far`, `Leaning now`, `like pollen`, and `, in bloom` over `frontend/src` (excluding tests) returns nothing.
+- [x] No em dash (—) appears inside running prose anywhere in `frontend/src/**/*.vue`; the email optional label reads `Email (optional)`.
+- [x] `PollManage.spec.ts` asserts `Open · collecting responses` and `PublicPoll.spec.ts` asserts `Top pick so far`; `PublicThanks.spec.ts`'s winning-slot assertion (`Top pick`, set in phase 2) is left untouched.
+- [x] `cd frontend && npm run lint && npm run type-check && npm run test:unit` all pass; no CSS class, component name, `data-testid`, prop, or route was changed.

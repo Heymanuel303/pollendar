@@ -100,7 +100,7 @@ describe('PollManage, status pill + Edit link + actions', () => {
   it('open poll: pollen "Open" pill, Edit link → /polls/42/edit, Cancel action, no Reopen', async () => {
     const wrapper = await mountWithPoll(makePoll())
 
-    expect(wrapper.text()).toContain('Open · gathering responses')
+    expect(wrapper.text()).toContain('Open · collecting responses')
     expect(editLink(wrapper)?.props('to')).toBe('/polls/42/edit')
     const labels = wrapper.findAll('button').map((b) => b.text())
     expect(labels).toContain('Cancel poll')
@@ -122,7 +122,10 @@ describe('PollManage, status pill + Edit link + actions', () => {
 
     expect(wrapper.text()).toContain('Cancelled')
     expect(wrapper.findComponent(BestSlotBloom).exists()).toBe(false)
-    expect(wrapper.text()).toContain('This poll is cancelled')
+    // Plain cancelled notice: "collecting", not "gathering".
+    expect(wrapper.text()).toContain(
+      'This poll is cancelled. Reopen it to keep collecting responses.',
+    )
     expect(wrapper.findAll('button').map((b) => b.text())).toContain('Reopen poll')
     expect(editLink(wrapper)).toBeFalsy()
   })

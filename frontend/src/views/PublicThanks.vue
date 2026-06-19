@@ -91,7 +91,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
         class="bloom-bg mt-10 rounded-2xl border border-pollen/30 bg-surface p-6 shadow-glow"
       >
         <div class="flex items-center justify-between gap-3">
-          <p class="text-xs uppercase tracking-widest text-mute">Leaning now</p>
+          <p class="text-xs uppercase tracking-widest text-mute">Top pick so far</p>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
             >✦ Top pick</span
@@ -113,7 +113,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
       <!-- Share actions -->
       <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
         <h2 class="font-display text-base font-semibold">Help find the time everyone can make</h2>
-        <p class="mt-1 text-sm text-dim">Pass it along, it takes about a minute.</p>
+        <p class="mt-1 text-sm text-dim">Pass it along. It takes about a minute.</p>
         <div class="mt-4 flex flex-col gap-3 sm:flex-row">
           <CopyButton :value="shareUrl" variant="primary">
             <span aria-hidden="true">🔗</span> Copy link
@@ -140,7 +140,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
       </div>
 
       <footer class="mt-12 border-t border-line/60 pt-6 text-center text-sm text-mute">
-        <p>The organizer will confirm the final time, we'll email you if you left an address.</p>
+        <p>The organizer confirms the final time. We'll email you if you left an address.</p>
         <p class="mt-3 text-xs">pollendar.app</p>
       </footer>
     </main>

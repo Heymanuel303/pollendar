@@ -11,7 +11,7 @@ import type { Availability, ResponseAnswer, SubmitResponsesDto } from '@/lib/api
 
 /**
  * Anonymous participant entry point (`/p/:publicToken`): renders the poll's dates → slots with a
- * tri-state toggle per slot, an "About you" form, and a sticky "Leaning so far" footer. Thin —
+ * tri-state toggle per slot, an "About you" form, and a sticky "Top pick so far" footer. Thin —
  * fetch/submit live in `publicPollStore`; this view holds only the local form/answer state.
  */
 const route = useRoute()
@@ -142,7 +142,7 @@ async function onSubmit(): Promise<void> {
               >Closed</span
             >
             <span class="text-xs uppercase tracking-widest text-mute">
-              {{ isOpen ? 'gathering responses' : 'no longer accepting responses' }}
+              {{ isOpen ? 'collecting responses' : 'no longer accepting responses' }}
             </span>
           </div>
           <h1 class="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -250,7 +250,7 @@ async function onSubmit(): Promise<void> {
         <!-- Results panel (renders for both open and closed polls) -->
         <div v-show="view === 'results'">
           <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
-            <p class="text-xs uppercase tracking-widest text-mute">Leaning so far</p>
+            <p class="text-xs uppercase tracking-widest text-mute">Top pick so far</p>
             <p class="mt-1.5 flex items-center gap-2 text-base">
               <template v-if="leaningLabel">
                 <span class="pollen-dot inline-block h-2.5 w-2.5" aria-hidden="true"></span>
@@ -294,7 +294,7 @@ async function onSubmit(): Promise<void> {
             </div>
             <div>
               <label for="participant-email" class="mb-2 block text-sm font-medium text-dim">
-                Email <span class="text-mute">— optional</span>
+                Email <span class="text-mute">(optional)</span>
               </label>
               <input
                 id="participant-email"
@@ -321,14 +321,14 @@ async function onSubmit(): Promise<void> {
         class="mx-auto flex max-w-3xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
       >
         <div class="min-w-0">
-          <p class="text-xs uppercase tracking-widest text-mute">Leaning so far</p>
+          <p class="text-xs uppercase tracking-widest text-mute">Top pick so far</p>
           <p class="mt-0.5 flex items-center gap-2 text-sm">
             <template v-if="leaningLabel">
               <span class="pollen-dot inline-block h-2.5 w-2.5" aria-hidden="true"></span>
               <span class="num font-medium text-moonlight">{{ leaningLabel }}</span>
               <span class="text-pollen">✦</span>
             </template>
-            <span v-else class="text-mute">No responses yet, be the first.</span>
+            <span v-else class="text-mute">No responses yet. Be the first.</span>
           </p>
         </div>
         <div class="flex flex-col items-stretch gap-2 sm:items-end">

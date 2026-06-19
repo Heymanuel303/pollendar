@@ -26,14 +26,14 @@ const previewRows: Cell[][] = [
   <section class="grid items-center gap-10 py-8 sm:gap-14 sm:py-10 lg:grid-cols-2 lg:py-16">
     <!-- Copy + EmailGate -->
     <div>
-      <p class="text-xs uppercase tracking-widest text-mute">Availability polling, in bloom</p>
+      <p class="text-xs uppercase tracking-widest text-mute">Group availability polling</p>
       <h1
         class="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl"
       >
         Find the time everyone can make.
       </h1>
       <p class="mt-5 max-w-xl text-lg leading-relaxed text-dim">
-        Pollendar gathers everyone's availability like pollen, and the best time blooms on its own.
+        Everyone marks when they're free, and Pollendar shows the time that works best.
       </p>
 
       <div class="mt-8 max-w-md">
@@ -60,7 +60,7 @@ const previewRows: Cell[][] = [
         <div class="flex items-center justify-between">
           <div>
             <h2 class="font-display text-lg font-semibold tracking-tight">Team dinner</h2>
-            <p class="text-sm text-mute">Europe/Brussels · gathering responses</p>
+            <p class="text-sm text-mute">Europe/Brussels · collecting responses</p>
           </div>
           <span
             class="rounded-full bg-pollen/15 px-2.5 py-1 text-xs font-medium text-pollen ring-1 ring-pollen/30"
