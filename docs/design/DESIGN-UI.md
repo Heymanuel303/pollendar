@@ -9,8 +9,8 @@ who opens one link and marks when they're free.
 
 ## Design principles
 
-- **The winner blooms.** The best slot is never just a bolded row — it visibly *blooms*: a warm
-  pollen glow, a soft halo, and an "In bloom" marker. The eye should land on the answer first.
+- **The winner blooms.** The best slot is never just a bolded row. It reads as a bloom via its
+  pollen ring, colour, and an "In bloom" marker. The eye should land on the answer first.
 - **Pollen, not spreadsheets.** Availability is rendered as a living constellation of golden
   dots, not a dense grid of checkboxes. Density communicates consensus at a glance.
 - **One link, no friction.** A participant should go from link to submitted in under a minute —
@@ -83,9 +83,8 @@ cards off the `canvas` without harsh edges.
 
 **The bloom** — reserved for the winning slot:
 
-- `shadow-glow` — `0 0 0 1px rgb(255 200 87 / .55), 0 0 28px rgb(255 200 87 / .32)`: a pollen
-  ring plus a warm outer halo.
-- `.bloom-bg` — a faint radial pollen gradient washed behind the winner.
+- `shadow-glow` — `0 0 0 1px rgb(255 200 87 / .40)`: a thin 1px pollen ring (no outer halo).
+- `.bloom-bg` — a very faint radial pollen gradient washed behind the winner.
 - `✦` — a small four-point sparkle glyph that marks the bloom ("✦ In bloom").
 
 **Motion principles:**
@@ -184,7 +183,7 @@ Port the design tokens into `src/assets/main.css`:
   --color-coral: #FF7A6B;
   --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
   --font-sans: "Inter", ui-sans-serif, sans-serif;
-  --shadow-glow: 0 0 0 1px rgb(255 200 87 / .55), 0 0 28px rgb(255 200 87 / .32);
+  --shadow-glow: 0 0 0 1px rgb(255 200 87 / .40);
 }
 ```
 

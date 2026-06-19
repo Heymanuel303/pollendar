@@ -23,7 +23,7 @@
   --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
   --font-sans: 'Inter', ui-sans-serif, sans-serif;
 
-  --shadow-glow: 0 0 0 1px rgb(255 200 87 / 0.55), 0 0 28px rgb(255 200 87 / 0.32);
+  --shadow-glow: 0 0 0 1px rgb(255 200 87 / 0.40);
   --shadow-card: 0 8px 24px rgb(0 0 0 / 0.35);
 
   /* Two motions only — settle (ease into place) and bloom (the winner's glow
@@ -74,8 +74,8 @@ body {
   .bg-dusk {
     background-color: var(--color-canvas);
     background-image:
-      radial-gradient(900px 520px at 85% -12%, rgb(255 200 87 / 0.1), transparent 60%),
-      radial-gradient(720px 460px at -5% 110%, rgb(124 138 224 / 0.12), transparent 60%);
+      radial-gradient(900px 520px at 85% -12%, rgb(255 200 87 / 0.05), transparent 60%),
+      radial-gradient(720px 460px at -5% 110%, rgb(124 138 224 / 0.06), transparent 60%);
   }
 
   /* A single grain of pollen — the constellation marker. Size is set by callers
@@ -83,7 +83,7 @@ body {
   .pollen-dot {
     background: radial-gradient(circle at 35% 30%, #ffe6a8, #ffc857 58%, #e0a325);
     border-radius: 9999px;
-    box-shadow: 0 0 8px rgb(255 200 87 / 0.55);
+    box-shadow: 0 0 4px rgb(255 200 87 / 0.30);
   }
 
   /* The bloom — reserved for the winning slot. */
@@ -95,7 +95,7 @@ body {
   .bloom-bg {
     background-image: radial-gradient(
       130% 120% at 50% 0%,
-      rgb(255 200 87 / 0.16),
+      rgb(255 200 87 / 0.05),
       rgb(255 200 87 / 0) 70%
     );
   }

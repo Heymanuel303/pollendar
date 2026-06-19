@@ -2,7 +2,7 @@
 
 **Slug:** `plain-copy-and-calm-glow` (folder: `docs/plans/2026-06-19-plain-copy-and-calm-glow/`)
 **Created:** 2026-06-19
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Make Pollendar feel calmer and less AI-written. Dial the pollen glow/bloom visual effect down to near-flat, and rewrite the UI and email copy into a plain, direct voice. The winning-slot label changes from "✦ In bloom" to "✦ Top pick" (the ✦ sparkle stays).
@@ -31,7 +31,7 @@ Make Pollendar feel calmer and less AI-written. Dial the pollen glow/bloom visua
 - [ ] `frontend`: lint + type-check + test:unit, and `backend`: lint + test, all pass.
 
 ## Phases
-1. [01-calm-glow-visuals](01-calm-glow-visuals.md) — dial the glow tokens in `main.css` to near-flat and sync `DESIGN-UI.md` · _solo_
+1. [01-calm-glow-visuals](01-calm-glow-visuals.md) — dial the glow tokens in `main.css` to near-flat and sync `DESIGN-UI.md` · _solo_ ✓
 2. [02-direct-winning-slot-copy](02-direct-winning-slot-copy.md) — "✦ In bloom" → "✦ Top pick" across 6 components + Landing/PublicThanks, plus the bloom-microcopy lines and "In bloom" test assertions · _solo_
 3. [03-straightforward-app-copy](03-straightforward-app-copy.md) — plain-voice rewrite of all remaining UI copy, fanned out one agent per screen · _workflow_
 4. [04-email-copy](04-email-copy.md) — email templates + subjects to the plain voice ("Top pick", no em dash) · _solo_

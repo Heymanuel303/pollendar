@@ -3,6 +3,7 @@
 **Plan:** [plain-copy-and-calm-glow](00-overview.md)
 **Depends on:** none
 **Execution:** solo
+**Status:** completed
 
 ## Context
 The wider feature makes Pollendar feel calmer and less AI-written: dial the glow/bloom effect down to near-flat, and rewrite UI + email copy into a plain, direct voice (the winning-slot label becomes "✦ Top pick"). This phase owns ONLY the visual glow. Right now the winner reads as a strong gold halo (a 28px blur ring) plus a saturated background wash, which feels loud and over-produced. We want the winner to read mainly via its border/ring + colour, with just a faint 1px pollen ring and a tiny dot glow. The copy rewrite is a separate phase and is explicitly out of scope here.
@@ -59,9 +60,9 @@ This phase changes CSS values and doc token text only, NOT user-facing copy. But
 - Do NOT grep for `In bloom` here — that string is intentionally still present in Phase 1 (it is rewritten in Phase 2).
 
 ## Acceptance
-- [ ] `frontend/src/assets/main.css` `--shadow-glow` is `0 0 0 1px rgb(255 200 87 / 0.40)` (single 1px ring, no 28px halo layer).
-- [ ] `.bloom-bg` peak alpha is `0.05`, `.pollen-dot` glow is `0 0 4px rgb(255 200 87 / 0.30)`, and `.bg-dusk` washes are `0.05` (pollen) and `0.06` (indigo).
-- [ ] `@keyframes bloom` and the `prefers-reduced-motion` guard are unchanged structurally and the animation still fades in over `0.25s ease-out`.
-- [ ] `docs/design/DESIGN-UI.md` documents the new near-flat `shadow-glow` value in both the "The bloom" section and the implementation code block, with no leftover `28px` / `0.55` / `0.32` / `0.16` glow numbers.
-- [ ] `cd frontend && npm run lint`, `npm run type-check`, and `npm run test:unit` all pass with no changes to any test file.
-- [ ] No CSS class, the `--shadow-glow` token name, the `shadow-glow` utility name, and no `data-testid` were renamed; no copy strings were changed.
+- [x] `frontend/src/assets/main.css` `--shadow-glow` is `0 0 0 1px rgb(255 200 87 / 0.40)` (single 1px ring, no 28px halo layer).
+- [x] `.bloom-bg` peak alpha is `0.05`, `.pollen-dot` glow is `0 0 4px rgb(255 200 87 / 0.30)`, and `.bg-dusk` washes are `0.05` (pollen) and `0.06` (indigo).
+- [x] `@keyframes bloom` and the `prefers-reduced-motion` guard are unchanged structurally and the animation still fades in over `0.25s ease-out`.
+- [x] `docs/design/DESIGN-UI.md` documents the new near-flat `shadow-glow` value in both the "The bloom" section and the implementation code block, with no leftover `28px` / `0.55` / `0.32` / `0.16` glow numbers.
+- [x] `cd frontend && npm run lint`, `npm run type-check`, and `npm run test:unit` all pass with no changes to any test file.
+- [x] No CSS class, the `--shadow-glow` token name, the `shadow-glow` utility name, and no `data-testid` were renamed; no copy strings were changed.
