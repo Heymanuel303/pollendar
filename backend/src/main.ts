@@ -29,7 +29,7 @@ async function bootstrap() {
   );
 
   // Safety-net for unhandled Prisma errors: maps known codes to clean HTTP statuses without leaking
-  // DB internals. The inline service mappings (HttpException subclasses) are unaffected — this filter
+  // DB internals. The inline service mappings (HttpException subclasses) are unaffected, this filter
   // only catches `Prisma.PrismaClientKnownRequestError`.
   app.useGlobalFilters(new PrismaExceptionFilter());
 

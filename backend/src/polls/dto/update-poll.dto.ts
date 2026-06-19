@@ -45,7 +45,7 @@ export class UpdatePollDateDto {
 }
 
 /**
- * Edit an open poll. Every field is optional — only the keys present are patched. `description`
+ * Edit an open poll. Every field is optional, only the keys present are patched. `description`
  * and `closesAt` may be sent as `null` to clear them.
  *
  * `dates`, when present, is the FULL desired tree of dates → slots and is applied as a **diff**,

@@ -4,7 +4,7 @@ import { createTestApp, type TestApp } from './setup-e2e';
 
 /**
  * Smoke test: the harness boots the whole app against the disposable schema and the global `/api`
- * prefix is wired. Replaces the stock Hello-World `/ (GET)` expectation — the root is now `/api`,
+ * prefix is wired. Replaces the stock Hello-World `/ (GET)` expectation, the root is now `/api`,
  * and `/` outside the prefix 404s.
  */
 describe('App bootstrap (e2e)', () => {

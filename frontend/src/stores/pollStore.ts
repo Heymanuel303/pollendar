@@ -25,13 +25,13 @@ type RequestState = 'idle' | 'loading' | 'success' | 'error'
 /**
  * A poll row as returned by the **list** endpoint `GET /api/polls`
  * (`PollsService.findAllForUser` → `prisma.poll.findMany({ where:{userId}, orderBy:{createdAt:'desc'} })`).
- * This is the raw model row — there are NO nested `dates`, NO `_count`, and NO response count in the
+ * This is the raw model row, there are NO nested `dates`, NO `_count`, and NO response count in the
  * payload today. The optional `responseCount` / `_count` / `dates` fields are declared
  * forward-compatibly so the card lights up automatically once the backend enriches the list; they
  * are always absent for now.
  *
  * Distinct from the *detail* `Poll` in `@/lib/api/types` (from `GET /api/polls/:id`), which always
- * carries nested `dates` + slots — the dashboard never fetches that heavier shape.
+ * carries nested `dates` + slots, the dashboard never fetches that heavier shape.
  *
  * TODO(phase-hardening): backend GET /polls should include `_count.participants` + a date range so
  * the card can show the response grains and the `Jun 26–28` range; see 99-hardening. Do NOT
@@ -60,7 +60,7 @@ export interface Poll {
 
 /**
  * Creator-side poll store. Owns the dashboard **list** slice (`list()` → GET `/api/polls`), poll
- * **create** (`create()` → POST `/api/polls`), and the manage-view detail slice — `get()`,
+ * **create** (`create()` → POST `/api/polls`), and the manage-view detail slice, `get()`,
  * `loadResults()`, `loadInviteMessage()`, and `complete()`. The shared fetch client already sends
  * cookie credentials + JSON headers, so the store never touches `fetch`.
  */
@@ -70,7 +70,7 @@ export const usePollStore = defineStore('poll', () => {
   /** Last create error as a human-readable message, or `null`. Cleared at the start of each attempt. */
   const error = ref<string | null>(null)
 
-  /** The creator's polls, newest-first — the list endpoint already orders `createdAt desc`. */
+  /** The creator's polls, newest-first, the list endpoint already orders `createdAt desc`. */
   const polls = ref<Poll[]>([])
   /** True while `list()` is in flight (drives the dashboard's calm loading affordance). */
   const loading = ref(false)
@@ -84,13 +84,13 @@ export const usePollStore = defineStore('poll', () => {
   /** Live aggregate results (best slot + per-slot tallies) for `currentPoll`, or `null`. */
   const results = ref<PollResults | null>(null)
   /** Per-participant rows (who voted + per-slot picks) for the owner-mode matrix, or `[]`.
-   *  PRIVACY: rows carry `displayName` only — never email. */
+   *  PRIVACY: rows carry `displayName` only, never email. */
   const participants = ref<ParticipantRow[]>([])
   /** Unfiltered participant count from the last `loadParticipants` (for any future pagination UI). */
   const participantsTotal = ref(0)
   /** `true` when more rows remain beyond the loaded page. */
   const participantsHasMore = ref(false)
-  /** Lifecycle of the last `loadParticipants` — the matrix degrades to empty on `'error'`. */
+  /** Lifecycle of the last `loadParticipants`, the matrix degrades to empty on `'error'`. */
   const participantsState = ref<RequestState>('idle')
   /** The backend invite text + canonical `shareUrl`, or `null`. `ShareBox` builds the full §7 copy. */
   const invite = ref<InviteMessage | null>(null)
@@ -135,7 +135,7 @@ export const usePollStore = defineStore('poll', () => {
 
   /**
    * Load the creator's polls via `GET /api/polls` (cookie credentials). The backend already orders
-   * newest-first, so the result is assigned verbatim — **no client re-sort**. A 401 is not
+   * newest-first, so the result is assigned verbatim, **no client re-sort**. A 401 is not
    * special-cased here (the router guard gates the dashboard); any failure records a readable
    * `listError` and the dashboard offers a retry.
    */
@@ -145,7 +145,7 @@ export const usePollStore = defineStore('poll', () => {
     try {
       polls.value = await apiGet<Poll[]>('/polls')
     } catch {
-      listError.value = 'Could not load your polls — please try again.'
+      listError.value = 'Could not load your polls, please try again.'
     } finally {
       loading.value = false
     }
@@ -166,7 +166,7 @@ export const usePollStore = defineStore('poll', () => {
       detailError.value =
         err instanceof ApiError && err.status === 404
           ? 'Poll not found'
-          : 'Could not load this poll — please try again.'
+          : 'Could not load this poll, please try again.'
     } finally {
       detailLoading.value = false
     }
@@ -190,8 +190,8 @@ export const usePollStore = defineStore('poll', () => {
    * public participants endpoint (`getParticipantResponses` → `GET /api/public/polls/:token/
    * participants-responses`), keyed by `currentPoll.publicToken`. Optional `limit`/`offset` page the
    * rows. Supplementary like {@link loadResults}: on failure the rows clear and `participantsState`
-   * goes `'error'` (the matrix simply shows no responses) — it does NOT throw, so the manage page
-   * still renders. PRIVACY: rows carry `displayName` only — never email.
+   * goes `'error'` (the matrix simply shows no responses), it does NOT throw, so the manage page
+   * still renders. PRIVACY: rows carry `displayName` only, never email.
    */
   async function loadParticipants(
     token: string,
@@ -230,8 +230,8 @@ export const usePollStore = defineStore('poll', () => {
   }
 
   /**
-   * Re-hydrate the supplementary slices hanging off `currentPoll` — live results, participant rows,
-   * invite text — in parallel. Each loader swallows its own error (they are supplementary), so this
+   * Re-hydrate the supplementary slices hanging off `currentPoll`, live results, participant rows,
+   * invite text, in parallel. Each loader swallows its own error (they are supplementary), so this
    * never throws. No-op when `currentPoll` is null. Every in-place mutation (shape A) awaits this; the
    * cold-load orchestrator (shape B) awaits it too. Add a slice once here and every refresh stays correct.
    */
@@ -260,7 +260,7 @@ export const usePollStore = defineStore('poll', () => {
 
   /**
    * Cold-load orchestrator for the manage/edit detail views (component mount / navigation). Resets the
-   * detail slice via `get()` (a skeleton is correct here — see `get`), then awaits `hydrateDerived` so
+   * detail slice via `get()` (a skeleton is correct here, see `get`), then awaits `hydrateDerived` so
    * results + participants + invite land before the caller proceeds. The ONLY detail-load entry point a
    * view calls in `onMounted`; views never chain the individual loaders themselves.
    */
@@ -302,7 +302,7 @@ export const usePollStore = defineStore('poll', () => {
    * derived set (results + participants + invite) is re-hydrated (a date/slot change can move the best
    * slot and the invite copy). The backend rejects an edit of a poll that is no longer `open` (409) and
    * validation failures (400); both are surfaced as a readable `updateError` and rethrown so the edit
-   * view stays reactive. Voted dates/slots are immutable in place server-side — the creator marks them
+   * view stays reactive. Voted dates/slots are immutable in place server-side, the creator marks them
    * invalidated + re-adds.
    */
   async function update(pollId: string, payload: UpdatePollPayload): Promise<void> {
@@ -323,7 +323,7 @@ export const usePollStore = defineStore('poll', () => {
   }
 
   /**
-   * Delete an owned poll: `DELETE /api/polls/:id` (204, cascade — votes go with it). On success the
+   * Delete an owned poll: `DELETE /api/polls/:id` (204, cascade, votes go with it). On success the
    * detail slice (`currentPoll`/`results`/`invite`) is cleared and the row is dropped from the cached
    * `polls` list so the dashboard reflects the deletion without a re-fetch. A failure records a
    * readable `removeError` and rethrows so the confirm dialog stays reactive.
@@ -351,7 +351,7 @@ export const usePollStore = defineStore('poll', () => {
    * the dashboard `polls[]` row is written through and the full derived set is re-hydrated. A 409 (not
    * open) is surfaced as `lifecycleError` and rethrown so the confirm dialog stays reactive.
    * `lifecycleTransitioning` clears only after `hydrateDerived` resolves (the button stops spinning once
-   * data is fresh — no floating refresh).
+   * data is fresh, no floating refresh).
    */
   async function cancel(pollId: string): Promise<void> {
     lifecycleTransitioning.value = true
@@ -443,7 +443,7 @@ function messageFor(err: unknown): string {
     if (err.status === 409) return 'That conflicts with an existing entry.'
     return 'Could not create the poll. Please try again.'
   }
-  return 'Could not reach the server — try again.'
+  return 'Could not reach the server, try again.'
 }
 
 /** Map a `complete()` failure to a single user-facing sentence, branching on the documented codes. */
@@ -453,7 +453,7 @@ function completeMessageFor(err: unknown): string {
     if (err.status === 400) return "That slot isn't part of this poll."
     return 'Could not complete the poll. Please try again.'
   }
-  return 'Could not reach the server — try again.'
+  return 'Could not reach the server, try again.'
 }
 
 /** Map an `update()` failure to a single user-facing sentence. */
@@ -466,7 +466,7 @@ function updateMessageFor(err: unknown): string {
     if (err.status === 409) return 'This poll can no longer be edited.'
     return 'Could not save your changes. Please try again.'
   }
-  return 'Could not reach the server — try again.'
+  return 'Could not reach the server, try again.'
 }
 
 /** Map a `remove()` failure to a single user-facing sentence. */
@@ -475,7 +475,7 @@ function removeMessageFor(err: unknown): string {
     if (err.status === 404) return 'This poll no longer exists.'
     return 'Could not delete the poll. Please try again.'
   }
-  return 'Could not reach the server — try again.'
+  return 'Could not reach the server, try again.'
 }
 
 /** Map a `cancel()`/`reopen()` failure to a single user-facing sentence. */
@@ -484,5 +484,5 @@ function lifecycleMessageFor(err: unknown): string {
     if (err.status === 409) return 'This poll is not in a state that allows that change.'
     return 'Could not change the poll status. Please try again.'
   }
-  return 'Could not reach the server — try again.'
+  return 'Could not reach the server, try again.'
 }

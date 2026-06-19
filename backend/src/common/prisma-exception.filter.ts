@@ -11,7 +11,7 @@ import type { Response } from 'express';
  * Safety-net filter for Prisma errors that escape the inline `try/catch` mappings in the services
  * (`polls.service.ts`, `public.service.ts`, `notifications.service.ts`). Those services throw
  * `HttpException` subclasses (`Conflict`/`NotFound`/`BadRequest`) which are NOT caught here because
- * `@Catch` is scoped to `Prisma.PrismaClientKnownRequestError` — so their behavior is preserved.
+ * `@Catch` is scoped to `Prisma.PrismaClientKnownRequestError`, so their behavior is preserved.
  *
  * Maps the known Prisma codes to clean HTTP statuses and NEVER echoes `exception.code`/`meta`/
  * `message`, so an unhandled DB error can't leak schema internals (column names, constraint targets).

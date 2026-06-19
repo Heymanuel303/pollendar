@@ -32,7 +32,7 @@ function timeToDate(time?: string): Date | null {
   return new Date(`1970-01-01T${normalized}Z`);
 }
 
-/** Stable identity of a slot for in-service dedupe — MySQL treats NULL end_times as distinct. */
+/** Stable identity of a slot for in-service dedupe, MySQL treats NULL end_times as distinct. */
 function slotKey(slot: CreatePollSlotDto | UpdatePollSlotDto): string {
   return `${slot.startTime ?? ''}|${slot.endTime ?? ''}|${slot.isAllDay ?? false}`;
 }
@@ -40,7 +40,7 @@ function slotKey(slot: CreatePollSlotDto | UpdatePollSlotDto): string {
 /**
  * The canonical "owned poll detail" shape: the poll with its nested dates → slots (both ordered by
  * sortOrder, each slot carrying its response count). EVERY endpoint that returns an owned poll to
- * the client — read, edit, and the lifecycle transitions (cancel/reopen/complete) — must use this.
+ * the client, read, edit, and the lifecycle transitions (cancel/reopen/complete), must use this.
  * The frontend's `OwnedPoll` contract requires `dates`; a flat row would wipe `currentPoll.dates`
  * and leave the availability grid + who's-coming matrix blank until a full page reload.
  */
@@ -133,11 +133,11 @@ export class PollsService {
   /**
    * Edit an open poll's scalar fields and (optionally) reconcile its nested dates + slots, all in
    * one transaction. Only keys present in the DTO are patched. Editing is gated to
-   * `status === 'open'` — a 409 otherwise.
+   * `status === 'open'`, a 409 otherwise.
    *
    * `dates` is applied as a **diff** that preserves votes:
    * - When the poll has zero votes the diff collapses to the historical destructive replace
-   *   (deleteMany → recreate) — fast and equivalent since nothing can be lost.
+   *   (deleteMany → recreate), fast and equivalent since nothing can be lost.
    * - Once any vote exists NO row is ever deleted. Existing rows are matched by `id`; a non-null
    *   incoming `invalidatedAt` soft-invalidates (votes kept), a `null` marker reactivates; rows
    *   without an `id` are created; rows absent from the payload are defensively soft-invalidated.
@@ -207,7 +207,7 @@ export class PollsService {
   }
 
   /**
-   * Has-votes diff path — NEVER deletes a row (a Response must never be lost). Matches incoming
+   * Has-votes diff path, NEVER deletes a row (a Response must never be lost). Matches incoming
    * dates/slots to existing rows by `id`, honours the `invalidatedAt` marker before any scalar
    * reconciliation, creates rows without an `id`, soft-invalidates rows absent from the payload,
    * and refuses an in-place edit of a voted date/slot with a 409.
@@ -276,7 +276,7 @@ export class PollsService {
         continue;
       }
       if (existingDate.invalidatedAt != null) {
-        continue; // already invalidated — idempotent
+        continue; // already invalidated, idempotent
       }
       const now = new Date();
       await tx.pollDate.update({
@@ -322,7 +322,7 @@ export class PollsService {
         existingDate.eventDate.getTime()
     ) {
       throw new ConflictException(
-        'A slot with votes cannot be edited in place — invalidate it and add a replacement',
+        'A slot with votes cannot be edited in place, invalidate it and add a replacement',
       );
     }
     // Patch the date's own sortOrder only when it has no voted slots.
@@ -381,7 +381,7 @@ export class PollsService {
       }
       if (existingSlot._count.responses >= 1) {
         throw new ConflictException(
-          'A slot with votes cannot be edited in place — invalidate it and add a replacement',
+          'A slot with votes cannot be edited in place, invalidate it and add a replacement',
         );
       }
       await tx.pollSlot.update({
@@ -402,7 +402,7 @@ export class PollsService {
         continue;
       }
       if (existingSlot.invalidatedAt != null) {
-        continue; // already invalidated — idempotent
+        continue; // already invalidated, idempotent
       }
       await tx.pollSlot.update({
         where: { id: existingSlot.id },
@@ -433,7 +433,7 @@ export class PollsService {
   /**
    * Recompute the persisted `slot_tallies` cache for every still-active slot of the poll, mirroring
    * the submit-path recompute but excluding invalidated dates/slots from scoring. Tally rows for
-   * just-invalidated slots are left in place (no longer read — results/best exclude them).
+   * just-invalidated slots are left in place (no longer read, results/best exclude them).
    */
   private async recomputeTallies(
     tx: Prisma.TransactionClient,
@@ -494,7 +494,7 @@ export class PollsService {
         throw new NotFoundException('Poll not found');
       }
       if (poll.status === PollStatus.cancelled) {
-        return poll; // idempotent — no second update
+        return poll; // idempotent, no second update
       }
       if (poll.status === PollStatus.completed) {
         throw new ConflictException(
@@ -664,7 +664,7 @@ export class PollsService {
     return 'invalidatedAt' in row && row.invalidatedAt != null;
   }
 
-  /** Total `Response` rows across every slot of the poll — chooses the update path. */
+  /** Total `Response` rows across every slot of the poll, chooses the update path. */
   private countResponsesForPoll(
     tx: Prisma.TransactionClient,
     pollId: bigint,
@@ -698,7 +698,7 @@ export class PollsService {
     }));
   }
 
-  /** Nested create payload — dates and their slots are created atomically with the poll. */
+  /** Nested create payload, dates and their slots are created atomically with the poll. */
   private buildPollData(
     userId: bigint,
     dto: CreatePollDto,

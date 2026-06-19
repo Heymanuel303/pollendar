@@ -7,7 +7,7 @@ import { buildMariaDbAdapter } from './mariadb-adapter';
  * Thin wrapper over the generated Prisma client that ties its connection lifecycle
  * to the Nest module lifecycle. Prisma 7 requires a driver adapter (the Rust engine /
  * built-in URL connection is gone), so we build the MySQL/MariaDB adapter from the
- * validated DATABASE_URL — the single connection string from the repo-root .env.
+ * validated DATABASE_URL, the single connection string from the repo-root .env.
  */
 @Injectable()
 export class PrismaService

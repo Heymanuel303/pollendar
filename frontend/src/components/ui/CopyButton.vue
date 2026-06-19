@@ -31,7 +31,7 @@ async function writeToClipboard(text: string): Promise<boolean> {
       return true
     }
   } catch {
-    // Permission denied / insecure context — fall through to the legacy path.
+    // Permission denied / insecure context, fall through to the legacy path.
   }
   try {
     const textarea = document.createElement('textarea')

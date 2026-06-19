@@ -29,7 +29,7 @@ type RequestState = 'idle' | 'loading' | 'success' | 'error'
  * - `loadParticipants(token, opts?)` → GET the per-participant rows for the matrix view.
  *
  * NOTE: the spec calls the results action `results`, but that collides with the reactive `results`
- * ref it populates (a setup store cannot expose both under one name) — the action is therefore
+ * ref it populates (a setup store cannot expose both under one name), the action is therefore
  * `loadResults`, the ref stays `results`.
  *
  * `errorCode` mirrors the last `ApiError.status` so a view can branch on **409** (duplicate email —
@@ -141,8 +141,8 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
 
   /**
    * Re-hydrate the derived slices that hang off the current poll (live results + participant rows)
-   * in parallel. Each call is independently non-fatal — `loadResults`/`loadParticipants` swallow
-   * their own errors — so a failure in one does not block the other or the caller.
+   * in parallel. Each call is independently non-fatal, `loadResults`/`loadParticipants` swallow
+   * their own errors, so a failure in one does not block the other or the caller.
    */
   async function hydrateDerived(token: string): Promise<void> {
     await Promise.all([loadResults(token), loadParticipants(token)])
@@ -151,7 +151,7 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
   /**
    * Cold-load orchestrator for the public detail views (component mount / share-link arrival): reset
    * the entity + derived slices so the view shows its skeleton, fetch the poll, then await the derived
-   * refresher. The ONLY entry point `PublicPoll`/`PublicThanks` call in `onMounted` — they never chain
+   * refresher. The ONLY entry point `PublicPoll`/`PublicThanks` call in `onMounted`, they never chain
    * the individual loaders themselves.
    */
   async function loadDetail(token: string): Promise<void> {
@@ -170,7 +170,7 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
       errorMessage.value = messageFor(err)
     } else {
       errorCode.value = null
-      errorMessage.value = 'Could not reach the server — please try again.'
+      errorMessage.value = 'Could not reach the server, please try again.'
     }
   }
 
@@ -201,5 +201,5 @@ function messageFor(err: ApiError): string {
   if (Array.isArray(message)) return message[0] ?? 'Please check your responses and try again.'
   if (typeof message === 'string' && message !== '') return message
   if (err.status === 404) return 'This poll could not be found.'
-  return 'Something went wrong — please try again.'
+  return 'Something went wrong, please try again.'
 }

@@ -63,7 +63,7 @@ export class PollsController {
 
   /**
    * Edit an owned, open poll: patches scalar fields and fully replaces nested dates+slots. The
-   * BigInt ids in the result are stringified by the global interceptor — no manual mapping needed.
+   * BigInt ids in the result are stringified by the global interceptor, no manual mapping needed.
    */
   @Patch(':id')
   @UseGuards(PollOwnershipGuard)

@@ -1,5 +1,5 @@
 /**
- * Fixed, app-wide time-block presets for the calendar bulk-apply flow. Pure TS — no Vue.
+ * Fixed, app-wide time-block presets for the calendar bulk-apply flow. Pure TS, no Vue.
  *
  * Each preset is either a fixed time range (`isAllDay: false`) or an all-day block. The
  * {@link presetToSlot} helper turns a preset into a fresh {@link PollSlotInput} on every call so

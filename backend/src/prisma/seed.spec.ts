@@ -6,7 +6,7 @@ import { PrismaService } from './prisma.service';
 import { seed } from '../../prisma/seed';
 
 /**
- * Integration spec — requires the Phase 1 infra (Dockerized MySQL) running and the
+ * Integration spec, requires the Phase 1 infra (Dockerized MySQL) running and the
  * Phase 3 migration applied. It runs the deterministic seed against the real database
  * inside beforeAll (twice, to prove idempotency), then asserts the fixture matches the
  * shape DESIGN §3.4 / §4 prescribes.
@@ -67,7 +67,7 @@ describe('seed (integration)', () => {
     expect(poll.dates.flatMap((d) => d.slots)).toHaveLength(4);
   });
 
-  it('creates 3 participants — 2 with email, 1 anonymous (null)', async () => {
+  it('creates 3 participants, 2 with email, 1 anonymous (null)', async () => {
     const poll = await loadPoll();
     expect(poll.participants).toHaveLength(3);
     expect(poll.participants.filter((p) => p.email !== null)).toHaveLength(2);
@@ -82,7 +82,7 @@ describe('seed (integration)', () => {
     expect(allDay[0].endTime).toBeNull();
   });
 
-  it('creates a full 3×4 response matrix — 12 responses, one per (participant, slot)', async () => {
+  it('creates a full 3×4 response matrix, 12 responses, one per (participant, slot)', async () => {
     const poll = await loadPoll();
     const responses = poll.participants.flatMap((p) => p.responses);
     expect(responses).toHaveLength(12);

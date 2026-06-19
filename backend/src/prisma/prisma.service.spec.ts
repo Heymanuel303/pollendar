@@ -5,7 +5,7 @@ import { PrismaModule } from './prisma.module';
 import { PrismaService } from './prisma.service';
 
 /**
- * Integration spec — requires the Phase 1 infra (Dockerized MySQL) running and the
+ * Integration spec, requires the Phase 1 infra (Dockerized MySQL) running and the
  * Phase 3 migration applied (`npx prisma migrate dev`). It boots the real DI graph,
  * connects through PrismaService, and asserts the 3NF schema is live.
  */

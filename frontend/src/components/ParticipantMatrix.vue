@@ -10,7 +10,7 @@ import type { Availability, PollDate, ParticipantRow } from '@/lib/api/types'
  *
  * - Voter mode (PublicPoll, default): renders the editable "You" row driven by `answers` +
  *   `@update:answers`, so the voter edits the same map the Vote tab uses.
- * - Owner mode (`owner` prop, the manager on PollManage): fully read-only — NO "You" row, no
+ * - Owner mode (`owner` prop, the manager on PollManage): fully read-only, NO "You" row, no
  *   `answers` map, no emit. Only the per-participant rows render. The manager is not a voter.
  *
  * Desktop (`v-else`, `data-testid="matrix-table"`): rows = participants (plus, in voter mode, a
@@ -23,17 +23,17 @@ import type { Availability, PollDate, ParticipantRow } from '@/lib/api/types'
  * (voter mode only), then read-only name chips grouped under Yes / Maybe / No with a `+N more`
  * overflow control.
  *
- * Purely presentational + an editable-row contract — it owns NO fetch (the parent calls
+ * Purely presentational + an editable-row contract, it owns NO fetch (the parent calls
  * `store.loadParticipants`). PRIVACY: `ParticipantRow` carries `displayName` only (never `email`),
  * so no email can leak through this component. Per-participant answers key on `pollSlotId`
- * (matching `ParticipantResponseAnswer` on the wire — same key as the submission `ResponseAnswer`).
+ * (matching `ParticipantResponseAnswer` on the wire, same key as the submission `ResponseAnswer`).
  */
 const props = withDefaults(
   defineProps<{
     dates: PollDate[]
     timezone: string
     participants: ParticipantRow[]
-    /** Live results' winning slot id (string), or null — drives the bloom column. */
+    /** Live results' winning slot id (string), or null, drives the bloom column. */
     winningSlotId: string | null
     /** The current voter's display name for their own editable row label (voter mode). */
     yourName?: string
@@ -85,7 +85,7 @@ function availabilityLabel(value: Availability | null): string {
    auto-unwraps the ref (a nested `bp.isPhone` would never unwrap → always truthy). */
 const { isPhone } = useBreakpoint()
 
-/** Read-only name lists for one slot, partitioned by answer — Yes / Maybe / No (mobile chips). */
+/** Read-only name lists for one slot, partitioned by answer, Yes / Maybe / No (mobile chips). */
 const GROUPS = [
   {
     kind: 'available' as Availability,
@@ -299,7 +299,7 @@ function overflowCount(slotId: string, kind: Availability): number {
           </tr>
         </thead>
         <tbody>
-          <!-- Editable "You" row — the voter edits the same `answers` map the Vote tab uses.
+          <!-- Editable "You" row, the voter edits the same `answers` map the Vote tab uses.
                Suppressed entirely in owner mode (the manager is not a voter). -->
           <tr v-if="!owner" class="border-b border-line/70">
             <td

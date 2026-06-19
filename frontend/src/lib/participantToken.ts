@@ -8,7 +8,7 @@
  * their edit token. A read failure is treated as "no token stored".
  *
  * NOTE: the backend `PUT /public/participants/:participantToken` edit route is not implemented yet
- * (see the plan's Open questions), so this token is persisted forward-compatibly — the "Edit my
+ * (see the plan's Open questions), so this token is persisted forward-compatibly, the "Edit my
  * response" affordance currently re-opens `/p/:publicToken` rather than hitting a real edit endpoint.
  */
 
@@ -23,7 +23,7 @@ export function saveParticipantToken(pollPublicToken: string, participantToken: 
   try {
     localStorage.setItem(keyFor(pollPublicToken), participantToken)
   } catch {
-    // Storage disabled / quota exceeded — the submit still succeeded; we just can't remember it.
+    // Storage disabled / quota exceeded, the submit still succeeded; we just can't remember it.
   }
 }
 
@@ -41,6 +41,6 @@ export function clearParticipantToken(pollPublicToken: string): void {
   try {
     localStorage.removeItem(keyFor(pollPublicToken))
   } catch {
-    // Nothing to do — treat as already cleared.
+    // Nothing to do, treat as already cleared.
   }
 }

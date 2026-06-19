@@ -4,7 +4,7 @@ import { PublicService } from './public.service';
 import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 /**
- * Anonymous public poll endpoints under `/api/public`. No `@UseGuards` — these are reachable via the
+ * Anonymous public poll endpoints under `/api/public`. No `@UseGuards`, these are reachable via the
  * public share link without authentication. Phase 2 adds `@Post('polls/:token/responses')` to this
  * same controller. BigInt ids are stringified by the global `BigIntSerializerInterceptor`.
  */

@@ -17,7 +17,7 @@ import { SubmitResponsesDto } from './dto/submit-responses.dto';
 
 /**
  * Anonymous, read-only access to a poll via its public share token. Returns a sanitized shape that
- * never leaks the owner `userId` or any participant data — see {@link PublicPoll}.
+ * never leaks the owner `userId` or any participant data, see {@link PublicPoll}.
  */
 @Injectable()
 export class PublicService {
@@ -71,7 +71,7 @@ export class PublicService {
 
   /**
    * Compute the live per-slot tallies and the deterministic best slot for a poll. Queried fresh on
-   * every call — it does NOT read the `slot_tallies` cache. An unknown token is a 404.
+   * every call, it does NOT read the `slot_tallies` cache. An unknown token is a 404.
    *
    * Canonical scoring (DESIGN §4): `score = available*2 + maybe*1`. The 5-key tie-break is done in
    * SQL (score desc → available_count desc → unavailable_count asc → event_date/start_time asc →
@@ -144,7 +144,7 @@ export class PublicService {
 
   /**
    * Per-participant `displayName` + per-slot answers for a poll, reachable via the public token. A
-   * participant's `email` NEVER reaches the wire — it is excluded at the SQL SELECT level (the
+   * participant's `email` NEVER reaches the wire, it is excluded at the SQL SELECT level (the
    * SELECT enumerates only `id`/`display_name`, never `*`), not mapped away afterward. There is NO
    * `status` check and NO submit-gate: rows are returned for open AND completed/cancelled polls
    * alike; the only gate is a valid token (unknown token → 404).
@@ -235,7 +235,7 @@ export class PublicService {
 
   /**
    * Create an anonymous participant and one response per answered slot, in a single transaction.
-   * Returns only the participant's `{ publicToken }` (for later edit/re-submission) — never their
+   * Returns only the participant's `{ publicToken }` (for later edit/re-submission), never their
    * `id`, email, or any owner data. An unknown token is a 404; a slot that does not belong to this
    * poll (or a non-numeric id) is a 400. The two distinct UNIQUE constraints map to 409:
    * `participants @@unique([pollId, email])` (duplicate email) and

@@ -7,7 +7,7 @@ import type { Transporter } from 'nodemailer';
  * Transports outbound mail via nodemailer. In dev it points at Mailpit (no auth);
  * config is driven entirely by the validated SMTP_* / MAIL_FROM env vars.
  *
- * MailService only delivers a pre-built magic link — token generation and hashing
+ * MailService only delivers a pre-built magic link, token generation and hashing
  * belong to Phase 2's AuthService, not here.
  */
 @Injectable()

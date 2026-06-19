@@ -5,7 +5,7 @@ import EmailGate from '@/components/EmailGate.vue'
 
 type Cell = 'yes' | 'maybe' | 'no'
 
-// Static illustration ported from docs/design/mockups/screens/landing.html — no live data this phase.
+// Static illustration ported from docs/design/mockups/screens/landing.html, no live data this phase.
 const previewColumns = [
   { day: 'Thu', part: 'Early' },
   { day: 'Thu', part: 'Late' },
@@ -33,7 +33,7 @@ const previewRows: Cell[][] = [
         Find the time everyone can make.
       </h1>
       <p class="mt-5 max-w-xl text-lg leading-relaxed text-dim">
-        Pollendar gathers everyone's availability like pollen — and the best time blooms on its own.
+        Pollendar gathers everyone's availability like pollen, and the best time blooms on its own.
       </p>
 
       <div class="mt-8 max-w-md">
@@ -50,7 +50,7 @@ const previewRows: Cell[][] = [
       </div>
     </div>
 
-    <!-- Decorative constellation preview — illustrative only, no live data this phase. -->
+    <!-- Decorative constellation preview, illustrative only, no live data this phase. -->
     <div class="relative hidden lg:block">
       <div class="bloom-bg absolute -inset-6 -z-10 rounded-3xl" aria-hidden="true"></div>
       <section

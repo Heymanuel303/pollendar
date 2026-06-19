@@ -7,7 +7,7 @@ import type { Availability, PollSlot } from '@/lib/api/types'
 /**
  * A single slot row in the participant flow: label + time range (rendered in the poll's timezone),
  * an optional "✦ In bloom" treatment for the current best slot, and the tri-state availability
- * toggle. Keeps `PublicPoll` thin — it owns no fetch/submit logic.
+ * toggle. Keeps `PublicPoll` thin, it owns no fetch/submit logic.
  */
 // Named `pollSlot` (not `slot`): a `:slot` template binding collides with Vue's deprecated
 // named-slot attribute (eslint vue/no-deprecated-slot-attribute).
@@ -15,7 +15,7 @@ const props = defineProps<{
   pollSlot: PollSlot
   /** The slot's candidate `"YYYY-MM-DD"` date (kept for callers/labels; the row renders only times). */
   eventDate: string
-  /** The poll's IANA timezone — documented on the time line; the wall-clock value is naive (see formatTime). */
+  /** The poll's IANA timezone, documented on the time line; the wall-clock value is naive (see formatTime). */
   timezone: string
   /** When true, apply the bloom treatment (the current best slot from live results). */
   isBest?: boolean

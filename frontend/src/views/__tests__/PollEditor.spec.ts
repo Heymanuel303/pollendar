@@ -22,7 +22,7 @@ import type { PollDateInput } from '@/types/poll'
 
 /**
  * jsdom omits `window.matchMedia`, which the calendar's `useBreakpoint` reads at setup (for day-grid
- * density only). Stub it so mounting the editor — which renders `CalendarDateEditor` — never throws.
+ * density only). Stub it so mounting the editor, which renders `CalendarDateEditor`, never throws.
  */
 function stubMatchMedia(matches: boolean): void {
   Object.defineProperty(window, 'matchMedia', {
@@ -45,7 +45,7 @@ function stubMatchMedia(matches: boolean): void {
 }
 
 // Track mounted wrappers so teleported (Teleport to="body") sheet nodes are torn down between
-// tests — otherwise an open sheet leaks into document.body and pollutes the next assertion.
+// tests, otherwise an open sheet leaks into document.body and pollutes the next assertion.
 const mounted: ReturnType<typeof mount>[] = []
 
 function mountEditor() {
@@ -61,7 +61,7 @@ beforeEach(() => {
   setActivePinia(createPinia())
   vi.clearAllMocks()
   localStorage.clear()
-  // Default to CREATE mode (`/polls/new`) — edit tests opt in by setting `routeState.params.id`.
+  // Default to CREATE mode (`/polls/new`), edit tests opt in by setting `routeState.params.id`.
   routeState.params = {}
   // sm-and-up by default (desktop) unless a test overrides it.
   stubMatchMedia(true)
@@ -73,7 +73,7 @@ afterEach(() => {
   localStorage.clear()
 })
 
-describe('PollEditor — split layout', () => {
+describe('PollEditor, split layout', () => {
   it('renders no Calendar | List toggle', () => {
     const wrapper = mountEditor()
     expect(wrapper.find('[role="group"][aria-label="Editor view"]').exists()).toBe(false)
@@ -117,7 +117,7 @@ describe('PollEditor — split layout', () => {
   })
 })
 
-describe('PollEditor — edit mode', () => {
+describe('PollEditor, edit mode', () => {
   /**
    * Owned poll fixture: a VOTED date `D1` (slot `S1`, 3 responses ⇒ locked) and a ZERO-VOTE date `D2`
    * (slot `S2`, 0 responses ⇒ freely editable). Wire times are `1970-01-01T…Z` ISO instants; the
@@ -181,7 +181,7 @@ describe('PollEditor — edit mode', () => {
   /**
    * Mount in edit mode with `pollStore.loadDetail`/`update` stubbed to swap in `poll`. The editor's
    * `onMounted` calls the cold-load orchestrator `loadDetail` (not the bare `get`), so the spy lands
-   * on `loadDetail` — it hydrates `currentPoll` exactly as the real orchestrator would after its GET.
+   * on `loadDetail`, it hydrates `currentPoll` exactly as the real orchestrator would after its GET.
    */
   async function mountEditMode(poll: OwnedPoll = makeOwnedPoll()) {
     routeState.params = { id: 'EDIT_ID' }
@@ -214,7 +214,7 @@ describe('PollEditor — edit mode', () => {
   }
 
   /**
-   * Add a brand-new candidate date by tapping its day cell in the Calendar editor — the "+ Add date"
+   * Add a brand-new candidate date by tapping its day cell in the Calendar editor, the "+ Add date"
    * button was removed in favour of the tap-to-select calendar (commit 65b0d61). The cell is the
    * `<button aria-label="YYYY-MM-DD">` rendered by {@link CalendarDateEditor}.
    */
@@ -304,7 +304,7 @@ describe('PollEditor — edit mode', () => {
     expect(added.id).toBeUndefined()
   })
 
-  it('submits via pollStore.update (PATCH) — ids + invalidatedAt + closesAt round-trip, new rows omit id', async () => {
+  it('submits via pollStore.update (PATCH), ids + invalidatedAt + closesAt round-trip, new rows omit id', async () => {
     const { wrapper, updateSpy, createSpy } = await mountEditMode()
 
     // Invalidate the voted slot so its marker must round-trip in the payload.

@@ -4,7 +4,7 @@ import { formatDate } from '@/lib/utils/timezone'
 import type { Poll } from '@/stores/pollStore'
 
 /**
- * Presentational card for a single poll on the dashboard. `Poll` in, navigation/emit out — it owns
+ * Presentational card for a single poll on the dashboard. `Poll` in, navigation/emit out, it owns
  * no fetching. Renders honestly from the **list** payload: it shows the response grains and event
  * date range *only* when the data is present (both are absent from `GET /api/polls` today), so the
  * card degrades gracefully and lights up automatically once hardening enriches the endpoint.
@@ -91,7 +91,7 @@ const primaryClass = computed<string>(() =>
     <!-- Optional description -->
     <p v-if="poll.description" class="mt-1 text-sm text-dim">{{ poll.description }}</p>
 
-    <!-- Response grains + count — only when the list payload carries a count (absent today) -->
+    <!-- Response grains + count, only when the list payload carries a count (absent today) -->
     <div v-if="responseCount !== null" class="mt-4 flex items-center gap-2.5 text-sm text-dim">
       <span class="flex flex-wrap items-center gap-1" aria-hidden="true">
         <span

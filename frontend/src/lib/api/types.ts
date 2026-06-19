@@ -1,7 +1,7 @@
 /**
  * Wire types for the Pollendar API. These mirror the backend DTOs exactly as serialized:
  * every `BigInt` id is a `string` (the backend's global BigIntSerializerInterceptor stringifies
- * them), and `availability` is the backend literal — `yes/maybe/no` is only UI-color naming.
+ * them), and `availability` is the backend literal, `yes/maybe/no` is only UI-color naming.
  */
 
 /** Poll lifecycle. Matches Prisma `PollStatus`. */
@@ -154,7 +154,7 @@ export interface SubmitResponsesResult {
  * One participant's answer for a single slot, from
  * `GET /api/public/polls/:token/participants-responses`. The slot field is `pollSlotId`
  * (matching the backend `ParticipantAnswer.pollSlotId`, same key as the submission
- * `ResponseAnswer.pollSlotId`). `pollSlotId` is a `string` — the backend emits raw `bigint`
+ * `ResponseAnswer.pollSlotId`). `pollSlotId` is a `string`, the backend emits raw `bigint`
  * and the global BigIntSerializerInterceptor stringifies it.
  */
 export interface ParticipantResponseAnswer {
@@ -164,7 +164,7 @@ export interface ParticipantResponseAnswer {
 
 /**
  * One participant row: their public-safe `displayName` + every per-slot answer.
- * PRIVACY: `email` is NEVER present — the backend selects `{ id, displayName }` only.
+ * PRIVACY: `email` is NEVER present, the backend selects `{ id, displayName }` only.
  * `participantId` is a `string` (stringified `bigint`).
  */
 export interface ParticipantRow {

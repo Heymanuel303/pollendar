@@ -15,7 +15,7 @@ import { PollsService } from './polls.service';
 const BASE64URL_22 = /^[A-Za-z0-9_-]{22}$/;
 
 // Mocks whose call arguments are asserted carry explicit generics so `.mock.calls[0][0]` is typed
-// (not `any`) — matching the convention in auth.service.spec.ts.
+// (not `any`), matching the convention in auth.service.spec.ts.
 const pollCreate = jest.fn<Promise<{ id: bigint }>, [unknown]>();
 const pollFindMany = jest.fn();
 const pollFindFirst = jest.fn<Promise<unknown>, [unknown]>();
@@ -374,7 +374,7 @@ describe('PollsService', () => {
     });
 
     describe('has-votes diff path (response.count >= 1)', () => {
-      /** An existing date with one active, voted slot — the common diff fixture. */
+      /** An existing date with one active, voted slot, the common diff fixture. */
       const existingDate = (overrides?: {
         slots?: Array<{
           id: bigint;
@@ -469,7 +469,7 @@ describe('PollsService', () => {
             where: { pollDateId: 10n, invalidatedAt: null },
           }),
         );
-        // Per-slot reconciliation is skipped — slot 100 is never individually updated/deleted.
+        // Per-slot reconciliation is skipped, slot 100 is never individually updated/deleted.
         expect(pollSlotUpdate).not.toHaveBeenCalled();
         expect(pollDateDeleteMany).not.toHaveBeenCalled();
       });
@@ -502,11 +502,11 @@ describe('PollsService', () => {
             {
               id: '10',
               eventDate: '2026-07-01',
-              // Re-sent byte-identical, WITHOUT any sortOrder key — must be a no-op.
+              // Re-sent byte-identical, WITHOUT any sortOrder key, must be a no-op.
               slots: [{ id: '100', startTime: '09:00', endTime: '10:00' }],
             },
             {
-              // Brand-new date (no id) — the trigger that forces the diff path.
+              // Brand-new date (no id), the trigger that forces the diff path.
               eventDate: '2026-07-08',
               slots: [{ startTime: '14:00', endTime: '15:00' }],
             },

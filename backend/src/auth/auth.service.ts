@@ -39,12 +39,12 @@ export class AuthService {
     private readonly jwt: JwtService,
   ) {}
 
-  /** 32 random bytes as a 43-char base64url string — the plain token mailed to the user. */
+  /** 32 random bytes as a 43-char base64url string, the plain token mailed to the user. */
   private generateToken(): string {
     return crypto.randomBytes(32).toString('base64url');
   }
 
-  /** SHA-256 hex digest (64 chars) — the only token representation persisted. */
+  /** SHA-256 hex digest (64 chars), the only token representation persisted. */
   private hashToken(token: string): string {
     return crypto.createHash('sha256').update(token).digest('hex');
   }
@@ -60,7 +60,7 @@ export class AuthService {
 
   /**
    * Upsert the user by email and create a hashed single-use login token, then email the
-   * magic link. Always resolves for valid input (upsert guarantees a row) — only infra
+   * magic link. Always resolves for valid input (upsert guarantees a row), only infra
    * failures (DB/SMTP) propagate, so the caller can return a fixed 200 with no enumeration.
    */
   async requestMagicLink(email: string, requestIp: string): Promise<void> {

@@ -5,7 +5,7 @@ import type { PollSlotInput } from '@/types/poll'
 
 /**
  * Controlled, presentational preset picker: one toggle-chip per {@link slotPresets} entry plus a
- * "Custom" start/end range row. Owns **no** in-place mutation — every change emits a brand-new
+ * "Custom" start/end range row. Owns **no** in-place mutation, every change emits a brand-new
  * `PollSlotInput[]` (mirroring `DateSlotEditor` / `SlotRow` ownership), so the component is a pure
  * function of its `modelValue` prop. A chip is "active" when the model already contains a slot
  * matching that preset by value (`isAllDay` + `startTime` + `endTime`).

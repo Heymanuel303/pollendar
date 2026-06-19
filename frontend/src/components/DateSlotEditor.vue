@@ -5,7 +5,7 @@ import type { PollDateInput } from '@/types/poll'
 
 /**
  * The "Candidate times" section: a reactive "N dates · M slots" badge, a list of {@link DateCard}s,
- * and an "+ Add date" button. Fully controlled — it mutates nothing in place; every add/remove of a
+ * and an "+ Add date" button. Fully controlled, it mutates nothing in place; every add/remove of a
  * date or slot bubbles up as an immutable `update:modelValue`, so the parent view owns the array and
  * this component stays a pure function of its props. `showErrors` flows down to each card/slot.
  */

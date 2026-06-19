@@ -1,11 +1,11 @@
 /**
- * Persist the creator's chosen candidate-times editor view — `Calendar` (month-grid multi-select)
- * vs `List` (per-date `DateCard` override surface) — so a returning creator reopens the editor in
+ * Persist the creator's chosen candidate-times editor view, `Calendar` (month-grid multi-select)
+ * vs `List` (per-date `DateCard` override surface), so a returning creator reopens the editor in
  * the view they last used. Keyed app-wide under `pollendar:editor-view`.
  *
  * Every access is wrapped in try/catch: private-mode browsers and storage-disabled environments
  * throw on `localStorage`, and the editor must still render even if we cannot remember the choice.
- * A read failure (or any stale/garbage value) is treated as "no preference stored" — the caller
+ * A read failure (or any stale/garbage value) is treated as "no preference stored", the caller
  * then falls back to the breakpoint default (Calendar on phone, List on desktop). The strict
  * `=== 'calendar' || === 'list'` guard means no invalid value can ever reach the template.
  */
@@ -29,6 +29,6 @@ export function saveEditorView(view: EditorView): void {
   try {
     localStorage.setItem(KEY, view)
   } catch {
-    // Storage disabled — the preference just isn't remembered next time.
+    // Storage disabled, the preference just isn't remembered next time.
   }
 }

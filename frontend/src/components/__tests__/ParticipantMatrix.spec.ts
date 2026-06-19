@@ -182,7 +182,7 @@ describe('ParticipantMatrix (desktop table)', () => {
     expect(youRow.find('[data-availability="maybe"]').exists()).toBe(true)
   })
 
-  it('renders the correct yes/maybe/no glyph (or — for no answer) per participant cell', () => {
+  it('renders the correct yes/maybe/no glyph (or, for no answer) per participant cell', () => {
     const wrapper = mountMatrix()
     const rows = wrapper.findAll('tbody tr')
     const aichaRow = rows[1]! // p1
@@ -368,11 +368,11 @@ describe('ParticipantMatrix (owner / read-only mode)', () => {
   describe('desktop table', () => {
     beforeEach(() => stubMatchMedia(true))
 
-    it('renders no "You" row — only the per-participant rows', () => {
+    it('renders no "You" row, only the per-participant rows', () => {
       // Omit `answers` entirely to prove owner mode tolerates a missing map.
       const wrapper = mountMatrix({ owner: true, answers: undefined })
       const bodyRows = wrapper.findAll('tbody tr')
-      // No You row — exactly one row per participant.
+      // No You row, exactly one row per participant.
       expect(bodyRows).toHaveLength(PARTICIPANTS.length)
 
       // The first body row is a participant (Aïcha), not the "you" tag.
@@ -391,7 +391,7 @@ describe('ParticipantMatrix (owner / read-only mode)', () => {
       const wrapper = mountMatrix({ owner: true, answers: undefined })
       // Aïcha is Yes for s1 → an "available" glyph exists.
       expect(wrapper.find('[data-availability="available"]').exists()).toBe(true)
-      // Bloom still applies to s1 — one cell per participant row (no You row).
+      // Bloom still applies to s1, one cell per participant row (no You row).
       const bloomed = wrapper.findAll('[data-testid="matrix-bloom"]')
       expect(bloomed).toHaveLength(PARTICIPANTS.length)
     })

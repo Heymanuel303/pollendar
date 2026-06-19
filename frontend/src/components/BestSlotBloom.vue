@@ -6,7 +6,7 @@ import type { BestSlot, SlotMeta, PollStatus } from '@/lib/api/types'
  * Large "best slot · in bloom" card with the complete-poll CTA. Ports the
  * `best-slot-badge.html` Variant 1 bloom card + the bloom panel in `poll-manage.html`.
  *
- * The winning slot's glow (`bloom-bg`) lives on exactly one element — this root `<section>` — so the
+ * The winning slot's glow (`bloom-bg`) lives on exactly one element, this root `<section>`, so the
  * results table can carry the only *other* bloom highlight without doubling up. When there is no
  * winner yet (`best`/`meta` null) the card collapses to a calm empty hint with no CTA.
  */
@@ -31,7 +31,7 @@ const emit = defineEmits<{ complete: [] }>()
     data-testid="best-slot-bloom"
     class="rounded-2xl border border-line bg-surface p-6 text-dim shadow-card"
   >
-    <p class="text-sm">No responses yet — the best slot will bloom here.</p>
+    <p class="text-sm">No responses yet, the best slot will bloom here.</p>
   </section>
 
   <section

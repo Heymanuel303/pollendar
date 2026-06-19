@@ -7,12 +7,12 @@ import type { PollDateInput, PollSlotInput } from '@/types/poll'
  * Pure calendar day-picker for the candidate-times editor: a tap-to-multi-select month grid that
  * stamps a single fixed default slot (`18:00–20:00`) onto each tapped day. Fully controlled over the
  * same `PollDateInput[]` array {@link DateSlotEditor} drives (byte-for-byte the same prop/emit
- * contract), so both editors bind one shared `dates` ref with no payload divergence — per-date
+ * contract), so both editors bind one shared `dates` ref with no payload divergence, per-date
  * slot/label editing happens in the List editor on the right.
  *
  * Selection is derived from `modelValue` (never a parallel local ref). Month navigation is the only
  * local UI state and never emits. Every emitted `PollDateInput` is `{ eventDate: '<YYYY-MM-DD>',
- * slots }` — no `sortOrder`, no `closesAt` — so the unchanged `buildPayload()` yields a
+ * slots }`, no `sortOrder`, no `closesAt`, so the unchanged `buildPayload()` yields a
  * `CreatePollPayload.dates[]` identical to the List flow's.
  */
 const props = defineProps<{
@@ -70,7 +70,7 @@ const monthLabel = computed<string>(() =>
 
 const weekdayHeaders = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
-/** The calendar matrix for the cursor month — leading blanks for alignment, then each day. */
+/** The calendar matrix for the cursor month, leading blanks for alignment, then each day. */
 const cells = computed<{ iso: string | null; selected: boolean }[]>(() => {
   const firstWeekday = new Date(Date.UTC(cursorYear.value, cursorMonth.value, 1)).getUTCDay()
   const dayCount = new Date(Date.UTC(cursorYear.value, cursorMonth.value + 1, 0)).getUTCDate()
@@ -85,7 +85,7 @@ const cells = computed<{ iso: string | null; selected: boolean }[]>(() => {
   return out
 })
 
-/** The fixed default slot a tapped day receives — fresh objects so each date owns its own. */
+/** The fixed default slot a tapped day receives, fresh objects so each date owns its own. */
 function defaultSlots(): PollSlotInput[] {
   return [{ startTime: '18:00', endTime: '20:00', isAllDay: false }]
 }
@@ -93,7 +93,7 @@ function defaultSlots(): PollSlotInput[] {
 /** Tap a day → toggle its membership, re-emitting the full immutable array (controlled round-trip). */
 function toggleDate(iso: string): void {
   if (selectedSet.value.has(iso)) {
-    // Edit mode: a voted (locked) day must NOT be removed by a tap — its votes are preserved via
+    // Edit mode: a voted (locked) day must NOT be removed by a tap, its votes are preserved via
     // invalidation in the List editor, never deletion here. Tapping an unlocked/new day removes it.
     const existing = props.modelValue.find((d) => d.eventDate.slice(0, 10) === iso)
     if (props.editMode === true && existing?.id != null && existing.hasVotes === true) return

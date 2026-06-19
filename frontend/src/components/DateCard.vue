@@ -6,7 +6,7 @@ import type { PollDateInput, PollSlotInput } from '@/types/poll'
 
 /**
  * One candidate date: a day-number chip, the formatted date label, its slot rows, and add/remove
- * actions. Like {@link SlotRow}, it owns no parent-array logic — every change emits an immutable
+ * actions. Like {@link SlotRow}, it owns no parent-array logic, every change emits an immutable
  * replacement of this date upward; the editor owns the date list. `showErrors` flows down to each
  * slot and also reveals the "needs at least one slot" message when the last slot was removed.
  */
@@ -26,7 +26,7 @@ const slots = computed<PollSlotInput[]>(() => props.modelValue.slots)
 const dateLabel = computed<string>(() => formatDate(props.modelValue.eventDate, props.timezone))
 const dayNumber = computed<string>(() => formatDayNumber(props.modelValue.eventDate))
 
-/** A loaded date carrying votes (on itself or any slot) — its structure is immutable, invalidate-only. */
+/** A loaded date carrying votes (on itself or any slot), its structure is immutable, invalidate-only. */
 const isLocked = computed<boolean>(
   () =>
     props.editMode === true &&
@@ -36,14 +36,14 @@ const isLocked = computed<boolean>(
 const isInvalidated = computed<boolean>(() => props.modelValue.invalidatedAt != null)
 /**
  * Date-level affordances (add-slot, remove-date) are suppressed when the date is locked (voted) or
- * deactivated — a voted/invalidated date can only be invalidated/reactivated, never restructured.
+ * deactivated, a voted/invalidated date can only be invalidated/reactivated, never restructured.
  */
 const dateActionsLocked = computed<boolean>(() => isLocked.value || isInvalidated.value)
 
 /**
  * Per-slot read-only state. A slot locks individually when it carries votes, or when the WHOLE date
  * is invalidated (every slot then renders read-only). A zero-vote slot in a voted date stays freely
- * editable — only its add/remove siblings at the date level are suppressed. Keeps acceptance #2 true:
+ * editable, only its add/remove siblings at the date level are suppressed. Keeps acceptance #2 true:
  * "zero-vote and brand-new entries stay freely editable".
  */
 function slotLocked(slot: PollSlotInput): boolean {
@@ -70,7 +70,7 @@ function addSlot(): void {
 
 /**
  * Invalidate / reactivate the whole date. Invalidating a date logically invalidates ALL its slots
- * (stamp the same ISO instant). Reactivating clears the date's marker AND the slot-level markers — the
+ * (stamp the same ISO instant). Reactivating clears the date's marker AND the slot-level markers, the
  * simplest correct rule: a date and its slots come back active together (slot-level toggles made via
  * `SlotRow` are independent, but reactivating the date is a clean reset so the date is usable again).
  */
@@ -162,7 +162,7 @@ const noSlots = computed<boolean>(() => props.showErrors === true && slots.value
         <span aria-hidden="true">⚠</span>Add at least one time slot for this date.
       </p>
 
-      <!-- Adding slots is suppressed on a locked/invalidated date — it can only be invalidated. -->
+      <!-- Adding slots is suppressed on a locked/invalidated date, it can only be invalidated. -->
       <button
         v-if="!dateActionsLocked"
         type="button"

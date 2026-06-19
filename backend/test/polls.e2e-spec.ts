@@ -64,7 +64,7 @@ interface ResultsBody {
  * Poll-lifecycle e2e: create → public fetch (sanitized) → submit → results → complete. The
  * magic-link throttle is shared within this spec's app (5/60s), so this spec logs in EXACTLY ONCE in
  * `beforeAll` and reuses `session.cookieHeader` for every authed request. The DB is truncated only
- * once (before login) — never per-test — so the session/user survives; each test creates its OWN
+ * once (before login), never per-test, so the session/user survives; each test creates its OWN
  * poll to stay isolated. BigInt ids are stringified by the global interceptor, so every id asserted
  * here is a string.
  */
@@ -131,7 +131,7 @@ describe('Poll lifecycle (e2e)', () => {
     }
   });
 
-  it('public poll fetch is sanitized — no userId, participants, or emails', async () => {
+  it('public poll fetch is sanitized, no userId, participants, or emails', async () => {
     const poll = await createPoll('Sanitized poll');
 
     await request(server())

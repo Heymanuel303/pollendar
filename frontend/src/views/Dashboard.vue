@@ -13,7 +13,7 @@ const { polls, loading, listError } = storeToRefs(pollStore)
 
 onMounted(() => pollStore.list())
 
-// The share box (and GET /api/polls/:id/invite-message) lands in a later phase — acknowledge the
+// The share box (and GET /api/polls/:id/invite-message) lands in a later phase, acknowledge the
 // emit so the card's "Share" affordance is wired without doing anything yet.
 function onShare(poll: Poll): void {
   console.debug('[dashboard] share requested for poll', poll.id)
@@ -27,7 +27,7 @@ function onShare(poll: Poll): void {
       <div>
         <h1 class="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Your polls</h1>
         <p class="mt-1.5 text-dim">
-          Find the time everyone can make — track every gathering in one place.
+          Find the time everyone can make, track every gathering in one place.
         </p>
       </div>
       <RouterLink
@@ -52,7 +52,7 @@ function onShare(poll: Poll): void {
       </button>
     </div>
 
-    <!-- Loading (first load) — calm settle, no looping spinner -->
+    <!-- Loading (first load), calm settle, no looping spinner -->
     <div
       v-else-if="loading && !polls.length"
       class="mt-16 flex animate-settle flex-col items-center gap-3 text-mute"

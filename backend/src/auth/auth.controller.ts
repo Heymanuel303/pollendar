@@ -90,7 +90,7 @@ export class AuthController {
 
   /**
    * Rotate the refresh token from the refresh cookie and reissue both cookies. A missing cookie
-   * is a 401 — the caller has no session to refresh.
+   * is a 401, the caller has no session to refresh.
    */
   @Post('refresh')
   @HttpCode(200)

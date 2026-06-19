@@ -93,7 +93,7 @@ async function onSubmit(): Promise<void> {
 
 <template>
   <div class="min-h-screen">
-    <!-- Public header — wordmark only, no app nav. -->
+    <!-- Public header, wordmark only, no app nav. -->
     <header class="border-b border-line/70">
       <div class="mx-auto flex h-16 max-w-3xl items-center justify-between px-6">
         <span class="flex items-center gap-2.5">
@@ -210,8 +210,8 @@ async function onSubmit(): Promise<void> {
           >
             {{
               poll.status === 'cancelled'
-                ? 'This poll was cancelled by the organizer — voting is closed, but you can still view results.'
-                : 'A final time has been chosen — voting is closed, but you can still view results.'
+                ? 'This poll was cancelled by the organizer, voting is closed, but you can still view results.'
+                : 'A final time has been chosen, voting is closed, but you can still view results.'
             }}
           </div>
 
@@ -328,7 +328,7 @@ async function onSubmit(): Promise<void> {
               <span class="num font-medium text-moonlight">{{ leaningLabel }}</span>
               <span class="text-pollen">✦</span>
             </template>
-            <span v-else class="text-mute">No responses yet — be the first.</span>
+            <span v-else class="text-mute">No responses yet, be the first.</span>
           </p>
         </div>
         <div class="flex flex-col items-stretch gap-2 sm:items-end">

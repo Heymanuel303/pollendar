@@ -23,8 +23,8 @@ app.use(createPinia())
 app.use(router)
 
 // When a mid-session request can't be refreshed (the refresh cookie is gone/expired), drop the
-// local session so `isAuthenticated` doesn't stay stale-true, and — only if the user is currently
-// on an authed route — send them to the landing page for a clean re-login.
+// local session so `isAuthenticated` doesn't stay stale-true, and, only if the user is currently
+// on an authed route, send them to the landing page for a clean re-login.
 setUnauthorizedHandler(() => {
   useAuthStore().clearSession()
   if (router.currentRoute.value.meta.requiresAuth) {

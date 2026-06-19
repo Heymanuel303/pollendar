@@ -66,7 +66,7 @@ describe('apiFetch', () => {
   })
 })
 
-describe('apiFetch — transparent session refresh', () => {
+describe('apiFetch, transparent session refresh', () => {
   it('refreshes once and replays the original request on a mid-session 401', async () => {
     const fetchFn = mockFetchSequence([
       { ok: false, status: 401, bodyText: '' }, // GET /polls → access token lapsed
@@ -162,7 +162,7 @@ describe('apiFetch — transparent session refresh', () => {
     expect(fetchFn).toHaveBeenCalledTimes(1)
   })
 
-  it('does NOT exempt a mere prefix-collision path (/auth/method) — it still refresh-retries on a 401', async () => {
+  it('does NOT exempt a mere prefix-collision path (/auth/method), it still refresh-retries on a 401', async () => {
     // `/auth/method` only *starts with* the substring "/auth/me"; it is a distinct endpoint, not the
     // exempt `/auth/me` probe, so a 401 there must trigger the normal refresh-and-replay.
     const fetchFn = mockFetchSequence([

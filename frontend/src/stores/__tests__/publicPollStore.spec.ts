@@ -226,7 +226,7 @@ describe('publicPollStore.loadDetail', () => {
     expect(store.poll).toBeNull()
     // `loadState` (set by `load`) is the durable failure signal: the derived loaders never touch it.
     expect(store.loadState).toBe('error')
-    // `errorCode` is NOT a reliable post-orchestrator signal here — the subsequent successful
+    // `errorCode` is NOT a reliable post-orchestrator signal here, the subsequent successful
     // `loadParticipants` calls `resetError()`, so the 404 recorded by `load` is cleared back to null.
     expect(store.errorCode).toBeNull()
   })

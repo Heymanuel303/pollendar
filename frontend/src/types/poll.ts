@@ -1,18 +1,18 @@
 /**
  * Input shapes for composing and creating a poll. These mirror the backend create DTOs
- * (`backend/src/polls/dto/create-poll.dto.ts`) field-for-field — the editor builds a
+ * (`backend/src/polls/dto/create-poll.dto.ts`) field-for-field, the editor builds a
  * {@link CreatePollPayload} and POSTs it to `/api/polls`.
  *
  * The *response* wire types (the created-poll summary, the full poll, results, …) live in
  * `@/lib/api/types`; this file holds only the editor-side **input** types plus a re-export of the
  * thin create result. All ids are `string` (the backend serializes its BigInt ids as strings).
  *
- * Note: `closesAt` is intentionally absent from {@link CreatePollPayload} — it is **PATCH-only**
+ * Note: `closesAt` is intentionally absent from {@link CreatePollPayload}, it is **PATCH-only**
  * (`update-poll.dto.ts`), not accepted by `POST /polls`. The editor surfaces it in the UI and sets
  * it via a later `PATCH /polls/:id`.
  *
  * The edit flow (`/polls/:id/edit`) reuses {@link PollSlotInput}/{@link PollDateInput} but stamps a
- * few **form-only** tracking fields onto them at load time — `id` (existing-row marker), `invalidatedAt`
+ * few **form-only** tracking fields onto them at load time, `id` (existing-row marker), `invalidatedAt`
  * (soft-invalidation), and `hasVotes` (derived vote-lock). These are stripped by the editor's
  * `buildPayload()` before a `POST /polls` (create never carries them) and mapped into the PATCH
  * {@link UpdatePollDateInput}/{@link UpdatePollSlotInput} shapes for an edit save.
@@ -66,7 +66,7 @@ export interface CreatePollPayload {
   dates: PollDateInput[]
 }
 
-/** Thin 201 result of `POST /api/polls` — a freshly created poll is always `open`. */
+/** Thin 201 result of `POST /api/polls`, a freshly created poll is always `open`. */
 export type CreatedPoll = PollSummary
 
 /** One slot in an edit payload. `id` present ⇒ existing row; absent ⇒ brand-new slot. `invalidatedAt`
@@ -90,10 +90,10 @@ export interface UpdatePollDateInput {
 }
 
 /**
- * Body of `PATCH /api/polls/:id`. Every field is optional — send only what changed. Scalar fields
+ * Body of `PATCH /api/polls/:id`. Every field is optional, send only what changed. Scalar fields
  * (`title`/`description`/`timezone`/`closesAt`) patch in place. `dates`, when present, is the FULL
  * desired nested tree; the backend diffs it against the stored tree by `id`. A date/slot that already
- * has >=1 response is IMMUTABLE in place — to change such a slot the creator marks it `invalidatedAt`
+ * has >=1 response is IMMUTABLE in place, to change such a slot the creator marks it `invalidatedAt`
  * and adds a replacement (new row, no `id`). `closesAt` is an ISO instant or `null` to clear it. Only
  * valid while the poll is `open` (backend returns 409 otherwise).
  */

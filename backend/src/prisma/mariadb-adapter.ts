@@ -7,7 +7,7 @@ import { PrismaMariaDb } from '@prisma/adapter-mariadb';
  * raw string to the adapter so we can set `allowPublicKeyRetrieval`: MySQL 8.4
  * authenticates with `caching_sha2_password` by default, and over a non-TLS
  * connection the mariadb driver must be allowed to fetch the server's RSA
- * public key to complete the handshake — without it every query fails with
+ * public key to complete the handshake, without it every query fails with
  * `ER_CANNOT_RETRIEVE_RSA_KEY` / a pool-acquire timeout. See memory:
  * prisma7-setup.
  */

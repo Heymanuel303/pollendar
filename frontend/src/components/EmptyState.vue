@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Reusable empty-state panel: a dashed-border card with an icon, title, body, and an optional CTA.
- * Purely presentational — it knows nothing about routes. The `icon` slot defaults to the `＋` glyph;
+ * Purely presentational, it knows nothing about routes. The `icon` slot defaults to the `＋` glyph;
  * the caller fills the `cta` slot with whatever action fits the screen (the dashboard passes a
  * "Create a poll" link to `/polls/new`).
  */

@@ -13,7 +13,7 @@ export type PollRequest = AuthenticatedRequest & { poll: Poll };
 
 /**
  * Runs after `JwtAuthGuard` (which attaches `req.user`). Loads the `:id` poll and throws 404 if it
- * is missing OR not owned by the caller — a 404 (not 403) so a non-owned poll is indistinguishable
+ * is missing OR not owned by the caller, a 404 (not 403) so a non-owned poll is indistinguishable
  * from a missing one (no existence leak), matching the Phase-1 read scoping. The loaded poll is
  * attached as `req.poll` for the handler to reuse.
  */

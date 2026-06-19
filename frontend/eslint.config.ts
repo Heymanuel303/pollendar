@@ -30,7 +30,7 @@ export default defineConfigWithVueTs(
 
   {
     // UI primitives (Button, Input, …) and page views (Landing, Dashboard, …) are
-    // intentionally single-word, design-system names registered with PascalCase — they
+    // intentionally single-word, design-system names registered with PascalCase, they
     // don't clash with native HTML elements, so the multi-word rule doesn't apply here.
     name: 'app/single-word-component-names',
     files: ['src/components/ui/**/*.vue', 'src/views/**/*.vue'],

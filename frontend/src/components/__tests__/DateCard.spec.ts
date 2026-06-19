@@ -51,10 +51,10 @@ describe('DateCard', () => {
 
 /**
  * Edit-mode locking: a loaded date carrying votes (id + a `hasVotes` slot) becomes invalidate-only —
- * no add-slot, no remove-date — and surfaces an Invalidate-date control that deactivates the date AND
+ * no add-slot, no remove-date, and surfaces an Invalidate-date control that deactivates the date AND
  * all its slots. A zero-vote loaded date in edit mode keeps full editability.
  */
-describe('DateCard — edit mode locking', () => {
+describe('DateCard, edit mode locking', () => {
   const VOTED: PollDateInput = {
     id: 'D1',
     eventDate: '2026-07-01',

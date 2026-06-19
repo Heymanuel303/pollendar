@@ -24,7 +24,7 @@ const sendPollCompleted = jest.fn<
   [string, string, string, string]
 >();
 
-/** Tx handle handed to `$transaction(fn)` — only the reservation reads/writes run inside it. */
+/** Tx handle handed to `$transaction(fn)`, only the reservation reads/writes run inside it. */
 const tx = {
   emailLog: { findUnique: emailLogFindUnique, create: emailLogCreate },
 };
@@ -210,7 +210,7 @@ describe('NotificationsService', () => {
         POLL_ID,
         POLL_TITLE,
         PUBLIC_TOKEN,
-        '2026-06-22 — Lunch',
+        '2026-06-22, Lunch',
       );
     });
 

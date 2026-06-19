@@ -9,7 +9,7 @@ import { PollsService } from './polls.service';
 
 // PrismaModule and ConfigModule are global, so PrismaService and ConfigService inject without
 // being imported. JwtModule is registered here (mirroring AuthModule) so JwtAuthGuard's JwtService
-// dependency resolves — AuthModule does not export the guard.
+// dependency resolves, AuthModule does not export the guard.
 @Module({
   imports: [
     NotificationsModule,

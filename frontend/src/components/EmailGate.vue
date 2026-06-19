@@ -27,7 +27,7 @@ async function submit(event: Event) {
     sent.value = true
   } catch {
     // requestLink only rejects on a genuine network/5xx failure.
-    error.value = "Couldn't reach the server — try again."
+    error.value = "Couldn't reach the server, try again."
   } finally {
     loading.value = false
   }

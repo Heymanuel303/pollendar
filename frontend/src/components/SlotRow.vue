@@ -4,7 +4,7 @@ import type { PollSlotInput } from '@/types/poll'
 
 /**
  * One slot in a candidate date: a label, an All-day / Set-times toggle, and start/end time inputs.
- * Owns no array logic — it emits an immutable replacement of its slot upward (the parent date owns
+ * Owns no array logic, it emits an immutable replacement of its slot upward (the parent date owns
  * the slot list) and a bare `remove` event. `showErrors` (set by the editor after a failed submit)
  * reveals the per-slot validation message: a time-range slot needs both a start and an end.
  */
@@ -25,7 +25,7 @@ function patch(changes: Partial<PollSlotInput>): void {
   emit('update:modelValue', { ...props.modelValue, ...changes })
 }
 
-/** A locked slot's read-only time range — `"All day"` or `"HH:mm–HH:mm"` (form values are already "HH:mm"). */
+/** A locked slot's read-only time range, `"All day"` or `"HH:mm–HH:mm"` (form values are already "HH:mm"). */
 const readonlyTimeLabel = computed<string>(() => {
   if (props.modelValue.isAllDay || !props.modelValue.startTime) return 'All day'
   return props.modelValue.endTime

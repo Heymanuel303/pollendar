@@ -24,7 +24,7 @@ function mountEditor(modelValue: PollDateInput[]): Wrapper {
   return mount(DateSlotEditor, { props: { modelValue, timezone: 'Europe/Brussels' } })
 }
 
-/** Newest `update:modelValue` payload — the immutable array the editor would hand its parent. */
+/** Newest `update:modelValue` payload, the immutable array the editor would hand its parent. */
 function lastModel(wrapper: Wrapper): PollDateInput[] {
   const events = wrapper.emitted('update:modelValue') as unknown[][] | undefined
   expect(events, 'expected an update:modelValue emit').toBeTruthy()
@@ -49,7 +49,7 @@ describe('DateSlotEditor', () => {
     const model = lastModel(wrapper)
     expect(model[0]?.slots).toHaveLength(2)
 
-    // The editor is controlled — re-feed the emitted value to see the badge recompute.
+    // The editor is controlled, re-feed the emitted value to see the badge recompute.
     await wrapper.setProps({ modelValue: model })
     expect(wrapper.text()).toContain('1 date')
     expect(wrapper.text()).toContain('2 slots')

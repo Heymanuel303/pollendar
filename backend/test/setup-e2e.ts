@@ -16,9 +16,9 @@ import { PrismaService } from '../src/prisma/prisma.service';
 export interface CapturedMail {
   kind: 'magic-link' | 'poll-completed';
   to: string;
-  /** magic-link only — `${APP_URL}/auth/callback?token=...` */
+  /** magic-link only, `${APP_URL}/auth/callback?token=...` */
   link?: string;
-  /** poll-completed only — the positional args passed to sendPollCompleted. */
+  /** poll-completed only, the positional args passed to sendPollCompleted. */
   args?: unknown[];
 }
 
@@ -32,7 +32,7 @@ export interface TestApp {
 /**
  * Boot the whole app against the disposable test schema, re-applying the exact global wiring
  * `main.ts` installs (prefix, cookie parser, BigInt serializer, validation pipe, Prisma exception
- * filter, credentialed CORS) — `createNestApplication()` does NOT replay `bootstrap()`. MailService
+ * filter, credentialed CORS), `createNestApplication()` does NOT replay `bootstrap()`. MailService
  * is stubbed so magic-link / completion mail is captured in-memory instead of hitting SMTP, and the
  * raw magic-link token (never returned by the API) can be recovered from the captured link.
  */

@@ -25,7 +25,7 @@ import type { Poll as OwnedPoll, PollSlot } from '@/lib/api/types'
 // Thin view: it owns the form state + validation and delegates the POST/PATCH to the store. The app
 // shell (App.vue) already provides the nav + centered <main>, so this renders only the editor content.
 // One component, two modes: `/polls/new` (CREATE) and `/polls/:id/edit` (EDIT) both resolve here and
-// branch on the presence of `route.params.id` — see {@link isEdit}.
+// branch on the presence of `route.params.id`, see {@link isEdit}.
 const route = useRoute()
 const router = useRouter()
 const pollStore = usePollStore()
@@ -42,9 +42,9 @@ const loaded = ref(false)
 const title = ref('')
 const description = ref('')
 const timezone = ref(defaultTimezone())
-// "Responses close" — a `datetime-local` wall-clock value. closesAt is PATCH-only (not accepted by
+// "Responses close", a `datetime-local` wall-clock value. closesAt is PATCH-only (not accepted by
 // POST /polls), so on CREATE it is surfaced but excluded from the payload; on EDIT it round-trips via
-// isoToLocalInput/localInputToIso (naive-UTC anchored, matching formatCloseLabel — see timezone.ts).
+// isoToLocalInput/localInputToIso (naive-UTC anchored, matching formatCloseLabel, see timezone.ts).
 const closesAtLocal = ref('')
 const dates = ref<PollDateInput[]>([
   {
@@ -56,7 +56,7 @@ const dates = ref<PollDateInput[]>([
 /**
  * Map a loaded wire slot into a {@link PollSlotInput}, converting the wire ISO `@db.Time` instants to
  * the `"HH:mm"` form the time inputs use and stamping the vote-lock. Vote source: `PollSlot._count.responses`
- * (Phase 2 enriches `GET /polls/:id`; Phase 4 added the field to the wire type) — `> 0` ⇒ immutable in place.
+ * (Phase 2 enriches `GET /polls/:id`; Phase 4 added the field to the wire type), `> 0` ⇒ immutable in place.
  */
 function hydrateSlot(slot: PollSlot): PollSlotInput {
   const hasVotes = (slot._count?.responses ?? 0) > 0
@@ -119,7 +119,7 @@ const breadcrumbLabel = computed<string>(() => (isEdit.value ? 'Edit' : 'New pol
 const headingLabel = computed<string>(() => (isEdit.value ? 'Edit poll' : 'Create a poll'))
 const subheadingLabel = computed<string>(() =>
   isEdit.value
-    ? 'Add or adjust times, or deactivate ones that no longer work — votes are kept.'
+    ? 'Add or adjust times, or deactivate ones that no longer work, votes are kept.'
     : 'Find the time everyone can make. Takes about a minute.',
 )
 const actionLabel = computed<string>(() => {
@@ -139,13 +139,13 @@ const allInvalidatedError = computed<string | undefined>(() => {
   )
   return hasActive
     ? undefined
-    : 'Keep at least one active date with a time — you can’t deactivate everything.'
+    : 'Keep at least one active date with a time, you can’t deactivate everything.'
 })
 
 function isValid(): boolean {
   if (title.value.trim() === '') return false
   if (isEdit.value) {
-    // EDIT: validate only ACTIVE (non-invalidated) dates/slots — a deactivated entry needn't be valid.
+    // EDIT: validate only ACTIVE (non-invalidated) dates/slots, a deactivated entry needn't be valid.
     // At least one active date with one active slot must remain; locked (voted) active slots already
     // carry valid persisted times, so only editable (zero-vote) active slots are checked.
     const activeDatesWithActiveSlots = dates.value.filter(
@@ -167,7 +167,7 @@ function isValid(): boolean {
   )
 }
 
-/** CREATE body for `POST /polls` — NEVER carries `id`/`invalidatedAt`/`closesAt` (those are edit-only). */
+/** CREATE body for `POST /polls`, NEVER carries `id`/`invalidatedAt`/`closesAt` (those are edit-only). */
 function buildCreatePayload(): CreatePollPayload {
   return {
     title: title.value.trim(),
@@ -186,7 +186,7 @@ function buildCreatePayload(): CreatePollPayload {
 }
 
 /**
- * EDIT body for `PATCH /polls/:id`. Full-replace strategy — the whole `dates` set is sent every time
+ * EDIT body for `PATCH /polls/:id`. Full-replace strategy, the whole `dates` set is sent every time
  * (the backend diff-update reconciles by `id`; never a delta). Existing rows carry their `id` +
  * `invalidatedAt` so invalidate/reactivate round-trips; brand-new rows omit both. `sortOrder` is
  * server-owned and never set here. `description`/`closesAt` send `null` (not `undefined`) to clear.
@@ -277,7 +277,7 @@ async function submit(): Promise<void> {
                 </template>
               </Field>
 
-              <Field label="Short description" hint="Optional — a line of context for invitees.">
+              <Field label="Short description" hint="Optional, a line of context for invitees.">
                 <template #default="{ id }">
                   <Input
                     :id="id"
@@ -296,10 +296,7 @@ async function submit(): Promise<void> {
                   </template>
                 </Field>
 
-                <Field
-                  label="Responses close"
-                  hint="Optional — set a deadline later from the poll."
-                >
+                <Field label="Responses close" hint="Optional, set a deadline later from the poll.">
                   <template #default="{ id }">
                     <input
                       :id="id"
@@ -342,7 +339,7 @@ async function submit(): Promise<void> {
           </div>
         </div>
 
-        <!-- RIGHT: always-editable list — the surface for adding custom slots and labels. -->
+        <!-- RIGHT: always-editable list, the surface for adding custom slots and labels. -->
         <DateSlotEditor
           v-model="dates"
           :timezone="timezone"

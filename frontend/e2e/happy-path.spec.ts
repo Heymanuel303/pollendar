@@ -1,9 +1,5 @@
 import { test, expect } from '@playwright/test'
-import {
-  getLatestMessageTo,
-  extractMagicLinkToken,
-  assertBodyContains,
-} from './helpers/mailpit'
+import { getLatestMessageTo, extractMagicLinkToken, assertBodyContains } from './helpers/mailpit'
 
 /**
  * End-to-end happy path for Pollendar (PLAN.md Phase 7):
@@ -15,7 +11,7 @@ import {
  * (:3000/api, migrated, CORS enabled) running. The Vite dev server (booted by playwright.config's
  * webServer) proxies `/api` to the backend so the httpOnly auth cookie stays same-origin.
  *
- * Reruns are isolated by a per-run timestamp baked into the emails — this avoids the
+ * Reruns are isolated by a per-run timestamp baked into the emails, this avoids the
  * `@@unique([pollId, email])` participant conflict and stays under the 5-req/60s magic-link throttle
  * (one magic-link request per run).
  */

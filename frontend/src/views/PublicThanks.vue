@@ -10,7 +10,7 @@ import { formatDate } from '@/lib/utils/timezone'
 
 /**
  * Post-submit confirmation (`/p/:publicToken/done`): a bloom hero, the live best-slot card (fetched
- * from `GET /results`, separately from submit), and the share actions. Thin — the store owns the
+ * from `GET /results`, separately from submit), and the share actions. Thin, the store owns the
  * fetches; this view only formats and lays them out.
  */
 const route = useRoute()
@@ -72,7 +72,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
           You're in!
         </h1>
         <p class="mt-3 text-dim">
-          <template v-if="name">Thanks {{ name }} — your availability is saved.</template>
+          <template v-if="name">Thanks {{ name }}, your availability is saved.</template>
           <template v-else>Your availability is saved.</template>
         </p>
         <div
@@ -113,7 +113,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
       <!-- Share actions -->
       <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
         <h2 class="font-display text-base font-semibold">Help find the time everyone can make</h2>
-        <p class="mt-1 text-sm text-dim">Pass it along — it takes about a minute.</p>
+        <p class="mt-1 text-sm text-dim">Pass it along, it takes about a minute.</p>
         <div class="mt-4 flex flex-col gap-3 sm:flex-row">
           <CopyButton :value="shareUrl" variant="primary">
             <span aria-hidden="true">🔗</span> Copy link
@@ -140,7 +140,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
       </div>
 
       <footer class="mt-12 border-t border-line/60 pt-6 text-center text-sm text-mute">
-        <p>The organizer will confirm the final time — we'll email you if you left an address.</p>
+        <p>The organizer will confirm the final time, we'll email you if you left an address.</p>
         <p class="mt-3 text-xs">pollendar.app</p>
       </footer>
     </main>

@@ -48,7 +48,7 @@ describe('Auth lifecycle (e2e)', () => {
       .expect(200);
     expect(linkRes.body).toEqual({ ok: true });
 
-    // Only the hash is stored — plaintext token is never persisted.
+    // Only the hash is stored, plaintext token is never persisted.
     const row = await ctx.prisma.loginToken.findFirst();
     expect(row).toBeTruthy();
     expect(row?.tokenHash).toMatch(/^[0-9a-f]{64}$/);

@@ -29,10 +29,10 @@ const SAMPLE_CREATOR_EMAIL = 'creator@example.com';
 const publicToken = (): string =>
   randomBytes(16).toString('base64url').slice(0, 22);
 
-/** A MySQL TIME value — Prisma derives the time-of-day from a 1970-01-01 UTC DateTime. */
+/** A MySQL TIME value, Prisma derives the time-of-day from a 1970-01-01 UTC DateTime. */
 const time = (hhmm: string): Date => new Date(`1970-01-01T${hhmm}:00Z`);
 
-/** A MySQL DATE value — midnight UTC of the given calendar day. */
+/** A MySQL DATE value, midnight UTC of the given calendar day. */
 const eventDate = (iso: string): Date => new Date(iso);
 
 export async function seed(prisma: PrismaClient): Promise<void> {
@@ -120,7 +120,7 @@ export async function seed(prisma: PrismaClient): Promise<void> {
       },
       {
         displayName: 'Charlie',
-        email: null, // anonymous — no email on file
+        email: null, // anonymous, no email on file
         availability: [
           Availability.available,
           Availability.unavailable,
@@ -163,7 +163,7 @@ async function main(): Promise<void> {
   const url = process.env['DATABASE_URL'];
   if (!url) {
     throw new Error(
-      'DATABASE_URL is not set — cannot seed (expected in repo-root .env).',
+      'DATABASE_URL is not set, cannot seed (expected in repo-root .env).',
     );
   }
 
@@ -171,7 +171,7 @@ async function main(): Promise<void> {
   try {
     await seed(prisma);
     console.log(
-      '✓ Seed complete: "Team lunch" poll — 2 dates, 4 slots, 3 participants, 12 responses.',
+      '✓ Seed complete: "Team lunch" poll, 2 dates, 4 slots, 3 participants, 12 responses.',
     );
   } finally {
     await prisma.$disconnect();

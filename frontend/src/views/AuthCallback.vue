@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/authStore'
 
 // Transient page (`/auth/callback`): the browser lands here from the email link with `?token=`.
 // We exchange it for the session cookies, then replace into the dashboard. On failure we never
-// leave a blank loader — we show an actionable error.
+// leave a blank loader, we show an actionable error.
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()

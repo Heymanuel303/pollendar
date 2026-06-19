@@ -63,7 +63,7 @@ function mountGrid() {
 }
 
 describe('AvailabilityGrid', () => {
-  it('blooms exactly one column — the best slot', () => {
+  it('blooms exactly one column, the best slot', () => {
     const wrapper = mountGrid()
 
     expect(wrapper.findAll('.bloom-bg')).toHaveLength(1)

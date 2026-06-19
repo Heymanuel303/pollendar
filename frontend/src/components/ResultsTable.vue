@@ -5,7 +5,7 @@ import type { PollResults, SlotMeta, SlotTally } from '@/lib/api/types'
 
 /**
  * Per-slot tally list with a distribution bar + score. The winning slot
- * (`results.best.slotId`) blooms — and it is the ONLY element carrying `bloom-bg`.
+ * (`results.best.slotId`) blooms, and it is the ONLY element carrying `bloom-bg`.
  *
  * Ports docs/design/mockups/components/results-table.html. Rows are emitted in poll
  * DISPLAY order (`order`, the slotIds PollManage flattens out of dates -> slots); each

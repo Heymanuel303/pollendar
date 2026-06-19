@@ -4,7 +4,7 @@ import { RouterView, useRoute } from 'vue-router'
 import AppNav from '@/components/layout/AppNav.vue'
 
 // Public participant routes (`/p/...`, `meta.public`) render their own minimal wordmark header and
-// full-width layout — they must NOT show the authenticated app nav or the constrained creator shell.
+// full-width layout, they must NOT show the authenticated app nav or the constrained creator shell.
 const route = useRoute()
 const isPublic = computed<boolean>(() => route.meta.public === true)
 </script>

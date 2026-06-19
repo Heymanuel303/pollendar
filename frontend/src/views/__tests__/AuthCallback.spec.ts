@@ -35,7 +35,7 @@ describe('AuthCallback', () => {
     expect(wrapper.text()).toContain('missing its token')
   })
 
-  it('shows the expired-link error when verify rejects — never a blank loader', async () => {
+  it('shows the expired-link error when verify rejects, never a blank loader', async () => {
     route.query = { token: 'expired' }
     verify.mockRejectedValue(new Error('401'))
     const wrapper = mountCallback()

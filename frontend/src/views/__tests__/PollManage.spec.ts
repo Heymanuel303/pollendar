@@ -96,7 +96,7 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('PollManage — status pill + Edit link + actions', () => {
+describe('PollManage, status pill + Edit link + actions', () => {
   it('open poll: pollen "Open" pill, Edit link → /polls/42/edit, Cancel action, no Reopen', async () => {
     const wrapper = await mountWithPoll(makePoll())
 
@@ -128,7 +128,7 @@ describe('PollManage — status pill + Edit link + actions', () => {
   })
 })
 
-describe('PollManage — lifecycle confirm dialogs', () => {
+describe('PollManage, lifecycle confirm dialogs', () => {
   it('Cancel: opens the dialog and confirming POSTs /polls/42/cancel', async () => {
     const wrapper = await mountWithPoll(makePoll())
 

@@ -85,7 +85,7 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('PublicPoll — closed (cancelled) state', () => {
+describe('PublicPoll, closed (cancelled) state', () => {
   it('shows the Closed chip + cancelled banner, disables controls, hides the submit bar, keeps results', async () => {
     const wrapper = await mountWithPoll(makePublicPoll({ status: 'cancelled' }))
 
@@ -109,7 +109,7 @@ describe('PublicPoll — closed (cancelled) state', () => {
   })
 })
 
-describe('PublicPoll — open state', () => {
+describe('PublicPoll, open state', () => {
   it('renders the sticky submit bar, enables controls, and shows the Open chip', async () => {
     const wrapper = await mountWithPoll(makePublicPoll({ status: 'open' }))
 

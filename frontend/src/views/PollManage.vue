@@ -17,7 +17,7 @@ import type { SlotMeta } from '@/lib/api/types'
 
 /**
  * Creator-facing manage view (`/polls/:id`): who responded, which slot is in bloom, the share box,
- * and the complete-poll flow. Thin by contract — all fetching lives in {@link usePollStore}; this
+ * and the complete-poll flow. Thin by contract, all fetching lives in {@link usePollStore}; this
  * view only derives display shapes (a `slotId → SlotMeta` map walked once) and owns the
  * complete-confirm dialog. `finalSlotId`/`completedAt` are creator-only and never leave this view.
  */
@@ -46,7 +46,7 @@ onMounted(async () => {
   await store.loadDetail(id.value)
 })
 
-/** slotId → { slot, date } — derived once so the results components never re-walk dates[].slots[]. */
+/** slotId → { slot, date }, derived once so the results components never re-walk dates[].slots[]. */
 const slotMetaById = computed<Record<string, SlotMeta>>(() => {
   const map: Record<string, SlotMeta> = {}
   for (const date of currentPoll.value?.dates ?? []) {
@@ -243,7 +243,7 @@ const bestLabel = computed<string>(() => {
         <Button variant="ghost" @click="openDeleteConfirm">Delete poll</Button>
       </div>
 
-      <!-- Best slot bloom — replaced by a neutral notice when cancelled (BestSlotBloom's else branch
+      <!-- Best slot bloom, replaced by a neutral notice when cancelled (BestSlotBloom's else branch
            would otherwise read "✓ Completed"). BestSlotBloom.vue stays untouched. -->
       <BestSlotBloom
         v-if="!isCancelled"
@@ -346,7 +346,7 @@ const bestLabel = computed<string>(() => {
           Cancel this poll?
         </h2>
         <p class="mt-2 text-sm text-dim">
-          Participants will no longer be able to vote. You can reopen it later — votes are kept.
+          Participants will no longer be able to vote. You can reopen it later, votes are kept.
         </p>
         <p v-if="lifecycleError" class="mt-3 text-sm text-coral">{{ lifecycleError }}</p>
         <div class="mt-5 flex justify-end gap-2">

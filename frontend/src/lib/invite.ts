@@ -10,7 +10,7 @@
  */
 export function buildInviteMessage(pollTitle: string, shareUrl: string): string {
   const title = pollTitle.trim() || 'a poll'
-  return `Help us find a time for "${title}" — add your availability here: ${shareUrl}`
+  return `Help us find a time for "${title}", add your availability here: ${shareUrl}`
 }
 
 /**
@@ -23,7 +23,7 @@ export function buildShareUrl(pollPublicToken: string): string {
 }
 
 /**
- * The full creator-facing invite message — the DESIGN.md §7 template the `ShareBox` shows and copies.
+ * The full creator-facing invite message, the DESIGN.md §7 template the `ShareBox` shows and copies.
  * The optional `description` line and the `Please reply before …` line are included only when present,
  * matching the rendered §7 example exactly:
  *

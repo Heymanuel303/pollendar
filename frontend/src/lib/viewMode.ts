@@ -30,6 +30,6 @@ export function saveViewMode(pollPublicToken: string, mode: ViewMode): void {
   try {
     localStorage.setItem(keyFor(pollPublicToken), mode)
   } catch {
-    // Storage disabled / quota exceeded — the toggle still works; we just can't remember it.
+    // Storage disabled / quota exceeded, the toggle still works; we just can't remember it.
   }
 }

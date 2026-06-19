@@ -7,7 +7,7 @@ type Wrapper = ReturnType<typeof mount>
 
 /**
  * jsdom omits `window.matchMedia`, which `useBreakpoint` reads at setup. Stub it as always-unmatched
- * (phone tier) — this component uses `isPhone` for layout density only, so the breakpoint never
+ * (phone tier), this component uses `isPhone` for layout density only, so the breakpoint never
  * affects selection logic or the emitted payload.
  */
 beforeEach(() => {
@@ -50,7 +50,7 @@ function mountEditor(modelValue: PollDateInput[]): Wrapper {
   return mount(CalendarDateEditor, { props: { modelValue, timezone: 'Europe/Brussels' } })
 }
 
-/** Newest `update:modelValue` payload — the immutable array the editor would hand its parent. */
+/** Newest `update:modelValue` payload, the immutable array the editor would hand its parent. */
 function lastModel(wrapper: Wrapper): PollDateInput[] {
   const events = wrapper.emitted('update:modelValue') as unknown[][] | undefined
   expect(events, 'expected an update:modelValue emit').toBeTruthy()
@@ -106,7 +106,7 @@ describe('CalendarDateEditor', () => {
     expect(wrapper.text()).toContain('2 selected')
   })
 
-  it('renders no bulk-apply preset panel — the calendar is a pure day-picker', () => {
+  it('renders no bulk-apply preset panel, the calendar is a pure day-picker', () => {
     const wrapper = mountEditor(twoDates())
     expect(wrapper.text()).not.toContain('Apply a time block')
     expect(wrapper.findAll('button').some((b) => b.text().includes('Apply to'))).toBe(false)

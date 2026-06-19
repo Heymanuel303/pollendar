@@ -16,12 +16,12 @@ export default function globalSetup(): void {
   const testUrl = process.env.TEST_DATABASE_URL;
   if (!testUrl) {
     throw new Error(
-      'TEST_DATABASE_URL must be set for the e2e suite — a disposable schema, never the dev DB.',
+      'TEST_DATABASE_URL must be set for the e2e suite, a disposable schema, never the dev DB.',
     );
   }
   if (testUrl === devUrl) {
     throw new Error(
-      'TEST_DATABASE_URL must not equal the dev DATABASE_URL — e2e must use a throwaway schema.',
+      'TEST_DATABASE_URL must not equal the dev DATABASE_URL, e2e must use a throwaway schema.',
     );
   }
 

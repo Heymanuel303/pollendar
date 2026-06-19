@@ -9,7 +9,7 @@ import type { BestSlot, Poll, SlotMeta } from '@/lib/api/types'
 /**
  * Creator-facing share panel: surfaces the public link and the full DESIGN.md §7 invite message,
  * each with its own copy-to-clipboard control, plus a footer badge for the current winning slot.
- * It owns no fetching — the share URL, poll, and best-slot data are passed in. The "Please reply
+ * It owns no fetching, the share URL, poll, and best-slot data are passed in. The "Please reply
  * before …" line is added by `buildFullInviteMessage` only when the poll has a close time.
  */
 const props = defineProps<{

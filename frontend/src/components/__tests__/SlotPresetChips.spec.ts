@@ -9,7 +9,7 @@ function mountChips(modelValue: PollSlotInput[] = []): Wrapper {
   return mount(SlotPresetChips, { props: { modelValue } })
 }
 
-/** Newest `update:modelValue` payload — the immutable array the picker hands its parent. */
+/** Newest `update:modelValue` payload, the immutable array the picker hands its parent. */
 function lastModel(wrapper: Wrapper): PollSlotInput[] {
   const events = wrapper.emitted('update:modelValue') as unknown[][] | undefined
   expect(events, 'expected an update:modelValue emit').toBeTruthy()

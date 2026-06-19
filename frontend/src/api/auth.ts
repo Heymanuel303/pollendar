@@ -1,8 +1,8 @@
 /**
- * Auth endpoint module — thin typed wrappers over the shared fetch client. The raw `fetch` wiring
+ * Auth endpoint module, thin typed wrappers over the shared fetch client. The raw `fetch` wiring
  * (the `/api` base + `credentials: "include"` so the httpOnly cookie rides along, and the typed
  * {@link ApiError} on a non-2xx response) lives in `@/lib/api/client`; the store calls these, never
- * `fetch` directly. The SPA never reads the JWT — `verify` sets httpOnly cookies server-side.
+ * `fetch` directly. The SPA never reads the JWT, `verify` sets httpOnly cookies server-side.
  */
 import { get, post } from '@/lib/api/client'
 import type { AuthUser } from '@/types/auth'
@@ -32,7 +32,7 @@ export function getMe(): Promise<AuthUser> {
   return get<AuthUser>('/auth/me')
 }
 
-/** `POST /api/auth/logout`. Idempotent — 200 even with no session; clears the cookies server-side. */
+/** `POST /api/auth/logout`. Idempotent, 200 even with no session; clears the cookies server-side. */
 export function logout(): Promise<{ ok: true }> {
   return post<{ ok: true }>('/auth/logout')
 }
@@ -40,7 +40,7 @@ export function logout(): Promise<{ ok: true }> {
 /**
  * `POST /api/auth/refresh`. Rotates the refresh session and reissues both httpOnly cookies. 200 →
  * the session is alive; a 401 (missing/expired/rotated refresh cookie) rejects with {@link ApiError}.
- * The client wrapper calls this transparently on a mid-session 401 — components rarely call it directly.
+ * The client wrapper calls this transparently on a mid-session 401, components rarely call it directly.
  */
 export function refresh(): Promise<{ ok: true }> {
   return post<{ ok: true }>('/auth/refresh')

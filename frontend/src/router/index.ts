@@ -41,7 +41,7 @@ const router = createRouter({
       component: () => import('@/views/PollManage.vue'),
       meta: { requiresAuth: true },
     },
-    // Anonymous participant flow — no auth, and `public: true` so App.vue renders the minimal
+    // Anonymous participant flow, no auth, and `public: true` so App.vue renders the minimal
     // wordmark-only layout (no creator app nav) for these full-bleed views.
     {
       path: '/p/:publicToken',

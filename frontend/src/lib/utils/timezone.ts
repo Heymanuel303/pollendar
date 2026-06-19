@@ -5,7 +5,7 @@
  * Poll `eventDate` (`"YYYY-MM-DD"`) and slot times (`"HH:mm[:ss]"`) are *naive* values already
  * expressed in the poll's IANA `timeZone` (the backend stores them as `@db.Date` / `@db.Time` with
  * no offset). They are therefore rendered faithfully by anchoring to a fixed UTC instant and
- * formatting in UTC — this never shifts the day or hour. The `timeZone` argument documents the zone
+ * formatting in UTC, this never shifts the day or hour. The `timeZone` argument documents the zone
  * the value belongs to (and lets callers re-render in another zone later); see {@link localZoneLabel}.
  */
 
@@ -15,7 +15,7 @@ import type { PollSlot } from '@/lib/api/types'
  * Split a calendar-date value into `[year, month, day]` numbers.
  *
  * Accepts both a bare `"YYYY-MM-DD"` and a full UTC-midnight ISO instant
- * `"YYYY-MM-DDT…Z"` — the latter is the wire shape of a `@db.Date` column (e.g.
+ * `"YYYY-MM-DDT…Z"`, the latter is the wire shape of a `@db.Date` column (e.g.
  * `currentPoll.dates[].eventDate` from `GET /api/polls/:id`), which Prisma serializes as
  * `"2026-06-19T00:00:00.000Z"`. Only the leading `"YYYY-MM-DD"` portion is parsed: because the
  * instant is UTC midnight, that portion **is** the intended calendar date, so taking it is
@@ -52,13 +52,13 @@ export function formatDate(eventDate: string, _timeZone?: string): string {
 
 /**
  * Format a wall-clock time as a 24-hour `"18:00"` label. Accepts either a bare `"HH:mm[:ss]"` string
- * or a full ISO instant — the latter is the wire shape of a poll slot's `@db.Time` column, which
+ * or a full ISO instant, the latter is the wire shape of a poll slot's `@db.Time` column, which
  * Prisma anchors to `1970-01-01` and serializes as e.g. `"1970-01-01T18:00:00.000Z"`.
  *
  * Both forms are rendered anchored in **UTC** so the stored wall-clock digits are preserved verbatim.
  * The slot time is already a *naive* value expressed in the poll's `timeZone`, so re-projecting it
  * through `poll.timezone` here would double-shift it; the `timeZone` arg is kept for documentation
- * (and future re-rendering) only — see the file header.
+ * (and future re-rendering) only, see the file header.
  */
 export function formatTime(value: string, _timeZone?: string): string {
   const anchor = value.includes('T')
@@ -92,7 +92,7 @@ export function localZoneLabel(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone
 }
 
-/** The viewer's local IANA timezone — the default zone a new poll is created in. Falls back to `"UTC"`. */
+/** The viewer's local IANA timezone, the default zone a new poll is created in. Falls back to `"UTC"`. */
 export function defaultTimezone(): string {
   return localZoneLabel() || 'UTC'
 }
@@ -119,7 +119,7 @@ export function commonTimezones(): string[] {
     const zones = supportedValuesOf?.('timeZone')
     if (zones && zones.length > 0) return zones
   } catch {
-    // Old runtime without supportedValuesOf — fall through to the hardcoded list.
+    // Old runtime without supportedValuesOf, fall through to the hardcoded list.
   }
   const local = localZoneLabel()
   return local && !FALLBACK_TIMEZONES.includes(local)
@@ -128,7 +128,7 @@ export function commonTimezones(): string[] {
 }
 
 /**
- * Day-of-month of a calendar date, no leading zero — e.g. `"26"` (for the date chip). Accepts a bare
+ * Day-of-month of a calendar date, no leading zero, e.g. `"26"` (for the date chip). Accepts a bare
  * `"YYYY-MM-DD"` or a full UTC-midnight ISO instant (the serialized shape of a `@db.Date` field) —
  * see {@link isoDateParts}.
  */
@@ -169,7 +169,7 @@ export function formatCloseLabel(iso: string, _timeZone?: string): string {
 
 /**
  * An ISO instant → a `datetime-local` wall-clock value `"YYYY-MM-DDTHH:mm"`, reading the wall-clock
- * digits **anchored in UTC** — the inverse of {@link localInputToIso} and consistent with how
+ * digits **anchored in UTC**, the inverse of {@link localInputToIso} and consistent with how
  * {@link formatCloseLabel} renders a close value verbatim (naive, never re-projected through a zone).
  * Used to hydrate the editor's "Responses close" input from a loaded poll's `closesAt`. Returns `""`
  * for an unparseable value so the input stays empty rather than showing `NaN`.
@@ -186,7 +186,7 @@ export function isoToLocalInput(iso: string): string {
 
 /**
  * A `datetime-local` wall-clock value `"YYYY-MM-DDTHH:mm"` → an ISO instant, anchoring the digits in
- * **UTC** (the inverse of {@link isoToLocalInput}). Returns `null` for an empty value — the editor
+ * **UTC** (the inverse of {@link isoToLocalInput}). Returns `null` for an empty value, the editor
  * sends `closesAt: null` to clear the deadline. Naive-UTC by design so a close value round-trips
  * through the editor byte-stable and matches {@link formatCloseLabel}'s verbatim rendering.
  */

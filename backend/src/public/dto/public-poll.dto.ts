@@ -3,7 +3,7 @@ import { PollStatus } from '@prisma/client';
 /**
  * Sanitized public view of a poll, returned by `GET /api/public/polls/:token`. Deliberately omits
  * the owner `userId`, participant data/emails, and completion internals (`finalSlotId`, timestamps).
- * BigInt `id` fields stay `bigint` here — the global `BigIntSerializerInterceptor` stringifies them
+ * BigInt `id` fields stay `bigint` here, the global `BigIntSerializerInterceptor` stringifies them
  * on the wire.
  */
 export interface PublicPollSlot {

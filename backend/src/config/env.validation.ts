@@ -155,7 +155,7 @@ export function validate(
   // Production hardening: real outbound mail goes through Resend SMTP, which
   // requires auth + TLS. Mailpit (dev) and the e2e stub need none of this, and
   // Jest may boot with NODE_ENV=test against the auth-less dev SMTP env, so this
-  // guard is scoped to production only — dev/test keep booting on port 1025.
+  // guard is scoped to production only, dev/test keep booting on port 1025.
   if (validatedConfig.NODE_ENV === Environment.Production) {
     const prodErrors: string[] = [];
     if (!validatedConfig.SMTP_USER?.trim()) {

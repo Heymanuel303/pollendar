@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => user.value !== null)
 
   /**
-   * Request a magic link. Never throws on an unknown email (anti-enumeration) — the calling
+   * Request a magic link. Never throws on an unknown email (anti-enumeration), the calling
    * component owns the "check your inbox" UI; only a genuine network/5xx failure rejects.
    */
   async function requestLink(email: string): Promise<void> {

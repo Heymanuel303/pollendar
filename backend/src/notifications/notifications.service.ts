@@ -6,7 +6,7 @@ import { MailService } from '../mail/mail.service';
 import { buildShareUrl } from '../polls/public-token.util';
 import { PrismaService } from '../prisma/prisma.service';
 
-/** VarChar(500) ceiling for EmailLog.error — truncate any captured message to fit. */
+/** VarChar(500) ceiling for EmailLog.error, truncate any captured message to fit. */
 const ERROR_MAX_LEN = 500;
 
 /** "HH:mm" from a 1970-anchored @db.Time Date; '' when absent. */
@@ -27,7 +27,7 @@ function renderSlotLabel(slot: {
 }): string {
   const day = slot.date.eventDate.toISOString().slice(0, 10);
   if (slot.label) {
-    return `${day} — ${slot.label}`;
+    return `${day}, ${slot.label}`;
   }
   if (slot.isAllDay) {
     return `${day} (all day)`;
@@ -58,7 +58,7 @@ export class NotificationsService {
   /**
    * Self-contained completion fan-out keyed by `pollId`: loads the poll, renders its finalized
    * slot label, and delegates to {@link sendPollCompletedEmails}. A no-op (logged) when the poll
-   * is missing or has no final slot — safe to call unconditionally after a complete transaction.
+   * is missing or has no final slot, safe to call unconditionally after a complete transaction.
    */
   async notifyPollCompleted(pollId: bigint): Promise<void> {
     const poll = await this.prisma.poll.findUnique({ where: { id: pollId } });

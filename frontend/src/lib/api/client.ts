@@ -2,7 +2,7 @@
  * Thin fetch wrapper for the Pollendar API.
  *
  * Every request goes to the `VITE_API_BASE` (`/api`) base with `credentials: "include"` so the
- * httpOnly auth cookie rides along — the SPA never sees or handles the JWT itself. On a non-2xx
+ * httpOnly auth cookie rides along, the SPA never sees or handles the JWT itself. On a non-2xx
  * response it throws a typed {@link ApiError} carrying the HTTP `status`, so callers can branch on
  * `err.status === 401` (no session), `409` (duplicate email/slot), `400` (bad request).
  *
@@ -40,7 +40,7 @@ async function parseBody(res: Response): Promise<unknown> {
 
 /**
  * Endpoints a 401 must NOT try to refresh-and-retry: the refresh call itself (would recurse), the
- * unauthenticated entry points, and the `/auth/me` probe — its 401 means "no session", which
+ * unauthenticated entry points, and the `/auth/me` probe, its 401 means "no session", which
  * `authStore.bootstrap()` handles, and auto-refreshing it would add a wasted call to every
  * anonymous public-poll visit. Session restore for those cases lives in the router guard.
  */

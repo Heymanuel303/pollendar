@@ -48,7 +48,7 @@ function mountTable() {
 const norm = (text: string) => text.replace(/\s+/g, ' ')
 
 describe('ResultsTable', () => {
-  it('blooms exactly one row — the best slot — with the ✦ In bloom pill', () => {
+  it('blooms exactly one row, the best slot, with the ✦ In bloom pill', () => {
     const wrapper = mountTable()
 
     expect(wrapper.findAll('.bloom-bg')).toHaveLength(1)

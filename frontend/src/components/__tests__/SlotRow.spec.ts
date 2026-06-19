@@ -90,7 +90,7 @@ describe('SlotRow', () => {
  * Edit-mode `locked` slot (a voted or invalidated row): the inputs collapse to a read-only label +
  * time range, the remove ✕ is hidden, and only an Invalidate / Reactivate control remains.
  */
-describe('SlotRow — locked (edit mode)', () => {
+describe('SlotRow, locked (edit mode)', () => {
   const LOCKED: PollSlotInput = {
     id: 'S1',
     isAllDay: false,
