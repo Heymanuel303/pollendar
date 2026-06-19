@@ -13,6 +13,7 @@ const META: SlotMeta = {
     isAllDay: false,
     label: 'Early',
     sortOrder: 0,
+    invalidatedAt: null,
   },
   date: '2026-06-26',
 }

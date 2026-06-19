@@ -40,3 +40,39 @@ export interface CreatePollPayload {
 
 /** Thin 201 result of `POST /api/polls` — a freshly created poll is always `open`. */
 export type CreatedPoll = PollSummary
+
+/** One slot in an edit payload. `id` present ⇒ existing row; absent ⇒ brand-new slot. `invalidatedAt`
+ *  is a non-null ISO instant to deactivate, `null`/absent to keep active (or reactivate). */
+export interface UpdatePollSlotInput {
+  id?: string
+  startTime?: string
+  endTime?: string
+  isAllDay?: boolean
+  label?: string
+  invalidatedAt?: string | null
+}
+
+/** One date in an edit payload, with its slots. `id`/`invalidatedAt` semantics as above; invalidating
+ *  a date logically invalidates all of its slots. */
+export interface UpdatePollDateInput {
+  id?: string
+  eventDate: string
+  slots: UpdatePollSlotInput[]
+  invalidatedAt?: string | null
+}
+
+/**
+ * Body of `PATCH /api/polls/:id`. Every field is optional — send only what changed. Scalar fields
+ * (`title`/`description`/`timezone`/`closesAt`) patch in place. `dates`, when present, is the FULL
+ * desired nested tree; the backend diffs it against the stored tree by `id`. A date/slot that already
+ * has >=1 response is IMMUTABLE in place — to change such a slot the creator marks it `invalidatedAt`
+ * and adds a replacement (new row, no `id`). `closesAt` is an ISO instant or `null` to clear it. Only
+ * valid while the poll is `open` (backend returns 409 otherwise).
+ */
+export interface UpdatePollPayload {
+  title?: string
+  description?: string | null
+  timezone?: string
+  closesAt?: string | null
+  dates?: UpdatePollDateInput[]
+}

@@ -1,8 +1,14 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ApiError, get as apiGet, post as apiPost } from '@/lib/api/client'
+import {
+  ApiError,
+  get as apiGet,
+  post as apiPost,
+  patch as apiPatch,
+  del as apiDel,
+} from '@/lib/api/client'
 import { getParticipantResponses } from '@/lib/api/public-poll'
-import type { CreatePollPayload, CreatedPoll } from '@/types/poll'
+import type { CreatePollPayload, CreatedPoll, UpdatePollPayload } from '@/types/poll'
 import type {
   PollDate,
   PollStatus,
@@ -96,6 +102,18 @@ export const usePollStore = defineStore('poll', () => {
   const completing = ref(false)
   /** `complete()` failure as a human-readable message (409/400 surfaced cleanly), or `null`. */
   const completeError = ref<string | null>(null)
+  /** True while `update()` is in flight (drives the edit form's save button). */
+  const updating = ref(false)
+  /** `update()` failure as a human-readable message (409 not-open / 400 validation), or `null`. */
+  const updateError = ref<string | null>(null)
+  /** True while `remove()` is in flight (drives the delete confirm button). */
+  const removing = ref(false)
+  /** `remove()` failure as a human-readable message, or `null`. */
+  const removeError = ref<string | null>(null)
+  /** True while a `cancel()`/`reopen()` lifecycle transition is in flight. */
+  const lifecycleTransitioning = ref(false)
+  /** `cancel()`/`reopen()` failure as a human-readable message, or `null`. */
+  const lifecycleError = ref<string | null>(null)
 
   /**
    * Create a poll with its nested dates + slots. Resolves the thin {@link CreatedPoll} (id +
@@ -232,6 +250,91 @@ export const usePollStore = defineStore('poll', () => {
     }
   }
 
+  /**
+   * Edit an open poll: `PATCH /api/polls/:id` with the changed scalar fields and/or the full desired
+   * nested `dates` tree (each row carrying its `id` + `invalidatedAt` marker). On 200 the returned
+   * updated poll replaces `currentPoll` and results are re-fetched (a date/slot change can move the best
+   * slot). The backend rejects an edit of a poll that is no longer `open` (409) and validation failures
+   * (400); both are surfaced as a readable `updateError` and rethrown so the edit view stays reactive.
+   * Voted dates/slots are immutable in place server-side — the creator marks them invalidated + re-adds.
+   */
+  async function update(pollId: string, payload: UpdatePollPayload): Promise<void> {
+    updating.value = true
+    updateError.value = null
+    try {
+      currentPoll.value = await apiPatch<OwnedPoll>(`/polls/${pollId}`, payload)
+      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+    } catch (err) {
+      updateError.value = updateMessageFor(err)
+      throw err
+    } finally {
+      updating.value = false
+    }
+  }
+
+  /**
+   * Delete an owned poll: `DELETE /api/polls/:id` (204, cascade — votes go with it). On success the
+   * detail slice (`currentPoll`/`results`/`invite`) is cleared and the row is dropped from the cached
+   * `polls` list so the dashboard reflects the deletion without a re-fetch. A failure records a
+   * readable `removeError` and rethrows so the confirm dialog stays reactive.
+   */
+  async function remove(pollId: string): Promise<void> {
+    removing.value = true
+    removeError.value = null
+    try {
+      await apiDel<void>(`/polls/${pollId}`)
+      polls.value = polls.value.filter((p) => p.id !== pollId)
+      currentPoll.value = null
+      results.value = null
+      invite.value = null
+    } catch (err) {
+      removeError.value = removeMessageFor(err)
+      throw err
+    } finally {
+      removing.value = false
+    }
+  }
+
+  /**
+   * Cancel an open poll: `POST /api/polls/:id/cancel` (no body). Transitions status to `cancelled`,
+   * which blocks new submissions just like `completed`. On 200 the updated poll replaces `currentPoll`
+   * and results are re-fetched. A 409 (not open) is surfaced as `lifecycleError` and rethrown so the
+   * confirm dialog stays reactive.
+   */
+  async function cancel(pollId: string): Promise<void> {
+    lifecycleTransitioning.value = true
+    lifecycleError.value = null
+    try {
+      currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/cancel`)
+      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+    } catch (err) {
+      lifecycleError.value = lifecycleMessageFor(err)
+      throw err
+    } finally {
+      lifecycleTransitioning.value = false
+    }
+  }
+
+  /**
+   * Reopen a cancelled OR completed poll: `POST /api/polls/:id/reopen` (no body). Transitions status
+   * back to `open` and, from `completed`, clears `finalSlotId` + `completedAt` (the swapped poll
+   * reflects this). On 200 the updated poll replaces `currentPoll` and results are re-fetched. A 409
+   * (already open) is surfaced as `lifecycleError` and rethrown.
+   */
+  async function reopen(pollId: string): Promise<void> {
+    lifecycleTransitioning.value = true
+    lifecycleError.value = null
+    try {
+      currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/reopen`)
+      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+    } catch (err) {
+      lifecycleError.value = lifecycleMessageFor(err)
+      throw err
+    } finally {
+      lifecycleTransitioning.value = false
+    }
+  }
+
   return {
     creating,
     error,
@@ -256,6 +359,16 @@ export const usePollStore = defineStore('poll', () => {
     loadParticipants,
     loadInviteMessage,
     complete,
+    updating,
+    updateError,
+    update,
+    removing,
+    removeError,
+    remove,
+    lifecycleTransitioning,
+    lifecycleError,
+    cancel,
+    reopen,
   }
 })
 
@@ -279,6 +392,37 @@ function completeMessageFor(err: unknown): string {
     if (err.status === 409) return 'Poll is no longer open.'
     if (err.status === 400) return "That slot isn't part of this poll."
     return 'Could not complete the poll. Please try again.'
+  }
+  return 'Could not reach the server — try again.'
+}
+
+/** Map an `update()` failure to a single user-facing sentence. */
+function updateMessageFor(err: unknown): string {
+  if (err instanceof ApiError) {
+    const body = err.body as { message?: string | string[] } | null
+    const message = body?.message
+    if (Array.isArray(message)) return message[0] ?? 'Please check the form and try again.'
+    if (typeof message === 'string' && message !== '') return message
+    if (err.status === 409) return 'This poll can no longer be edited.'
+    return 'Could not save your changes. Please try again.'
+  }
+  return 'Could not reach the server — try again.'
+}
+
+/** Map a `remove()` failure to a single user-facing sentence. */
+function removeMessageFor(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 404) return 'This poll no longer exists.'
+    return 'Could not delete the poll. Please try again.'
+  }
+  return 'Could not reach the server — try again.'
+}
+
+/** Map a `cancel()`/`reopen()` failure to a single user-facing sentence. */
+function lifecycleMessageFor(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 409) return 'This poll is not in a state that allows that change.'
+    return 'Could not change the poll status. Please try again.'
   }
   return 'Could not reach the server — try again.'
 }

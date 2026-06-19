@@ -30,6 +30,20 @@ export interface PollSlot {
   isAllDay: boolean
   label: string | null
   sortOrder: number
+  /**
+   * Soft-invalidation timestamp: `null` while the slot is active, an ISO instant once the creator
+   * deactivated it. Invalidated slots keep their historical responses but are hidden from the public
+   * voting view, excluded from results/best + the tally cache, and rejected by submission. Reversible:
+   * clearing it (sending `invalidatedAt: null` in a `PATCH /polls/:id` `dates` row) reactivates the slot.
+   */
+  invalidatedAt: string | null
+  /**
+   * Per-slot response count, present on the CREATOR detail read (`GET /api/polls/:id`) as Prisma's
+   * passed-through `_count` aggregate (Phase 2 emits `_count.responses`). The editor uses
+   * `_count.responses > 0` to lock a voted slot from in-place edits. Absent on the sanitized public
+   * view, so the field is OPTIONAL (keeps `PublicPoll` reuse + the list endpoint valid).
+   */
+  _count?: { responses: number }
 }
 
 /** One candidate date (`eventDate` is `"YYYY-MM-DD"`) with its slots. */
@@ -38,6 +52,13 @@ export interface PollDate {
   eventDate: string
   sortOrder: number
   slots: PollSlot[]
+  /**
+   * Soft-invalidation timestamp: `null` while the date is active, an ISO instant once the creator
+   * deactivated it. Invalidating a date logically invalidates all of its slots; its (and their)
+   * historical responses are preserved. Reversible by sending `invalidatedAt: null` in a
+   * `PATCH /polls/:id` `dates` row.
+   */
+  invalidatedAt: string | null
 }
 
 /** Sanitized public poll view. From `GET /api/public/polls/:token`. */

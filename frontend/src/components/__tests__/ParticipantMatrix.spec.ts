@@ -40,7 +40,7 @@ function slot(
   startTime: string | null,
   endTime: string | null,
 ): PollSlot {
-  return { id, startTime, endTime, isAllDay: startTime === null, label, sortOrder: 0 }
+  return { id, startTime, endTime, isAllDay: startTime === null, label, sortOrder: 0, invalidatedAt: null }
 }
 
 const DATES: PollDate[] = [
@@ -48,12 +48,19 @@ const DATES: PollDate[] = [
     id: 'd1',
     eventDate: '2026-06-26',
     sortOrder: 0,
+    invalidatedAt: null,
     slots: [
       slot('s1', 'Early', '18:00:00', '20:00:00'),
       slot('s2', 'Late', '20:00:00', '22:00:00'),
     ],
   },
-  { id: 'd2', eventDate: '2026-06-27', sortOrder: 1, slots: [slot('s3', null, null, null)] },
+  {
+    id: 'd2',
+    eventDate: '2026-06-27',
+    sortOrder: 1,
+    invalidatedAt: null,
+    slots: [slot('s3', null, null, null)],
+  },
 ]
 
 const PARTICIPANTS: ParticipantRow[] = [

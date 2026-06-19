@@ -16,6 +16,7 @@ function slot(overrides: Partial<PollSlot>): PollSlot {
     isAllDay: false,
     label: null,
     sortOrder: 0,
+    invalidatedAt: null,
     ...overrides,
   }
 }
