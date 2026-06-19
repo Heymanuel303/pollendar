@@ -1,7 +1,7 @@
 # Pollendar — Design
 
 Availability-polling web app (Doodle / When2Meet style). This document defines the
-architecture, the **3NF** MySQL schema, the Prisma schema, the best-date algorithm, the
+architecture, the **3NF** PostgreSQL schema, the Prisma schema, the best-date algorithm, the
 REST API, the auth & notification flows, and the frontend information architecture.
 
 > Stack versions are pinned in [`PLAN.md`](./PLAN.md). The Tailwind CSS v4 + Vite setup
@@ -46,7 +46,7 @@ flowchart LR
   subgraph Server
     API["NestJS 11 API<br/>(Prisma 6)"]
   end
-  DB[("MySQL 8.4")]
+  DB[("PostgreSQL 16")]
   MAIL["SMTP<br/>(Mailpit in dev)"]
 
   SPA -- "REST + httpOnly cookie" --> API
@@ -63,7 +63,7 @@ flowchart LR
 
 ---
 
-## 3. Data model (MySQL, 3NF)
+## 3. Data model (PostgreSQL, 3NF)
 
 ### 3.1 Entity-relationship diagram
 
@@ -180,7 +180,7 @@ Constraint: **UNIQUE(poll_id, event_date)** — a date appears once per poll. In
 | created_at   | TIMESTAMP      |                                                       |
 
 Index `(poll_date_id)`. Uniqueness of `(poll_date_id, start_time, end_time)` is enforced
-in the service layer (MySQL unique indexes treat multiple NULLs as distinct, so an all-day
+in the service layer (PostgreSQL unique indexes treat multiple NULLs as distinct, so an all-day
 slot can't be deduped purely by index).
 
 > **Key 3NF decision:** `poll_slots` does **not** store `poll_id`. The poll is reachable
@@ -280,7 +280,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -474,7 +474,7 @@ model EmailLog {
 }
 ```
 
-> Note: MySQL `BIGINT` maps to JS `BigInt` in Prisma. Serialize ids as strings in API
+> Note: PostgreSQL `BIGINT` maps to JS `BigInt` in Prisma. Serialize ids as strings in API
 > responses (a small interceptor) so they survive JSON. Alternatively switch ids to
 > `Int`/`@db.UnsignedInt` if 2³¹ rows is comfortably enough — fine for this app.
 
@@ -635,7 +635,7 @@ unauthenticated and reached by share/participant tokens.
 sequenceDiagram
   participant U as Creator (browser)
   participant API as NestJS API
-  participant DB as MySQL
+  participant DB as PostgreSQL
   participant M as Mailpit/SMTP
 
   U->>API: POST /auth/magic-link { email }

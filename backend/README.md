@@ -1,12 +1,12 @@
 # backend (NestJS + Prisma)
 
-Pollendar's API server — NestJS 11 + Prisma 6 against MySQL 8.4. Scaffolded in
+Pollendar's API server — NestJS 11 + Prisma 6 against PostgreSQL 16. Scaffolded in
 **Phase 0/1** — see [`../docs/PLAN.md`](../docs/PLAN.md) for the roadmap and
 [`../docs/DESIGN.md`](../docs/DESIGN.md) for the architecture, 3NF schema, and module layout.
 
 ## Local development
 
-Infra (MySQL + Mailpit) comes from the repo-root `docker-compose.yml`, and config is read
+Infra (PostgreSQL + Mailpit) comes from the repo-root `docker-compose.yml`, and config is read
 from the **repo-root `.env`** via `@nestjs/config` (validated on boot — the app fails fast on
 a missing/invalid required var).
 

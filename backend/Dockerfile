@@ -31,8 +31,8 @@ FROM node:24.11.1-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Production-only deps. Keeps `prisma` (for `migrate deploy`), `mariadb` and
-# `@prisma/adapter-mariadb` (Prisma 7 connects through the driver adapter, not a
+# Production-only deps. Keeps `prisma` (for `migrate deploy`), `pg` and
+# `@prisma/adapter-pg` (Prisma 7 connects through the driver adapter, not a
 # bundled query engine), and dotenv (pulled in transitively by @nestjs/config and
 # the Prisma config loader).
 COPY package.json package-lock.json ./

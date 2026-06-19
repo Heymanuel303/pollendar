@@ -8,7 +8,7 @@ TypeScript (strict) + Pinia + vue-router, styled with Tailwind v4 (CSS-first, no
 
 - Node `^22.18.0 || >=24.12.0`.
 - The backend stack running for anything beyond static UI work:
-  - docker-compose (MySQL + Mailpit) up — `docker compose up -d` from the repo root.
+  - docker-compose (PostgreSQL + Mailpit) up — `docker compose up -d` from the repo root.
   - The NestJS API on `:3000` (`/api`), migrated and seeded.
   - Mailpit web UI / API on `:8025` (dev emails — magic links, completion notices — land here).
 
@@ -107,7 +107,7 @@ complete → assert the completion email in Mailpit.
 
 Prerequisites (all running before you start):
 
-- docker-compose (MySQL + Mailpit on `:8025`).
+- docker-compose (PostgreSQL + Mailpit on `:8025`).
 - The NestJS backend on `:3000/api`, migrated/seeded, with `CORS_ORIGINS` including this SPA's origin.
 
 ```bash

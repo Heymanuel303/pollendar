@@ -6,7 +6,7 @@ import { PrismaService } from './prisma.service';
 import { seed } from '../../prisma/seed';
 
 /**
- * Integration spec, requires the Phase 1 infra (Dockerized MySQL) running and the
+ * Integration spec, requires the Phase 1 infra (Dockerized PostgreSQL) running and the
  * Phase 3 migration applied. It runs the deterministic seed against the real database
  * inside beforeAll (twice, to prove idempotency), then asserts the fixture matches the
  * shape DESIGN §3.4 / §4 prescribes.

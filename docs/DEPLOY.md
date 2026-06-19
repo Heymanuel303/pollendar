@@ -1,11 +1,11 @@
 # Deploying the Pollendar API
 
-Production deploy guide for the NestJS 11 / Prisma 7 backend against MySQL 8.4.
+Production deploy guide for the NestJS 11 / Prisma 7 backend against PostgreSQL 16.
 The image is built from `backend/` via a multi-stage [`backend/Dockerfile`](../backend/Dockerfile);
 on container start the entrypoint runs `prisma migrate deploy` and then serves the API.
 
 The deploy is intentionally platform-agnostic: a single Docker image plus
-`prisma migrate deploy`. Any host that can run a container and reach a MySQL 8.4
+`prisma migrate deploy`. Any host that can run a container and reach a PostgreSQL 16
 database and an SMTP relay will work.
 
 ## Build
@@ -59,7 +59,7 @@ following:
 | `API_PORT` | yes | `3000` (matches the image's `EXPOSE`) |
 | `APP_URL` | yes | Public base URL of the API |
 | `CORS_ORIGINS` | yes | Comma-separated allow-list of the real frontend origin(s), e.g. `https://app.example.com`. **Never `*`** — CORS runs with `credentials: true` |
-| `DATABASE_URL` | yes | MySQL 8.4 connection string (`mysql://user:pass@host:3306/pollendar`); consumed by both the app and `prisma.config.ts` |
+| `DATABASE_URL` | yes | PostgreSQL 16 connection string (`postgresql://user:pass@host:5432/pollendar`); consumed by both the app and `prisma.config.ts` |
 | `JWT_ACCESS_SECRET` | yes | Strong unique secret — inject via a secret manager, never bake into the image |
 | `JWT_REFRESH_SECRET` | yes | Strong unique secret — separate from the access secret |
 | `ACCESS_TOKEN_TTL` | yes | Duration string, e.g. `15m` |

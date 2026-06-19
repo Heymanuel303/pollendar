@@ -18,7 +18,7 @@ import { randomBytes } from 'node:crypto';
 import { resolve } from 'node:path';
 import { config as loadEnv } from 'dotenv';
 import { Availability, PrismaClient } from '@prisma/client';
-import { buildMariaDbAdapter } from '../src/prisma/mariadb-adapter';
+import { buildPgAdapter } from '../src/prisma/pg-adapter';
 
 // Single source of truth for env is the repo-root .env (mirrors prisma.config.ts).
 loadEnv({ path: resolve(__dirname, '..', '..', '.env') });
@@ -29,10 +29,10 @@ const SAMPLE_CREATOR_EMAIL = 'creator@example.com';
 const publicToken = (): string =>
   randomBytes(16).toString('base64url').slice(0, 22);
 
-/** A MySQL TIME value, Prisma derives the time-of-day from a 1970-01-01 UTC DateTime. */
+/** A `@db.Time` value, Prisma derives the time-of-day from a 1970-01-01 UTC DateTime. */
 const time = (hhmm: string): Date => new Date(`1970-01-01T${hhmm}:00Z`);
 
-/** A MySQL DATE value, midnight UTC of the given calendar day. */
+/** A `@db.Date` value, midnight UTC of the given calendar day. */
 const eventDate = (iso: string): Date => new Date(iso);
 
 export async function seed(prisma: PrismaClient): Promise<void> {
@@ -167,7 +167,7 @@ async function main(): Promise<void> {
     );
   }
 
-  const prisma = new PrismaClient({ adapter: buildMariaDbAdapter(url) });
+  const prisma = new PrismaClient({ adapter: buildPgAdapter(url) });
   try {
     await seed(prisma);
     console.log(

@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test'
 /**
  * Playwright config for the Pollendar happy-path e2e (`e2e/happy-path.spec.ts`).
  *
- * Prerequisites (see README "End-to-end tests"): the docker-compose stack (MySQL + Mailpit on
+ * Prerequisites (see README "End-to-end tests"): the docker-compose stack (PostgreSQL + Mailpit on
  * `:8025`) and the NestJS backend (`:3000/api`, migrated/seeded, CORS enabled) must be running. The
  * `webServer` block boots the Vite dev server, which proxies `/api` to the backend so the httpOnly
  * auth cookie stays same-origin.

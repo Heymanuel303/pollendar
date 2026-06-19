@@ -31,7 +31,7 @@ const toBoolean = ({ value }: { value: unknown }): unknown => {
 
 /**
  * Validation schema for the environment variables the backend consumes (PLAN.md §4).
- * MYSQL_* vars are consumed by docker-compose, not the app, so they are intentionally
+ * POSTGRES_* vars are consumed by docker-compose, not the app, so they are intentionally
  * not validated here. DATABASE_URL is the single Prisma connection string.
  */
 export class EnvironmentVariables {

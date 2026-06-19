@@ -10,7 +10,7 @@ const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 if (!testDatabaseUrl) {
   throw new Error(
     'TEST_DATABASE_URL must be set for the e2e suite, point it at a disposable schema ' +
-      '(e.g. mysql://pollendar:pollendar@localhost:3306/pollendar_test), never the dev DATABASE_URL.',
+      '(e.g. postgresql://pollendar:pollendar@localhost:5432/pollendar_test), never the dev DATABASE_URL.',
   );
 }
 process.env.DATABASE_URL = testDatabaseUrl;

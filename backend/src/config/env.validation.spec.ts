@@ -6,7 +6,7 @@ const completeEnv = (): Record<string, string> => ({
   API_PORT: '3000',
   APP_URL: 'http://localhost:5173',
   CORS_ORIGINS: 'http://localhost:5173',
-  DATABASE_URL: 'mysql://pollendar:pollendar@localhost:3306/pollendar',
+  DATABASE_URL: 'postgresql://pollendar:pollendar@localhost:5432/pollendar',
   JWT_ACCESS_SECRET: 'access-secret',
   JWT_REFRESH_SECRET: 'refresh-secret',
   ACCESS_TOKEN_TTL: '15m',

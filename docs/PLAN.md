@@ -11,9 +11,9 @@ roadmap to follow after you approve the design.
 | Tool                          | Version line      | Role                                            |
 | ----------------------------- | ----------------- | ----------------------------------------------- |
 | Node.js                       | 22 LTS            | Runtime for backend & frontend tooling          |
-| MySQL                         | 8.4 (LTS)         | Relational DB (Docker image `mysql:8.4`)        |
+| PostgreSQL                    | 16 (LTS)          | Relational DB (Docker image `postgres:16`)      |
 | NestJS                        | 11.x              | Backend framework (TypeScript)                  |
-| Prisma / @prisma/client       | 6.x               | ORM + migrations against MySQL                  |
+| Prisma / @prisma/client       | 6.x               | ORM + migrations against PostgreSQL             |
 | Vue                           | 3.5.x             | Frontend framework                              |
 | Vite                          | latest (6/7)      | Frontend build/dev server                       |
 | **Tailwind CSS**              | **4.x (v4.3)**    | Styling — **web-verified** setup (see §3)       |
@@ -36,7 +36,7 @@ roadmap to follow after you approve the design.
 
 ```
 pollendar/
-├── docker-compose.yml          # ✅ exists — MySQL 8.4 + Mailpit
+├── docker-compose.yml          # ✅ exists — PostgreSQL 16 + Mailpit
 ├── .env.example                # ✅ exists — all env vars
 ├── .gitignore                  # ✅ exists
 ├── README.md                   # ✅ exists
@@ -80,7 +80,7 @@ pollendar/
 
 ```bash
 cp .env.example .env
-docker compose up -d            # MySQL :3306, Mailpit SMTP :1025 / UI :8025
+docker compose up -d            # PostgreSQL :5432, Mailpit SMTP :1025 / UI :8025
 ```
 
 **Backend (NestJS + Prisma)**
@@ -92,7 +92,7 @@ npm install @nestjs/config @nestjs/jwt @nestjs/throttler \
   prisma @prisma/client class-validator class-transformer \
   cookie-parser nodemailer
 npm install -D @types/cookie-parser @types/nodemailer
-npx prisma init --datasource-provider mysql
+npx prisma init --datasource-provider postgresql
 # → paste schema from DESIGN.md §3.4 into prisma/schema.prisma
 npx prisma migrate dev --name init
 ```
@@ -144,9 +144,8 @@ schema.
 | `API_PORT`                       | `3000`                                           | NestJS port                      |
 | `APP_URL`                        | `http://localhost:5173`                          | Frontend origin (link building)  |
 | `CORS_ORIGINS`                   | `http://localhost:5173`                          | Allowed credentialed origins     |
-| `DATABASE_URL`                   | `mysql://pollendar:pollendar@localhost:3306/pollendar` | Prisma connection          |
-| `MYSQL_DATABASE/USER/PASSWORD`   | `pollendar`                                      | docker-compose MySQL init        |
-| `MYSQL_ROOT_PASSWORD`            | `root`                                           | MySQL root (dev only)            |
+| `DATABASE_URL`                   | `postgresql://pollendar:pollendar@localhost:5432/pollendar` | Prisma connection     |
+| `POSTGRES_DB/USER/PASSWORD`      | `pollendar`                                      | docker-compose PostgreSQL init   |
 | `JWT_ACCESS_SECRET`              | (random)                                         | Signs access JWT                 |
 | `JWT_REFRESH_SECRET`             | (random)                                         | Signs/derives refresh token      |
 | `ACCESS_TOKEN_TTL`               | `15m`                                            | Access cookie lifetime           |
@@ -170,7 +169,7 @@ on the previous.
   Tailwind v4 wired; `.env`.
 - **Acceptance:** `docker compose up` healthy; `nest start --watch` serves on :3000; Vue
   dev server on :5173 renders a Tailwind-styled page; `npx prisma db pull`/`migrate`
-  connects to MySQL.
+  connects to PostgreSQL.
 
 ### Phase 1 — Database schema + Prisma + migrations + seed
 - **Goal:** the 3NF schema live.
@@ -246,7 +245,7 @@ on the previous.
 ```bash
 # 1. Infra
 cp .env.example .env
-docker compose up -d            # MySQL :3306 · Mailpit UI http://localhost:8025
+docker compose up -d            # PostgreSQL :5432 · Mailpit UI http://localhost:8025
 
 # 2. Backend
 cd backend
@@ -271,7 +270,7 @@ npm run dev                     # http://localhost:5173
 | ------------ | ----------------------------------------------------------------------------- |
 | Unit         | Best-slot algorithm (scoring + tie-breaking, incl. the worked example); magic-link token hashing/expiry. |
 | Service      | Poll CRUD ownership rules; one-answer-per-slot and one-email-per-poll constraints; notification recipient selection (only participants with emails; none → none). |
-| e2e (Nest)   | Auth happy path (request → verify → me → logout) and full poll lifecycle against a disposable test MySQL schema. |
+| e2e (Nest)   | Auth happy path (request → verify → me → logout) and full poll lifecycle against a disposable test PostgreSQL schema. |
 | Frontend     | Component tests for `AvailabilityGrid` and `ResultsTable`; an optional Playwright happy-path once the UI stabilizes. |
 
 ---

@@ -99,10 +99,10 @@ export class PublicService {
       }>
     >(Prisma.sql`
       SELECT s.id AS slot_id,
-             SUM(r.availability = 'available')   AS available_count,
-             SUM(r.availability = 'maybe')       AS maybe_count,
-             SUM(r.availability = 'unavailable') AS unavailable_count,
-             (SUM(r.availability = 'available') * 2 + SUM(r.availability = 'maybe')) AS score,
+             COUNT(*) FILTER (WHERE r.availability = 'available')   AS available_count,
+             COUNT(*) FILTER (WHERE r.availability = 'maybe')       AS maybe_count,
+             COUNT(*) FILTER (WHERE r.availability = 'unavailable') AS unavailable_count,
+             (COUNT(*) FILTER (WHERE r.availability = 'available') * 2 + COUNT(*) FILTER (WHERE r.availability = 'maybe')) AS score,
              d.event_date AS event_date,
              s.start_time AS start_time,
              s.label      AS label
@@ -313,10 +313,10 @@ export class PublicService {
           }>
         >(Prisma.sql`
           SELECT s.id AS id,
-                 SUM(r.availability = 'available')   AS available_count,
-                 SUM(r.availability = 'maybe')       AS maybe_count,
-                 SUM(r.availability = 'unavailable') AS unavailable_count,
-                 (SUM(r.availability = 'available') * 2 + SUM(r.availability = 'maybe')) AS score
+                 COUNT(*) FILTER (WHERE r.availability = 'available')   AS available_count,
+                 COUNT(*) FILTER (WHERE r.availability = 'maybe')       AS maybe_count,
+                 COUNT(*) FILTER (WHERE r.availability = 'unavailable') AS unavailable_count,
+                 (COUNT(*) FILTER (WHERE r.availability = 'available') * 2 + COUNT(*) FILTER (WHERE r.availability = 'maybe')) AS score
           FROM poll_slots s
           JOIN poll_dates d ON d.id = s.poll_date_id
           LEFT JOIN responses r ON r.poll_slot_id = s.id

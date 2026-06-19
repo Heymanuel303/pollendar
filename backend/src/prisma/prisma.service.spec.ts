@@ -5,7 +5,7 @@ import { PrismaModule } from './prisma.module';
 import { PrismaService } from './prisma.service';
 
 /**
- * Integration spec, requires the Phase 1 infra (Dockerized MySQL) running and the
+ * Integration spec, requires the Phase 1 infra (Dockerized PostgreSQL) running and the
  * Phase 3 migration applied (`npx prisma migrate dev`). It boots the real DI graph,
  * connects through PrismaService, and asserts the 3NF schema is live.
  */
@@ -60,10 +60,12 @@ describe('PrismaService (integration)', () => {
   });
 
   it('connects and finds all 10 application tables', async () => {
-    const rows = await prisma.$queryRaw<
-      Array<Record<string, string>>
-    >`SHOW TABLES`;
-    const names = rows.map((row) => Object.values(row)[0]);
+    const rows = await prisma.$queryRaw<Array<{ table_name: string }>>`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+    `;
+    const names = rows.map((row) => row.table_name);
 
     for (const table of EXPECTED_TABLES) {
       expect(names).toContain(table);
@@ -72,10 +74,13 @@ describe('PrismaService (integration)', () => {
 
   it('created the expected UNIQUE constraints', async () => {
     const uniqueKeys = async (table: string): Promise<string[]> => {
-      const rows = await prisma.$queryRawUnsafe<Array<{ Key_name: string }>>(
-        `SHOW INDEX FROM \`${table}\` WHERE Non_unique = 0`,
+      const rows = await prisma.$queryRawUnsafe<Array<{ indexname: string }>>(
+        `SELECT indexname FROM pg_indexes
+         WHERE schemaname = 'public' AND tablename = $1
+           AND indexdef LIKE 'CREATE UNIQUE INDEX%'`,
+        table,
       );
-      return rows.map((row) => row.Key_name);
+      return rows.map((row) => row.indexname);
     };
 
     expect(await uniqueKeys('users')).toContain('users_email_key');

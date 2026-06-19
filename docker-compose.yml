@@ -1,6 +1,6 @@
-# MySQL + Mailpit for LOCAL DEV and the e2e suite ONLY.
+# PostgreSQL + Mailpit for LOCAL DEV and the e2e suite ONLY.
 #   docker compose up -d
-# MySQL  → localhost:3306
+# PostgreSQL → localhost:5432
 # Mailpit → SMTP localhost:1025, web UI http://localhost:8025 (dev/e2e email sink)
 #
 # Mailpit is the dev/e2e SMTP sink — it is NOT a production service. In production
@@ -8,21 +8,20 @@
 # service for prod email. See docs/DEPLOY.md ("Resend setup") for the env-driven
 # prod=Resend / dev=Mailpit split (same MailService, no code change).
 services:
-  mysql:
-    image: mysql:8.4
-    container_name: pollendar-mysql
+  postgres:
+    image: postgres:16
+    container_name: pollendar-postgres
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-pollendar}
-      MYSQL_USER: ${MYSQL_USER:-pollendar}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pollendar}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      POSTGRES_DB: ${POSTGRES_DB:-pollendar}
+      POSTGRES_USER: ${POSTGRES_USER:-pollendar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pollendar}
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pollendar} -d ${POSTGRES_DB:-pollendar}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -40,4 +39,4 @@ services:
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
 volumes:
-  mysql_data:
+  postgres_data:

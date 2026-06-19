@@ -15,7 +15,7 @@ participants who supplied an email — no emails, no messages.
 plan only. No application code has been generated yet — see the docs below and review them
 before scaffolding begins.
 
-- [`docs/DESIGN.md`](docs/DESIGN.md) — architecture, the 3NF MySQL schema, the Prisma
+- [`docs/DESIGN.md`](docs/DESIGN.md) — architecture, the 3NF PostgreSQL schema, the Prisma
   schema, the best-date algorithm, the REST API, auth & notification flows, and the
   frontend information architecture.
 - [`docs/PLAN.md`](docs/PLAN.md) — pinned stack versions, the folder layout, the exact
@@ -25,7 +25,7 @@ before scaffolding begins.
 
 | Layer        | Choice                                                       |
 | ------------ | ------------------------------------------------------------ |
-| Database     | MySQL 8.4 (Docker Compose)                                   |
+| Database     | PostgreSQL 16 (Docker Compose)                              |
 | Backend      | NestJS 11 (TypeScript) + Prisma 6                            |
 | Frontend     | Vue 3 + Vite + Pinia + vue-router                            |
 | Styling      | Tailwind CSS v4 (`@tailwindcss/vite`, CSS-first)             |
@@ -37,7 +37,7 @@ before scaffolding begins.
 
 ```
 pollendar/
-├── docker-compose.yml     # MySQL 8.4 + Mailpit
+├── docker-compose.yml     # PostgreSQL 16 + Mailpit
 ├── .env.example           # all environment variables
 ├── docs/                  # DESIGN.md + PLAN.md  ← review these
 ├── backend/               # NestJS app (generated in Phase 0)

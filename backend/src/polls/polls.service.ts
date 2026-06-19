@@ -32,7 +32,7 @@ function timeToDate(time?: string): Date | null {
   return new Date(`1970-01-01T${normalized}Z`);
 }
 
-/** Stable identity of a slot for in-service dedupe, MySQL treats NULL end_times as distinct. */
+/** Stable identity of a slot for in-service dedupe, NULL end_times are treated as distinct. */
 function slotKey(slot: CreatePollSlotDto | UpdatePollSlotDto): string {
   return `${slot.startTime ?? ''}|${slot.endTime ?? ''}|${slot.isAllDay ?? false}`;
 }
@@ -449,10 +449,10 @@ export class PollsService {
       }>
     >(Prisma.sql`
       SELECT s.id AS id,
-             SUM(r.availability = 'available')   AS available_count,
-             SUM(r.availability = 'maybe')       AS maybe_count,
-             SUM(r.availability = 'unavailable') AS unavailable_count,
-             (SUM(r.availability = 'available') * 2 + SUM(r.availability = 'maybe')) AS score
+             COUNT(*) FILTER (WHERE r.availability = 'available')   AS available_count,
+             COUNT(*) FILTER (WHERE r.availability = 'maybe')       AS maybe_count,
+             COUNT(*) FILTER (WHERE r.availability = 'unavailable') AS unavailable_count,
+             (COUNT(*) FILTER (WHERE r.availability = 'available') * 2 + COUNT(*) FILTER (WHERE r.availability = 'maybe')) AS score
       FROM poll_slots s
       JOIN poll_dates d ON d.id = s.poll_date_id
       LEFT JOIN responses r ON r.poll_slot_id = s.id

@@ -7,7 +7,7 @@ import { getLatestMessageTo, extractMagicLinkToken, assertBodyContains } from '.
  *   second browser context → watch the best slot bloom → complete the poll → assert the completion
  *   email lands in Mailpit.
  *
- * Prereqs (see README): docker-compose (MySQL + Mailpit on :8025) + the NestJS backend
+ * Prereqs (see README): docker-compose (PostgreSQL + Mailpit on :8025) + the NestJS backend
  * (:3000/api, migrated, CORS enabled) running. The Vite dev server (booted by playwright.config's
  * webServer) proxies `/api` to the backend so the httpOnly auth cookie stays same-origin.
  *

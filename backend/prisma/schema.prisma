@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 enum PollStatus {
@@ -175,9 +175,9 @@ model Response {
 
 model SlotTally {
   pollSlotId        BigInt   @id @map("poll_slot_id")
-  availableCount    Int      @default(0) @map("available_count") @db.UnsignedInt
-  maybeCount        Int      @default(0) @map("maybe_count") @db.UnsignedInt
-  unavailableCount  Int      @default(0) @map("unavailable_count") @db.UnsignedInt
+  availableCount    Int      @default(0) @map("available_count")
+  maybeCount        Int      @default(0) @map("maybe_count")
+  unavailableCount  Int      @default(0) @map("unavailable_count")
   score             Int      @default(0)
   updatedAt         DateTime @updatedAt @map("updated_at")
   slot              PollSlot @relation(fields: [pollSlotId], references: [id], onDelete: Cascade)
