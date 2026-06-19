@@ -211,7 +211,11 @@ async function onSubmit(): Promise<void> {
             v-if="!isOpen"
             class="mb-6 rounded-xl border border-line bg-surface2 px-4 py-3 text-sm text-dim"
           >
-            This poll is closed — voting is no longer open, but you can still view results.
+            {{
+              poll.status === 'cancelled'
+                ? 'This poll was cancelled by the organizer — voting is closed, but you can still view results.'
+                : 'A final time has been chosen — voting is closed, but you can still view results.'
+            }}
           </div>
 
           <!-- Availability input -->

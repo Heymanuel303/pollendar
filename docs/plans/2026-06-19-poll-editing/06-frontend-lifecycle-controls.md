@@ -83,10 +83,10 @@ Run inside `frontend/`:
 - Manual UI check (optional): start the frontend, open `/polls/:id` for an open poll → see Edit link + "Cancel poll"; cancel it → pill flips to "Cancelled", BestSlotBloom replaced by the cancelled card, Edit link gone, "Reopen poll" appears; open the same poll's `/p/:publicToken` in another tab → "Closed" chip, banner shown, voting controls disabled, no submit bar, Results tab still works. Reopen → controls re-enable. Delete → redirected to `/dashboard`.
 
 ## Acceptance
-- [ ] `PollManage.vue` renders exactly one status pill matching `status`: `open` → pollen "Open · gathering responses", `completed` → mint "Completed", `cancelled` → neutral "Cancelled".
-- [ ] An Edit link to `/polls/:id/edit` is shown for `open` and `completed` polls and hidden for `cancelled`.
-- [ ] An open poll shows a "Cancel poll" action; a cancelled or completed poll shows a "Reopen poll" action; all states show a "Delete poll" action — each gated behind a confirm dialog that keeps open and shows a coral error on failure.
-- [ ] Cancelling calls `pollStore.cancel(id)` (`POST /api/polls/:id/cancel`), reopening calls `pollStore.reopen(id)` (`POST /api/polls/:id/reopen`) and re-loads results, deleting calls `pollStore.remove(id)` (`DELETE /api/polls/:id`) and routes to `/dashboard`.
-- [ ] A cancelled poll's manage view replaces the BestSlotBloom completed copy with a neutral "This poll is cancelled" card (BestSlotBloom.vue is NOT edited).
-- [ ] `PublicPoll.vue` for a `cancelled` (or `completed`) poll shows the "Closed" chip + banner, disables all voting controls, hides the sticky submit bar, and still renders results.
-- [ ] New co-located specs `PollManage.spec.ts` and `PublicPoll.spec.ts` pass; `npm run lint`, `npm run type-check`, `npm run test:unit`, and `npm run build` are all green.
+- [x] `PollManage.vue` renders exactly one status pill matching `status`: `open` → pollen "Open · gathering responses", `completed` → mint "Completed", `cancelled` → neutral "Cancelled".
+- [x] An Edit link to `/polls/:id/edit` is shown for `open` and `completed` polls and hidden for `cancelled`.
+- [x] An open poll shows a "Cancel poll" action; a cancelled or completed poll shows a "Reopen poll" action; all states show a "Delete poll" action — each gated behind a confirm dialog that keeps open and shows a coral error on failure.
+- [x] Cancelling calls `pollStore.cancel(id)` (`POST /api/polls/:id/cancel`), reopening calls `pollStore.reopen(id)` (`POST /api/polls/:id/reopen`) and re-loads results, deleting calls `pollStore.remove(id)` (`DELETE /api/polls/:id`) and routes to `/dashboard`.
+- [x] A cancelled poll's manage view replaces the BestSlotBloom completed copy with a neutral "This poll is cancelled" card (BestSlotBloom.vue is NOT edited).
+- [x] `PublicPoll.vue` for a `cancelled` (or `completed`) poll shows the "Closed" chip + banner, disables all voting controls, hides the sticky submit bar, and still renders results.
+- [x] New co-located specs `PollManage.spec.ts` and `PublicPoll.spec.ts` pass; `npm run lint`, `npm run type-check`, `npm run test:unit`, and `npm run build` are all green.

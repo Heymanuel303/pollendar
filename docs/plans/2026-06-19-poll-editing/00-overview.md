@@ -2,7 +2,7 @@
 
 **Slug:** `poll-editing` (folder: `docs/plans/2026-06-19-poll-editing/`)
 **Created:** 2026-06-19
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Let a poll creator edit a poll after it is live **without destroying participant votes**: add new dates/slots, soft-invalidate (deactivate) existing dates/slots while preserving their historical responses, edit scalar fields (title/description/timezone/closesAt), and run a cancel/reopen lifecycle. Today's `PATCH /api/polls/:id` destructively deletes and recreates all dates/slots (cascading away every vote) and there is no edit UI at all — this plan replaces that with a vote-preserving path and wires it through the frontend.
@@ -35,14 +35,14 @@ Let a poll creator edit a poll after it is live **without destroying participant
 - Tests are co-located with the code they cover (no trailing test phase). Backend: `npm run lint`/`build`/`test`. Frontend: `npm run type-check`/`lint`/`test:unit`/`build`.
 
 ## Acceptance criteria
-- [ ] A creator can add dates/slots, deactivate/reactivate existing ones, and edit scalar fields on a live poll, and **no participant vote is ever destroyed** by an edit.
-- [ ] Editing a voted slot in place is rejected (409); the creator invalidates + re-adds instead.
-- [ ] Invalidated dates/slots vanish from the public voting view, results/best, and the tally cache, but their historical responses remain queryable.
-- [ ] Invalidating the **current best** date/slot recalculates the public best — `GET /results` returns a new `best` (the next-ranked active slot, or `null` if none remain) that excludes it — because best is a live computation, not a cached value. Pinned by an e2e in Phase 3; the contract spans Phase 2 (invalidate) + Phase 3 (`getResults` filter), so both must ship together.
-- [ ] Submissions to a cancelled/completed poll return 409; to an invalidated slot return 400.
-- [ ] A creator can cancel an open poll and reopen a cancelled/completed poll (reopen clears the finalized slot); the manage view and participant view reflect all three states.
-- [ ] `/polls/:id/edit` loads the poll, locks voted rows, allows invalidate/add, and PATCHes via `pollStore.update()`; create mode is unchanged.
-- [ ] All layer gates green (backend lint/build/test; frontend type-check/lint/test:unit/build).
+- [x] A creator can add dates/slots, deactivate/reactivate existing ones, and edit scalar fields on a live poll, and **no participant vote is ever destroyed** by an edit.
+- [x] Editing a voted slot in place is rejected (409); the creator invalidates + re-adds instead.
+- [x] Invalidated dates/slots vanish from the public voting view, results/best, and the tally cache, but their historical responses remain queryable.
+- [x] Invalidating the **current best** date/slot recalculates the public best — `GET /results` returns a new `best` (the next-ranked active slot, or `null` if none remain) that excludes it — because best is a live computation, not a cached value. Pinned by an e2e in Phase 3; the contract spans Phase 2 (invalidate) + Phase 3 (`getResults` filter), so both must ship together.
+- [x] Submissions to a cancelled/completed poll return 409; to an invalidated slot return 400.
+- [x] A creator can cancel an open poll and reopen a cancelled/completed poll (reopen clears the finalized slot); the manage view and participant view reflect all three states.
+- [x] `/polls/:id/edit` loads the poll, locks voted rows, allows invalidate/add, and PATCHes via `pollStore.update()`; create mode is unchanged.
+- [x] All layer gates green (backend lint/build/test; frontend type-check/lint/test:unit/build).
 
 ## Phases
 1. [01-schema-soft-invalidation](01-schema-soft-invalidation.md) — add nullable `invalidatedAt` to `PollDate`+`PollSlot` via an additive migration · _solo_ ✓
@@ -50,7 +50,7 @@ Let a poll creator edit a poll after it is live **without destroying participant
 3. [03-backend-public-gating](03-backend-public-gating.md) — exclude invalidated rows from public view/results/tally; gate submission on open-status · _workflow_ ✓
 4. [04-frontend-store-and-types](04-frontend-store-and-types.md) — `pollStore` `update`/`remove`/`cancel`/`reopen` + `invalidatedAt`/vote-count types + `UpdatePollPayload` · _solo_ ✓
 5. [05-frontend-editor-edit-mode](05-frontend-editor-edit-mode.md) — `/polls/:id/edit` reusing `PollEditor.vue`: load, lock voted rows, invalidate/add, PATCH · _solo_ ✓
-6. [06-frontend-lifecycle-controls](06-frontend-lifecycle-controls.md) — manage-view Edit/Cancel/Reopen/Delete + status pills; participant cancelled/closed state · _solo_
+6. [06-frontend-lifecycle-controls](06-frontend-lifecycle-controls.md) — manage-view Edit/Cancel/Reopen/Delete + status pills; participant cancelled/closed state · _solo_ ✓
 
 **Execution order:** 1 → (2 ‖ 3 in parallel, both depend only on 1) → 4 (depends on 2's contract; 3 ships the participant behavior) → (5 ‖ 6 in parallel, both depend on 4; 6's Edit link targets 5's route).
 

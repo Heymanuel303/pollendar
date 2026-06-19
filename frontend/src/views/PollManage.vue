@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { usePollStore } from '@/stores/pollStore'
 import BestSlotBloom from '@/components/BestSlotBloom.vue'
@@ -22,6 +22,7 @@ import type { SlotMeta } from '@/lib/api/types'
  * complete-confirm dialog. `finalSlotId`/`completedAt` are creator-only and never leave this view.
  */
 const route = useRoute()
+const router = useRouter()
 const store = usePollStore()
 const {
   currentPoll,
@@ -31,6 +32,10 @@ const {
   detailError,
   completing,
   completeError,
+  lifecycleTransitioning,
+  lifecycleError,
+  removing,
+  removeError,
 } = storeToRefs(store)
 
 const id = computed<string>(() => String(route.params.id ?? ''))
@@ -85,6 +90,9 @@ const closesAtHuman = computed<string | null>(() =>
 )
 
 const isCompleted = computed<boolean>(() => currentPoll.value?.status === 'completed')
+const isCancelled = computed<boolean>(() => currentPoll.value?.status === 'cancelled')
+/** Single source for the three-state pill + lifecycle-action/Edit-link gating. */
+const status = computed(() => currentPoll.value?.status)
 
 /** Confirm-dialog state. `BestSlotBloom` only emits `complete`; this view owns the dialog + store call. */
 const confirmOpen = ref(false)
@@ -99,6 +107,58 @@ async function confirmComplete(): Promise<void> {
     confirmOpen.value = false
   } catch {
     // The store set `completeError`; keep the dialog open so the message is visible.
+  }
+}
+
+/**
+ * Cancel / Reopen / Delete confirm dialogs. Each `openX` clears the relevant error ref first so a
+ * stale message never flashes; each `confirmX` closes on success and, on failure, leaves the dialog
+ * open (the store already set the error ref). Only one lifecycle dialog is open at a time, so
+ * cancel + reopen share `lifecycleTransitioning`/`lifecycleError`; delete uses `removing`/`removeError`.
+ */
+const cancelConfirmOpen = ref(false)
+function openCancelConfirm(): void {
+  lifecycleError.value = null
+  cancelConfirmOpen.value = true
+}
+async function confirmCancel(): Promise<void> {
+  if (!currentPoll.value) return
+  try {
+    await store.cancel(currentPoll.value.id)
+    cancelConfirmOpen.value = false
+  } catch {
+    // The store set `lifecycleError`; keep the dialog open.
+  }
+}
+
+const reopenConfirmOpen = ref(false)
+function openReopenConfirm(): void {
+  lifecycleError.value = null
+  reopenConfirmOpen.value = true
+}
+async function confirmReopen(): Promise<void> {
+  if (!currentPoll.value) return
+  try {
+    await store.reopen(currentPoll.value.id)
+    reopenConfirmOpen.value = false
+  } catch {
+    // The store set `lifecycleError`; keep the dialog open.
+  }
+}
+
+const deleteConfirmOpen = ref(false)
+function openDeleteConfirm(): void {
+  removeError.value = null
+  deleteConfirmOpen.value = true
+}
+async function confirmDelete(): Promise<void> {
+  if (!currentPoll.value) return
+  try {
+    await store.remove(currentPoll.value.id)
+    deleteConfirmOpen.value = false
+    await router.push('/dashboard')
+  } catch {
+    // The store set `removeError`; keep the dialog open.
   }
 }
 
@@ -145,11 +205,13 @@ const bestLabel = computed<string>(() => {
             {{ currentPoll.title }}
           </h1>
           <Pill v-if="isCompleted" tone="mint">Completed</Pill>
+          <Pill v-else-if="isCancelled" tone="neutral">Cancelled</Pill>
           <Pill v-else tone="pollen">Open · gathering responses</Pill>
-          <!-- Reuses PollEditor in edit mode. Reachable in any status — the editor (+ the lifecycle
-               phase's reopen control) is the path back to open for cancelled/completed polls. -->
+          <!-- Reuses PollEditor in edit mode. Hidden for cancelled polls (not editable in place —
+               reopen first); shown for open + completed. -->
           <RouterLink
-            :to="{ name: 'poll-edit', params: { id } }"
+            v-if="status !== 'cancelled'"
+            :to="`/polls/${id}/edit`"
             class="ml-auto inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium text-moonlight transition hover:bg-surface2"
           >
             ✎ Edit poll
@@ -172,8 +234,25 @@ const bestLabel = computed<string>(() => {
         </div>
       </header>
 
-      <!-- Best slot bloom -->
+      <!-- Creator lifecycle actions: cancel (open) / reopen (cancelled|completed) + always-available
+           delete. Each opens a confirm dialog below. -->
+      <div class="mb-6 flex flex-wrap items-center gap-2">
+        <Button v-if="status === 'open'" variant="danger" @click="openCancelConfirm"
+          >Cancel poll</Button
+        >
+        <Button
+          v-if="status === 'cancelled' || status === 'completed'"
+          variant="secondary"
+          @click="openReopenConfirm"
+          >Reopen poll</Button
+        >
+        <Button variant="ghost" @click="openDeleteConfirm">Delete poll</Button>
+      </div>
+
+      <!-- Best slot bloom — replaced by a neutral notice when cancelled (BestSlotBloom's else branch
+           would otherwise read "✓ Completed"). BestSlotBloom.vue stays untouched. -->
       <BestSlotBloom
+        v-if="!isCancelled"
         class="mb-8"
         :best="best"
         :meta="bestMeta"
@@ -185,6 +264,9 @@ const bestLabel = computed<string>(() => {
         :completing="completing"
         @complete="openConfirm"
       />
+      <div v-else class="mb-8 rounded-2xl border border-line bg-surface p-6 text-dim shadow-card">
+        This poll is cancelled. Reopen it to keep gathering responses.
+      </div>
 
       <!-- Two-column body -->
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -253,6 +335,91 @@ const bestLabel = computed<string>(() => {
           <Button variant="primary" :loading="completing" @click="confirmComplete"
             >✦ Complete poll</Button
           >
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel-poll confirm dialog -->
+    <div
+      v-if="cancelConfirmOpen"
+      class="fixed inset-0 z-30 grid place-items-center bg-canvas/70 p-4 sm:p-6 backdrop-blur safe-bottom"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cancel-confirm-title"
+    >
+      <div class="w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <h2 id="cancel-confirm-title" class="font-display text-lg font-semibold tracking-tight">
+          Cancel this poll?
+        </h2>
+        <p class="mt-2 text-sm text-dim">
+          Participants will no longer be able to vote. You can reopen it later — votes are kept.
+        </p>
+        <p v-if="lifecycleError" class="mt-3 text-sm text-coral">{{ lifecycleError }}</p>
+        <div class="mt-5 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            :disabled="lifecycleTransitioning"
+            @click="cancelConfirmOpen = false"
+            >Keep poll</Button
+          >
+          <Button variant="danger" :loading="lifecycleTransitioning" @click="confirmCancel"
+            >Cancel poll</Button
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Reopen-poll confirm dialog -->
+    <div
+      v-if="reopenConfirmOpen"
+      class="fixed inset-0 z-30 grid place-items-center bg-canvas/70 p-4 sm:p-6 backdrop-blur safe-bottom"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reopen-confirm-title"
+    >
+      <div class="w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <h2 id="reopen-confirm-title" class="font-display text-lg font-semibold tracking-tight">
+          Reopen this poll?
+        </h2>
+        <p class="mt-2 text-sm text-dim">
+          Participants will be able to vote again. Any finalized time is cleared.
+        </p>
+        <p v-if="lifecycleError" class="mt-3 text-sm text-coral">{{ lifecycleError }}</p>
+        <div class="mt-5 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            :disabled="lifecycleTransitioning"
+            @click="reopenConfirmOpen = false"
+            >Cancel</Button
+          >
+          <Button variant="primary" :loading="lifecycleTransitioning" @click="confirmReopen"
+            >Reopen poll</Button
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete-poll confirm dialog -->
+    <div
+      v-if="deleteConfirmOpen"
+      class="fixed inset-0 z-30 grid place-items-center bg-canvas/70 p-4 sm:p-6 backdrop-blur safe-bottom"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-confirm-title"
+    >
+      <div class="w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-card">
+        <h2 id="delete-confirm-title" class="font-display text-lg font-semibold tracking-tight">
+          Delete this poll?
+        </h2>
+        <p class="mt-2 text-sm text-dim">
+          This permanently removes the poll and every response. This cannot be undone.
+        </p>
+        <p v-if="removeError" class="mt-3 text-sm text-coral">{{ removeError }}</p>
+        <div class="mt-5 flex justify-end gap-2">
+          <Button variant="ghost" :disabled="removing" @click="deleteConfirmOpen = false"
+            >Cancel</Button
+          >
+          <Button variant="danger" :loading="removing" @click="confirmDelete">Delete poll</Button>
         </div>
       </div>
     </div>
