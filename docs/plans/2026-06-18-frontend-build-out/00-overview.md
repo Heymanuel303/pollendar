@@ -2,7 +2,7 @@
 
 **Slug:** `frontend-build-out` (folder: `docs/plans/2026-06-18-frontend-build-out/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Build the real Pollendar frontend — a Vue 3.5 + Vite + TypeScript (strict) SPA — implementing every

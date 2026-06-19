@@ -2,7 +2,7 @@
 
 **Slug:** `resend-email-migration` (folder: `docs/plans/2026-06-18-resend-email-migration/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Migrate Pollendar's **production** outbound email (magic-link sign-in + poll-completed notices) from the local docker-compose **Mailpit** SMTP sink to **Resend**, sending from `Pollendar <pollendar@heymanuel.ch>` (the owner controls `heymanuel.ch`). Local dev and the e2e suites keep using Mailpit — the prod-vs-dev switch is purely env-driven, with **no change to `MailService` logic or its public API**.
