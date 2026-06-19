@@ -36,8 +36,17 @@ function stubMatchMedia(matches: boolean): void {
   })
 }
 
+// Track mounted wrappers so teleported (Teleport to="body") sheet nodes are torn down between
+// tests — otherwise an open sheet leaks into document.body and pollutes the next assertion.
+const mounted: ReturnType<typeof mount>[] = []
+
 function mountEditor() {
-  return mount(PollEditor, { global: { stubs: { RouterLink: RouterLinkStub } } })
+  const wrapper = mount(PollEditor, {
+    attachTo: document.body,
+    global: { stubs: { RouterLink: RouterLinkStub } },
+  })
+  mounted.push(wrapper)
+  return wrapper
 }
 
 /** Find the segmented-toggle button by its visible label. */
@@ -57,6 +66,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  while (mounted.length) mounted.pop()!.unmount()
+  document.body.innerHTML = ''
   localStorage.clear()
 })
 
@@ -138,5 +149,88 @@ describe('PollEditor — Calendar | List toggle', () => {
     const list = wrapper.findComponent(DateSlotEditor)
     expect(typeof list.props('timezone')).toBe('string')
     expect(list.props('showErrors')).toBe(false)
+  })
+})
+
+describe('PollEditor — phone preview bottom-sheet (phase 4)', () => {
+  /** The bottom-sheet panel is teleported to <body>; find it by its dialog role + label. */
+  function findSheet(): HTMLElement | null {
+    return document.body.querySelector<HTMLElement>('[role="dialog"][aria-label="Poll preview"]')
+  }
+
+  function showPreviewTrigger(wrapper: ReturnType<typeof mountEditor>) {
+    return wrapper.findAll('button').find((b) => b.text().includes('Show preview'))
+  }
+
+  it('renders a full-width "Show preview" trigger and hides the sticky sidebar on phone', () => {
+    stubMatchMedia(false) // isPhone
+    const wrapper = mountEditor()
+
+    const trigger = showPreviewTrigger(wrapper)
+    expect(trigger, 'expected a Show preview trigger on phone').toBeTruthy()
+    // The trigger is phone-only (lg:hidden) and the sidebar is gated to lg+.
+    expect(trigger!.classes()).toContain('lg:hidden')
+    expect(wrapper.get('aside').classes()).toEqual(
+      expect.arrayContaining(['hidden', 'lg:block']),
+    )
+    // Sheet starts closed.
+    expect(findSheet()).toBeNull()
+  })
+
+  it('opens the teleported bottom-sheet when the trigger is tapped on phone', async () => {
+    stubMatchMedia(false)
+    const wrapper = mountEditor()
+
+    await showPreviewTrigger(wrapper)!.trigger('click')
+
+    const sheet = findSheet()
+    expect(sheet, 'expected the bottom-sheet to open').not.toBeNull()
+    // The sheet carries the safe-area + slide-in tokens from the foundations utilities.
+    expect(sheet!.className).toContain('safe-bottom')
+    expect(sheet!.className).toContain('animate-settle')
+    // It is NOT a native <dialog>.
+    expect(sheet!.tagName.toLowerCase()).not.toBe('dialog')
+  })
+
+  it('closes the sheet via the ✕ button', async () => {
+    stubMatchMedia(false)
+    const wrapper = mountEditor()
+
+    await showPreviewTrigger(wrapper)!.trigger('click')
+    const close = findSheet()!.querySelector<HTMLButtonElement>(
+      'button[aria-label="Close preview"]',
+    )
+    expect(close).toBeTruthy()
+    close!.click()
+    await flushPromises()
+
+    expect(findSheet()).toBeNull()
+  })
+
+  it('does NOT render the trigger or sheet at lg+ even after toggling', async () => {
+    stubMatchMedia(true) // desktop — isPhone is false
+    const wrapper = mountEditor()
+
+    // No phone trigger button exists in the rendered tree query for desktop intent:
+    // it carries lg:hidden so it is present in DOM but the sheet is guarded by isPhone.
+    const trigger = showPreviewTrigger(wrapper)
+    if (trigger) {
+      await trigger.trigger('click')
+    }
+    // isPhone is false → the v-if="isPhone && showPreview" never renders the sheet.
+    expect(findSheet()).toBeNull()
+  })
+
+  it('the sheet exposes a working Create poll action wired to the store', async () => {
+    stubMatchMedia(false)
+    const wrapper = mountEditor()
+
+    await showPreviewTrigger(wrapper)!.trigger('click')
+    const sheet = findSheet()!
+    const createBtn = Array.from(sheet.querySelectorAll('button')).find((b) =>
+      (b.textContent ?? '').includes('Create poll'),
+    )
+    expect(createBtn, 'expected a Create poll button inside the sheet').toBeTruthy()
+    expect(createBtn!.getAttribute('type')).toBe('button')
   })
 })

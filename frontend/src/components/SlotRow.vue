@@ -53,7 +53,7 @@ const invalid = computed<boolean>(
 const showError = computed<boolean>(() => props.showErrors === true && invalid.value)
 
 const timeFieldClass =
-  'field-sizing-content rounded-md border bg-canvas px-2 py-2.5 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
+  'field-sizing-content min-w-[5.5rem] rounded-md border bg-canvas px-2 py-2.5 text-center font-display text-sm text-moonlight focus:outline-none focus:ring-2'
 const timeStateClass = computed<string>(() =>
   showError.value
     ? 'border-coral focus:border-coral focus:ring-coral/30'
@@ -79,8 +79,8 @@ const timeStateClass = computed<string>(() =>
           type="button"
           :class="
             isAllDay
-              ? 'rounded-md bg-yes px-3 py-2 min-h-11 text-canvas shadow-glow'
-              : 'rounded-md px-3 py-2 min-h-11 text-dim transition hover:text-moonlight'
+              ? 'touch-target rounded-md bg-yes px-3 py-2 text-canvas shadow-glow'
+              : 'touch-target rounded-md px-3 py-2 text-dim transition hover:text-moonlight'
           "
           @click="setAllDay(true)"
         >
@@ -90,8 +90,8 @@ const timeStateClass = computed<string>(() =>
           type="button"
           :class="
             !isAllDay
-              ? 'rounded-md bg-yes px-3 py-2 min-h-11 text-canvas shadow-glow'
-              : 'rounded-md px-3 py-2 min-h-11 text-dim transition hover:text-moonlight'
+              ? 'touch-target rounded-md bg-yes px-3 py-2 text-canvas shadow-glow'
+              : 'touch-target rounded-md px-3 py-2 text-dim transition hover:text-moonlight'
           "
           @click="setAllDay(false)"
         >
@@ -120,7 +120,7 @@ const timeStateClass = computed<string>(() =>
 
       <button
         type="button"
-        class="ml-auto rounded-md px-3 py-2 min-h-11 text-sm text-mute transition hover:text-coral"
+        class="touch-target ml-auto inline-flex items-center justify-center rounded-md px-3 py-2 text-sm text-mute transition hover:text-coral"
         aria-label="Remove slot"
         @click="emit('remove')"
       >

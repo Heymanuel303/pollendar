@@ -60,7 +60,7 @@ const noSlots = computed<boolean>(() => props.showErrors === true && slots.value
       </div>
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-xl px-3 py-2 font-medium text-dim transition hover:text-coral"
+        class="touch-target inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2 font-medium text-dim transition hover:text-coral"
         aria-label="Remove date"
         @click="emit('remove')"
       >
@@ -84,7 +84,7 @@ const noSlots = computed<boolean>(() => props.showErrors === true && slots.value
 
       <button
         type="button"
-        class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-dim transition hover:text-pollen"
+        class="touch-target inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-dim transition hover:text-pollen"
         @click="addSlot"
       >
         + Add slot

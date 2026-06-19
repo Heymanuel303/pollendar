@@ -3,6 +3,7 @@
 **Plan:** [2026-06-18-mobile-calendar-editor](00-overview.md)
 **Depends on:** 03-editor-integration.md
 **Execution:** solo
+**Status:** completed
 
 ## Context
 This plan replaces the one-date-at-a-time candidate-times editor with a calendar multi-select + bulk-slot-apply flow behind a `Calendar | List` toggle, emitting the IDENTICAL `CreatePollPayload` with no backend change. Phase 3 already wired the toggle and the new `CalendarDateEditor` into `PollEditor.vue` over the shared `dates[]` ref. This final phase makes the editor screen itself usable on a phone: the `lg:`-only sticky preview sidebar becomes a "Show preview" bottom-sheet below `lg`, and the reused `DateCard` / `SlotRow` controls get bumped to a ≥44px tap zone. No editor data flow, validation, or `buildPayload()` mapping changes — this is layout + tap-target only.
@@ -52,8 +53,8 @@ Make the editor responsive: fold the `lg:`-only preview sidebar into a "Show pre
 - Payload parity check (manual): create a poll from the phone layout (Calendar or List) and confirm the POST body in the Network tab matches a poll created from the desktop layout for the same dates/slots — identical `dates[]`, no `sortOrder`, no `closesAt`.
 
 ## Acceptance
-- [ ] Below `lg`, the sticky preview sidebar is replaced by a `⬇ Show preview` button that opens a safe-area-aware bottom-sheet (no native `<dialog>`), rendering the same `previewRows` + a functional "Create poll" action; at `lg+` the original sticky sidebar is restored and the sheet/trigger are hidden.
-- [ ] `PollEditor.vue` consumes `useBreakpoint()` (`isPhone`) and a local `showPreview` ref; `buildPayload()` (lines 73-88), `isValid()`, `submit()`, and the `dates` ref are unchanged.
-- [ ] `DateCard.vue` remove + add-slot controls and `SlotRow.vue` toggle + remove controls all carry `touch-target` (≥44×44px); `SlotRow` time inputs keep a `min-w` so they stay legible at 375px.
-- [ ] The emitted `CreatePollPayload` is byte-identical to before this phase (same `dates[]` mapping, `sortOrder` unset, `closesAt` excluded); `pollStore.create()` untouched.
-- [ ] `cd frontend && npm run build && npm run lint` both pass with changes left uncommitted.
+- [x] Below `lg`, the sticky preview sidebar is replaced by a `⬇ Show preview` button that opens a safe-area-aware bottom-sheet (no native `<dialog>`), rendering the same `previewRows` + a functional "Create poll" action; at `lg+` the original sticky sidebar is restored and the sheet/trigger are hidden.
+- [x] `PollEditor.vue` consumes `useBreakpoint()` (`isPhone`) and a local `showPreview` ref; `buildPayload()` (lines 73-88), `isValid()`, `submit()`, and the `dates` ref are unchanged.
+- [x] `DateCard.vue` remove + add-slot controls and `SlotRow.vue` toggle + remove controls all carry `touch-target` (≥44×44px); `SlotRow` time inputs keep a `min-w` so they stay legible at 375px.
+- [x] The emitted `CreatePollPayload` is byte-identical to before this phase (same `dates[]` mapping, `sortOrder` unset, `closesAt` excluded); `pollStore.create()` untouched.
+- [x] `cd frontend && npm run build && npm run lint` both pass with changes left uncommitted.

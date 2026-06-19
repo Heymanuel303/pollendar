@@ -64,22 +64,24 @@ describe('SlotRow', () => {
     expect(mountRow(incomplete, false).text()).not.toContain('Set a start and end time')
   })
 
-  // Phase 3 responsive pass: 44px touch targets across the toggle, remove button and time inputs.
-  it('gives the All-day / Set-times toggle a 44px floor', () => {
+  // Phase 4 responsive pass: 44px touch targets via the `touch-target` utility across the toggle,
+  // remove button and a min-width on the time inputs so they stay legible at 375px.
+  it('gives the All-day / Set-times toggle a touch-target floor', () => {
     const wrapper = mountRow(TIMED)
     for (const label of ['All day', 'Set times']) {
       const btn = wrapper.findAll('button').find((b) => b.text() === label)!
-      expect(btn.classes()).toEqual(expect.arrayContaining(['min-h-11', 'px-3', 'py-2']))
+      expect(btn.classes()).toEqual(expect.arrayContaining(['touch-target', 'px-3', 'py-2']))
     }
   })
 
-  it('gives the remove button a 44px floor', () => {
+  it('gives the remove button a touch-target floor', () => {
     const remove = mountRow(TIMED).get('button[aria-label="Remove slot"]')
-    expect(remove.classes()).toEqual(expect.arrayContaining(['min-h-11', 'px-3', 'py-2']))
+    expect(remove.classes()).toContain('touch-target')
   })
 
-  it('pads the time inputs to clear 44px', () => {
+  it('keeps the time inputs legible with a min-width and vertical padding', () => {
     const start = mountRow(TIMED).get('input[aria-label="Start time"]')
     expect(start.classes()).toContain('py-2.5')
+    expect(start.classes()).toContain('min-w-[5.5rem]')
   })
 })
