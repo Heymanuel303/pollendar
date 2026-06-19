@@ -3,6 +3,7 @@
 **Plan:** [2026-06-18-participant-matrix](00-overview.md)
 **Depends on:** 02-desktop-matrix-table.md
 **Execution:** solo
+**Status:** completed
 
 ## Context
 The feature adds a `Vote | Results` view to the public poll (`/p/:publicToken`): tri-state voting stays, and a per-participant matrix shows who voted and what they picked, visible to anyone with the share link for open **and** closed polls. Phase 1 shipped the `Vote | Results` toggle as pure local state (no backend). Phase 2 built the desktop `ParticipantMatrix.vue` table whose data — `displayName` + per-slot answers, **never email** — comes from a `publicPollStore` participants action added by the separate `who-voted-endpoint` plan (`GET /api/public/polls/:token/participants-responses`). This phase adds the **mobile** variant of that same component: a per-slot card-stack chosen at runtime via `useBreakpoint` (from the `responsive-foundations` plan).
@@ -51,9 +52,9 @@ Add the mobile variant of ParticipantMatrix via useBreakpoint DOM-switch: one fu
 - On a closed poll (`status !== 'open'`), confirm Results cards still render and the inline voter toggle is disabled (closed-poll disabling is owned by Phase 1; verify it propagates to the mobile toggle wrapper).
 
 ## Acceptance
-- [ ] At ≤640px the Results view renders one full-width card per slot (no `overflow-x` scroll), grouped by date in poll order.
-- [ ] Each card shows the current voter's tri-state `AvailabilityToggle` inline at the top, bound to the same `answers` state as the desktop table (single source of truth, no duplicate fetch).
-- [ ] Name chips are grouped under Yes / Maybe / No with a working `+N more` expand control; chips show `displayName` only (never email).
-- [ ] All tappable controls (toggle buttons, `+N more`) use the `touch-target` utility and measure ≥44px on touch.
-- [ ] The DOM switches between `data-testid="matrix-cards"` and `data-testid="matrix-table"` across the `useBreakpoint` breakpoint.
-- [ ] `cd frontend && npm run build && npm run lint` pass clean.
+- [x] At ≤640px the Results view renders one full-width card per slot (no `overflow-x` scroll), grouped by date in poll order.
+- [x] Each card shows the current voter's tri-state `AvailabilityToggle` inline at the top, bound to the same `answers` state as the desktop table (single source of truth, no duplicate fetch).
+- [x] Name chips are grouped under Yes / Maybe / No with a working `+N more` expand control; chips show `displayName` only (never email).
+- [x] All tappable controls (toggle buttons, `+N more`) use the `touch-target` utility and measure ≥44px on touch.
+- [x] The DOM switches between `data-testid="matrix-cards"` and `data-testid="matrix-table"` across the `useBreakpoint` breakpoint.
+- [x] `cd frontend && npm run build && npm run lint` pass clean.

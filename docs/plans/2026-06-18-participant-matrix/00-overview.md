@@ -2,7 +2,7 @@
 
 **Slug:** `participant-matrix` (folder: `docs/plans/2026-06-18-participant-matrix/`)
 **Created:** 2026-06-18
-**Status:** in-progress
+**Status:** completed
 
 ## Goal
 Add a `Vote | Results` view to the public poll: keep tri-state voting, and add a per-participant matrix (desktop table / mobile card-stack) showing who voted and what they picked — visible to anyone holding the share link, for open and closed polls.
@@ -26,16 +26,16 @@ Add a `Vote | Results` view to the public poll: keep tri-state voting, and add a
 - Frontend-only verification: `cd frontend && npm run build && npm run lint`
 
 ## Acceptance criteria
-- [ ] `Vote | Results` toggle persists per device; Vote tab keeps tri-state voting
-- [ ] Closed polls show the Results matrix with Vote disabled (not a full "poll closed" replacement)
-- [ ] Desktop matrix table: participant rows incl. the voter's own editable row, sticky name column, winning-slot bloom
-- [ ] Mobile per-slot card-stack via `useBreakpoint`; touch targets ≥44px
-- [ ] build + lint green
+- [x] `Vote | Results` toggle persists per device; Vote tab keeps tri-state voting
+- [x] Closed polls show the Results matrix with Vote disabled (not a full "poll closed" replacement)
+- [x] Desktop matrix table: participant rows incl. the voter's own editable row, sticky name column, winning-slot bloom
+- [x] Mobile per-slot card-stack via `useBreakpoint`; touch targets ≥44px
+- [x] build + lint green
 
 ## Phases
 1. [01-vote-results-toggle](01-vote-results-toggle.md) — toggle + Vote-tab refactor + closed-poll change (no backend dep) · _solo_ ✓
 2. [02-desktop-matrix-table](02-desktop-matrix-table.md) — `ParticipantMatrix` desktop table (consumes endpoint) · _solo_ ✓
-3. [03-mobile-card-stack](03-mobile-card-stack.md) — mobile per-slot card-stack + touch targets · _solo_
+3. [03-mobile-card-stack](03-mobile-card-stack.md) — mobile per-slot card-stack + touch targets · _solo_ ✓
 
 ## Open questions
 - Display-name UX: prompt voters for a recognizable name and handle duplicate names, now that names are shown?

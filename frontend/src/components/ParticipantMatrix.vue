@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import AvailabilityToggle from '@/components/AvailabilityToggle.vue'
+import { useBreakpoint } from '@/composables/useBreakpoint'
 import { formatDate, formatSlotRange } from '@/lib/utils/timezone'
 import type { Availability, PollDate, ParticipantRow } from '@/lib/api/types'
 
 /**
- * Desktop per-participant availability matrix: rows = participants (plus a leading editable "You"
- * row driven by `v-model`-style `answers`), columns = slots grouped by date, cells = yes/maybe/no
- * glyphs. Sticky left name column; the winning slot's column carries the `bloom-bg` wash.
+ * Per-participant availability matrix, adaptive across breakpoints.
+ *
+ * Desktop (`v-else`, `data-testid="matrix-table"`): rows = participants (plus a leading editable
+ * "You" row driven by `v-model`-style `answers`), columns = slots grouped by date, cells =
+ * yes/maybe/no glyphs. Sticky left name column; the winning slot's column carries the `bloom-bg`
+ * wash and horizontal scroll handles overflow.
+ *
+ * Mobile (`v-if="bp.isPhone"`, `data-testid="matrix-cards"`): one full-width card per slot (NO
+ * horizontal scroll) grouped by date, the voter's tri-state `AvailabilityToggle` inline at the top,
+ * then read-only name chips grouped under Yes / Maybe / No with a `+N more` overflow control.
  *
  * Purely presentational + an editable-row contract — it owns NO fetch (the parent calls
  * `store.loadParticipants`). PRIVACY: `ParticipantRow` carries `displayName` only (never `email`),
@@ -61,6 +69,61 @@ function availabilityLabel(value: Availability | null): string {
   if (value === 'unavailable') return 'No'
   return 'No answer'
 }
+
+/* ── Mobile card-stack ──────────────────────────────────────────────────────
+   Runtime DOM switch: phones get the card-stack, everything else the table.
+   `useBreakpoint` owns the `typeof window` guard; destructured so the template
+   auto-unwraps the ref (a nested `bp.isPhone` would never unwrap → always truthy). */
+const { isPhone } = useBreakpoint()
+
+/** Read-only name lists for one slot, partitioned by answer — Yes / Maybe / No (mobile chips). */
+const GROUPS = [
+  { kind: 'available' as Availability, label: 'Yes', chip: 'bg-yes/15 text-yes ring-1 ring-yes/40' },
+  { kind: 'maybe' as Availability, label: 'Maybe', chip: 'bg-maybe/15 text-maybe ring-1 ring-maybe/40' },
+  { kind: 'unavailable' as Availability, label: 'No', chip: 'bg-no/15 text-moonlight ring-1 ring-no/50' },
+]
+
+/** Number of name chips shown before collapsing the remainder into a `+N more` control. */
+const CHIP_LIMIT = 6
+
+/** Display names of every participant who picked `kind` for `slotId` (read-only; `displayName` only). */
+function namesForSlot(slotId: string, kind: Availability): string[] {
+  return props.participants
+    .filter((row) => answerFor(row, slotId) === kind)
+    .map((row) => row.displayName)
+}
+
+/** Expanded `slotId|kind` groups whose full chip list is shown (tap `+N more` to add). */
+const expandedGroups = ref<Set<string>>(new Set())
+
+function groupKey(slotId: string, kind: Availability): string {
+  return `${slotId}|${kind}`
+}
+
+function isGroupExpanded(slotId: string, kind: Availability): boolean {
+  return expandedGroups.value.has(groupKey(slotId, kind))
+}
+
+function toggleGroup(slotId: string, kind: Availability): void {
+  const key = groupKey(slotId, kind)
+  const next = new Set(expandedGroups.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  expandedGroups.value = next
+}
+
+/** The chips to render for a group, honouring the `CHIP_LIMIT` collapse unless expanded. */
+function visibleNames(slotId: string, kind: Availability): string[] {
+  const names = namesForSlot(slotId, kind)
+  if (isGroupExpanded(slotId, kind)) return names
+  return names.slice(0, CHIP_LIMIT)
+}
+
+/** How many names are hidden behind the `+N more` control (0 when nothing is collapsed). */
+function overflowCount(slotId: string, kind: Availability): number {
+  if (isGroupExpanded(slotId, kind)) return 0
+  return Math.max(0, namesForSlot(slotId, kind).length - CHIP_LIMIT)
+}
 </script>
 
 <template>
@@ -81,8 +144,97 @@ function availabilityLabel(value: Availability | null): string {
       </div>
     </div>
 
-    <!-- Scrollable per-participant grid -->
-    <div class="overflow-x-auto rounded-xl border border-line bg-canvas">
+    <!-- Mobile: one full-width card per slot (no horizontal scroll). -->
+    <div v-if="isPhone" class="space-y-6" data-testid="matrix-cards">
+      <div v-for="date in dates" :key="date.id" class="space-y-3">
+        <h3 class="num text-sm font-semibold text-moonlight">
+          {{ formatDate(date.eventDate, timezone) }}
+        </h3>
+        <article
+          v-for="slot in date.slots"
+          :key="slot.id"
+          :class="[
+            'w-full rounded-2xl border border-line bg-surface p-4 shadow-card',
+            slot.id === winningSlotId ? 'bloom-bg border-pollen/40 shadow-glow' : '',
+          ]"
+          :data-testid="slot.id === winningSlotId ? 'matrix-card-bloom' : undefined"
+        >
+          <!-- Card header: slot range + in-bloom pill for the winner. -->
+          <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h4 class="num text-base font-semibold text-moonlight">
+              {{ formatSlotRange(slot, timezone) }}
+            </h4>
+            <span
+              v-if="slot.id === winningSlotId"
+              class="inline-flex items-center gap-1 rounded-full bg-pollen/15 px-2 py-0.5 text-[11px] font-medium text-pollen ring-1 ring-pollen/40"
+            >
+              ✦ In bloom
+            </span>
+          </header>
+
+          <!-- The voter's own tri-state control, inline at the top of the card. -->
+          <div class="mb-4">
+            <p class="mb-2 text-xs uppercase tracking-widest text-mute">Your vote</p>
+            <div class="touch-target flex items-center">
+              <AvailabilityToggle
+                :model-value="answers[slot.id] ?? null"
+                :disabled="!editable"
+                :label="`Your availability for ${formatSlotRange(slot, timezone)}`"
+                @update:model-value="emit('update:answers', slot.id, $event)"
+              />
+            </div>
+          </div>
+
+          <!-- Read-only name chips grouped under Yes / Maybe / No. -->
+          <div class="space-y-3">
+            <div v-for="group in GROUPS" :key="group.kind">
+              <h5
+                class="mb-1.5 text-xs uppercase tracking-widest text-dim"
+                :aria-label="`${group.label} for ${formatSlotRange(slot, timezone)}`"
+              >
+                {{ group.label }}
+              </h5>
+              <div
+                v-if="namesForSlot(slot.id, group.kind).length > 0"
+                class="flex flex-wrap gap-2"
+              >
+                <span
+                  v-for="name in visibleNames(slot.id, group.kind)"
+                  :key="name"
+                  :class="['rounded-full px-3 py-1 text-sm', group.chip]"
+                >
+                  {{ name }}
+                </span>
+                <button
+                  v-if="overflowCount(slot.id, group.kind) > 0"
+                  type="button"
+                  class="touch-target inline-flex items-center rounded-full border border-line px-3 py-1 text-sm text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40"
+                  :aria-expanded="isGroupExpanded(slot.id, group.kind)"
+                  :aria-label="`Show ${overflowCount(slot.id, group.kind)} more ${group.label} names`"
+                  @click="toggleGroup(slot.id, group.kind)"
+                >
+                  +{{ overflowCount(slot.id, group.kind) }} more
+                </button>
+                <button
+                  v-else-if="isGroupExpanded(slot.id, group.kind) && namesForSlot(slot.id, group.kind).length > CHIP_LIMIT"
+                  type="button"
+                  class="touch-target inline-flex items-center rounded-full border border-line px-3 py-1 text-sm text-dim transition hover:text-moonlight focus:outline-none focus:ring-2 focus:ring-pollen/40"
+                  :aria-expanded="true"
+                  :aria-label="`Show fewer ${group.label} names`"
+                  @click="toggleGroup(slot.id, group.kind)"
+                >
+                  Show less
+                </button>
+              </div>
+              <p v-else class="text-sm text-mute">No one yet</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Desktop: scrollable per-participant grid. -->
+    <div v-else class="overflow-x-auto rounded-xl border border-line bg-canvas" data-testid="matrix-table">
       <table class="w-full min-w-[640px] border-collapse text-sm">
         <thead>
           <!-- Date-group row -->
