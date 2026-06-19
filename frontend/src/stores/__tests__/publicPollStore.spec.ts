@@ -165,3 +165,69 @@ describe('publicPollStore.loadParticipants', () => {
     expect(store.errorCode).toBe(404)
   })
 })
+
+describe('publicPollStore.loadDetail', () => {
+  it('fetches the poll then hydrates results + participants in one call', async () => {
+    getPublicPoll.mockResolvedValue({
+      id: '1',
+      title: 'Dinner',
+      timezone: 'Europe/Brussels',
+      dates: [],
+    })
+    getResults.mockResolvedValue({
+      best: { slotId: '9', date: '2026-06-26', label: 'Early', score: 6 },
+      slots: [],
+    })
+    getParticipantResponses.mockResolvedValue({
+      participants: [{ participantId: '5', displayName: 'Sam', answers: [] }],
+      total: 1,
+      hasMore: false,
+    })
+    const store = usePublicPollStore()
+
+    await store.loadDetail('share-token')
+
+    expect(getPublicPoll).toHaveBeenCalledWith('share-token')
+    expect(getResults).toHaveBeenCalledWith('share-token')
+    expect(getParticipantResponses).toHaveBeenCalledWith('share-token', undefined, undefined)
+    expect(store.poll).toMatchObject({ id: '1', title: 'Dinner' })
+    expect(store.results?.best?.slotId).toBe('9')
+    expect(store.participants).toHaveLength(1)
+    expect(store.loadState).toBe('success')
+  })
+
+  it('still resolves the poll when the derived loads fail (non-fatal)', async () => {
+    getPublicPoll.mockResolvedValue({
+      id: '1',
+      title: 'Dinner',
+      timezone: 'Europe/Brussels',
+      dates: [],
+    })
+    getResults.mockRejectedValue(new ApiError(404, { message: 'Not Found' }))
+    getParticipantResponses.mockRejectedValue(new ApiError(404, { message: 'Not Found' }))
+    const store = usePublicPollStore()
+
+    await expect(store.loadDetail('share-token')).resolves.toBeUndefined()
+
+    expect(store.poll).toMatchObject({ id: '1' })
+    expect(store.loadState).toBe('success')
+    expect(store.results).toBeNull()
+    expect(store.participants).toEqual([])
+  })
+
+  it('clears the poll and records the error when the poll fetch 404s', async () => {
+    getPublicPoll.mockRejectedValue(new ApiError(404, { message: 'Not Found' }))
+    getResults.mockResolvedValue({ best: null, slots: [] })
+    getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+    const store = usePublicPollStore()
+
+    await store.loadDetail('nope')
+
+    expect(store.poll).toBeNull()
+    // `loadState` (set by `load`) is the durable failure signal: the derived loaders never touch it.
+    expect(store.loadState).toBe('error')
+    // `errorCode` is NOT a reliable post-orchestrator signal here — the subsequent successful
+    // `loadParticipants` calls `resetError()`, so the 404 recorded by `load` is cleared back to null.
+    expect(store.errorCode).toBeNull()
+  })
+})

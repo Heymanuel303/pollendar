@@ -3,6 +3,7 @@
 **Plan:** [store-data-refresh-convention](00-overview.md)
 **Depends on:** 01-pollstore-refresh-convention.md
 **Execution:** solo
+**Status:** completed
 
 ## Context
 This plan standardizes how Pinia stores refresh data after state changes across the Vue frontend: in-place mutations re-hydrate only derived slices (no loading flash, no double-fetch), cold loads use one orchestrator that resets+fetches, and delete/navigate-away mutations prune caches. Phase 1 applied the convention to the owned-poll store (`pollStore.ts`) and `PollManage.vue`. This phase applies the IDENTICAL convention to the anonymous public flow: the `publicPollStore` and its `PublicPoll`/`PublicThanks` views currently chain three loaders (`load` + `loadResults` + `loadParticipants`) in `onMounted`, which this phase consolidates behind a single cold-load orchestrator (shape B). The public store has no in-place mutations (shape A) — `submit` is a navigate-away (shape C) and only needs to be confirmed, not changed.
@@ -177,6 +178,6 @@ Run from the `frontend/` directory:
 - Manual UI check: open `/p/:token` and `/p/:token/done` cold — the poll, live results, and participant matrix all render with a single skeleton pass (no double-fetch, no flash); submitting on `/p/:token` still navigates to `/done` with the bloom and a persisted edit token (shape C unchanged).
 
 ## Acceptance
-- [ ] `publicPollStore` exposes one public `loadDetail(token)` orchestrator and a private `hydrateDerived(token)`; `PublicPoll.vue` and `PublicThanks.vue` `onMounted` each call ONLY `store.loadDetail(token.value)` (no chained `load`/`loadResults`/`loadParticipants`).
-- [ ] `submit` (shape C) and the `errorCode`/`errorMessage`/`messageFor` handling are unchanged; `hydrateDerived` is not on the public store surface.
-- [ ] `publicPollStore.spec.ts` has a passing `loadDetail` block, `PublicPoll.spec.ts` asserts the single cold load, and a new `PublicThanks.spec.ts` covers the mount + bloom/no-results paths; all listed verification commands pass green.
+- [x] `publicPollStore` exposes one public `loadDetail(token)` orchestrator and a private `hydrateDerived(token)`; `PublicPoll.vue` and `PublicThanks.vue` `onMounted` each call ONLY `store.loadDetail(token.value)` (no chained `load`/`loadResults`/`loadParticipants`).
+- [x] `submit` (shape C) and the `errorCode`/`errorMessage`/`messageFor` handling are unchanged; `hydrateDerived` is not on the public store surface.
+- [x] `publicPollStore.spec.ts` has a passing `loadDetail` block, `PublicPoll.spec.ts` asserts the single cold load, and a new `PublicThanks.spec.ts` covers the mount + bloom/no-results paths; all listed verification commands pass green.

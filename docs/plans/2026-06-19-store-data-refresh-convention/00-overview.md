@@ -40,7 +40,7 @@ The standard — three mutually exclusive shapes:
 
 ## Phases
 1. [01-pollstore-refresh-convention](01-pollstore-refresh-convention.md) — reference implementation in `pollStore` + `PollManage`/`PollEditor`: `hydrateDerived`/`patchListRow`/`loadDetail`, uniform shape-A mutations, drop `refreshPoll`, update specs · _solo_ ✓
-2. [02-public-store-refresh-convention](02-public-store-refresh-convention.md) — mirror the convention in `publicPollStore` + `PublicPoll`/`PublicThanks` (single cold-load orchestrator, new `PublicThanks.spec.ts`) · _solo_
+2. [02-public-store-refresh-convention](02-public-store-refresh-convention.md) — mirror the convention in `publicPollStore` + `PublicPoll`/`PublicThanks` (single cold-load orchestrator, new `PublicThanks.spec.ts`) · _solo_ ✓
 3. [03-codify-and-extend-convention](03-codify-and-extend-convention.md) — authoritative `README` section, then fan-out conformance audit across `authStore` + every store-consuming view/router/entry point, fixing stragglers · _workflow_
 
 ## Open questions

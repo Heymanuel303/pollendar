@@ -33,13 +33,10 @@ function setView(mode: ViewMode): void {
 }
 
 onMounted(async () => {
-  await store.load(token.value)
+  // One cold-load orchestrator: fetches the poll then hydrates results + participant rows in parallel.
+  await store.loadDetail(token.value)
   // Restore the last-used tab for this poll (per-device), defaulting to Vote.
   view.value = getViewMode(token.value) ?? 'vote'
-  // Results drive which slot "blooms" + the footer's leaning label. Best-effort; non-fatal if absent.
-  await store.loadResults(token.value)
-  // Per-participant rows feed the Results-tab matrix. Non-fatal: the matrix simply shows no rows.
-  await store.loadParticipants(token.value)
 })
 
 watch(view, (mode) => saveViewMode(token.value, mode))

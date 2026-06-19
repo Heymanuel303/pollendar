@@ -24,8 +24,8 @@ const name = computed<string | null>(() =>
 )
 
 onMounted(async () => {
-  // load() gives us title/timezone if the visitor arrives cold via the share URL; results drive the bloom.
-  await Promise.all([store.load(token.value), store.loadResults(token.value)])
+  // One cold-load orchestrator: title/timezone for a cold share-link arrival + results for the bloom.
+  await store.loadDetail(token.value)
 })
 
 const shareUrl = computed<string>(() => buildShareUrl(token.value))

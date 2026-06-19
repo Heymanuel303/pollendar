@@ -139,6 +139,31 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
     }
   }
 
+  /**
+   * Re-hydrate the derived slices that hang off the current poll (live results + participant rows)
+   * in parallel. Each call is independently non-fatal — `loadResults`/`loadParticipants` swallow
+   * their own errors — so a failure in one does not block the other or the caller.
+   */
+  async function hydrateDerived(token: string): Promise<void> {
+    await Promise.all([loadResults(token), loadParticipants(token)])
+  }
+
+  /**
+   * Cold-load orchestrator for the public detail views (component mount / share-link arrival): reset
+   * the entity + derived slices so the view shows its skeleton, fetch the poll, then await the derived
+   * refresher. The ONLY entry point `PublicPoll`/`PublicThanks` call in `onMounted` — they never chain
+   * the individual loaders themselves.
+   */
+  async function loadDetail(token: string): Promise<void> {
+    poll.value = null
+    results.value = null
+    participants.value = []
+    participantsTotal.value = 0
+    participantsHasMore.value = false
+    await load(token)
+    await hydrateDerived(token)
+  }
+
   function applyError(err: unknown): void {
     if (err instanceof ApiError) {
       errorCode.value = err.status
@@ -161,6 +186,7 @@ export const usePublicPollStore = defineStore('publicPoll', () => {
     errorCode,
     errorMessage,
     load,
+    loadDetail,
     submit,
     loadResults,
     loadParticipants,

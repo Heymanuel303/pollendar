@@ -119,4 +119,12 @@ describe('PublicPoll — open state', () => {
     expect(nameInput(wrapper).disabled).toBe(false)
     expect(emailInput(wrapper).disabled).toBe(false)
   })
+
+  it('drives a single cold load that fetches poll + results + participants once', async () => {
+    await mountWithPoll(makePublicPoll({ status: 'open' }))
+    expect(getPublicPoll).toHaveBeenCalledTimes(1)
+    expect(getResults).toHaveBeenCalledTimes(1)
+    expect(getParticipantResponses).toHaveBeenCalledTimes(1)
+    expect(getPublicPoll).toHaveBeenCalledWith('tok')
+  })
 })
