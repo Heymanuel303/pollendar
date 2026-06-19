@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { DevThrottlerGuard } from './common/dev-throttler.guard';
 import { validate } from './config/env.validation';
 import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -41,8 +42,9 @@ import { PublicModule } from './public/public.module';
   controllers: [AppController],
   providers: [
     AppService,
-    // Global throttler so @Throttle decorators take effect across controllers.
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Global throttler so @Throttle decorators take effect across controllers. The dev-aware
+    // subclass disables all throttling when NODE_ENV=development (see DevThrottlerGuard).
+    { provide: APP_GUARD, useClass: DevThrottlerGuard },
   ],
 })
 export class AppModule {}
