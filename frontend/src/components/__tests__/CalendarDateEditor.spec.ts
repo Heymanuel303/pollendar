@@ -59,13 +59,6 @@ function lastModel(wrapper: Wrapper): PollDateInput[] {
   return latest[0] as PollDateInput[]
 }
 
-/** First button whose rendered text contains `text` (throws if none, so tests fail loudly). */
-function buttonByText(wrapper: Wrapper, text: string) {
-  const button = wrapper.findAll('button').find((candidate) => candidate.text().includes(text))
-  if (!button) throw new Error(`No button containing "${text}"`)
-  return button
-}
-
 /** The day-cell button for a bare `"YYYY-MM-DD"` (matched on its aria-label). */
 function dayCell(wrapper: Wrapper, iso: string) {
   return wrapper.get(`button[aria-label="${iso}"]`)
@@ -113,36 +106,10 @@ describe('CalendarDateEditor', () => {
     expect(wrapper.text()).toContain('2 selected')
   })
 
-  it('"Apply to N selected" rewrites every selected date\'s slots, preserving eventDates', async () => {
+  it('renders no bulk-apply preset panel — the calendar is a pure day-picker', () => {
     const wrapper = mountEditor(twoDates())
-
-    // Pick the Morning preset (09:00–12:00) in the embedded SlotPresetChips bulk-apply panel.
-    await buttonByText(wrapper, 'Morning').trigger('click')
-    await buttonByText(wrapper, 'Apply to').trigger('click')
-
-    const model = lastModel(wrapper)
-    // eventDates are preserved across the bulk-apply.
-    expect(model.map((d) => d.eventDate)).toEqual(['2026-06-26', '2026-06-27'])
-    // Every selected date now carries the chosen Morning slot.
-    for (const date of model) {
-      const morning = date.slots.find((s) => s.startTime === '09:00' && s.endTime === '12:00')
-      expect(morning, 'expected the Morning preset slot on every selected date').toBeTruthy()
-      expect(morning?.isAllDay).toBe(false)
-    }
-  })
-
-  it('"Apply to N selected" gives each date its own slot objects (no shared identity)', async () => {
-    const wrapper = mountEditor(twoDates())
-
-    await buttonByText(wrapper, 'Apply to').trigger('click')
-
-    const model = lastModel(wrapper)
-    expect(model[0]?.slots[0]).not.toBe(model[1]?.slots[0])
-  })
-
-  it('"Apply to N selected" is disabled when nothing is selected', () => {
-    const wrapper = mountEditor([])
-    expect(buttonByText(wrapper, 'Apply to').attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).not.toContain('Apply a time block')
+    expect(wrapper.findAll('button').some((b) => b.text().includes('Apply to'))).toBe(false)
   })
 
   it('renders the showErrors empty-state message matching the List flow', () => {
@@ -156,7 +123,6 @@ describe('CalendarDateEditor', () => {
     const wrapper = mountEditor(oneDate())
 
     await dayCell(wrapper, '2026-06-20').trigger('click')
-    await buttonByText(wrapper, 'Apply to').trigger('click')
 
     for (const event of wrapper.emitted('update:modelValue') as unknown[][]) {
       const model = event[0] as PollDateInput[]

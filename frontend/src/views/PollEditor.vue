@@ -1,19 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DateSlotEditor from '@/components/DateSlotEditor.vue'
 import CalendarDateEditor from '@/components/CalendarDateEditor.vue'
-import { useBreakpoint } from '@/composables/useBreakpoint'
-import { getEditorView, saveEditorView, type EditorView } from '@/lib/editorViewPreference'
 import Field from '@/components/ui/Field.vue'
 import Input from '@/components/ui/Input.vue'
-import Pill from '@/components/ui/Pill.vue'
 import TimezoneSelect from '@/components/ui/TimezoneSelect.vue'
 import { usePollStore } from '@/stores/pollStore'
 import {
   defaultTimezone,
-  formatCloseLabel,
-  formatDate,
   formatTime,
   isoToLocalInput,
   localInputToIso,
@@ -57,15 +52,6 @@ const dates = ref<PollDateInput[]>([
     slots: [{ startTime: '18:00', endTime: '20:00', isAllDay: false }],
   },
 ])
-
-// Calendar | List view toggle over the SAME `dates` ref above — both editors bind it, so the array
-// never diverges (the load-bearing invariant behind the byte-identical payload guarantee). A stored
-// preference wins; otherwise default to Calendar on phone, List on desktop. `isPhone.value` is read
-// once at setup: a later resize must not clobber an explicit toggle. The preference is intentionally
-// SHARED across `/polls/new` and `/polls/:id/edit` — it does NOT reset on navigation between them.
-const { isPhone } = useBreakpoint()
-const editorView = ref<EditorView>(getEditorView() ?? (isPhone.value ? 'calendar' : 'list'))
-watch(editorView, (view) => saveEditorView(view))
 
 /**
  * Map a loaded wire slot into a {@link PollSlotInput}, converting the wire ISO `@db.Time` instants to
@@ -119,10 +105,6 @@ onMounted(async () => {
   loaded.value = true
 })
 
-// Below `lg` the sticky preview sidebar collapses; a phone-only trigger opens this bottom-sheet so
-// the same preview + create action stay reachable without a desktop-width column.
-const showPreview = ref(false)
-
 // Flipped true on the first submit attempt so inline errors only appear after the creator tries.
 const submitted = ref(false)
 
@@ -132,7 +114,7 @@ const titleError = computed<string | undefined>(() =>
     : undefined,
 )
 
-// ── Mode-aware copy + action wiring (one set of computeds keeps the sidebar + bottom-sheet in sync) ──
+// ── Mode-aware copy + action wiring (drives the action anchored beneath the calendar) ──
 const breadcrumbLabel = computed<string>(() => (isEdit.value ? 'Edit' : 'New poll'))
 const headingLabel = computed<string>(() => (isEdit.value ? 'Edit poll' : 'Create a poll'))
 const subheadingLabel = computed<string>(() =>
@@ -159,24 +141,6 @@ const allInvalidatedError = computed<string | undefined>(() => {
     ? undefined
     : 'Keep at least one active date with a time — you can’t deactivate everything.'
 })
-
-const closesPreview = computed<string | null>(() =>
-  closesAtLocal.value === '' ? null : formatCloseLabel(closesAtLocal.value, timezone.value),
-)
-
-// Static illustration of how the poll will look once shared — reflects the live structure but never
-// fetches tallies (results land in the manage phase). Tri-state controls below are non-interactive.
-const previewRows = computed(() =>
-  dates.value.flatMap((date) =>
-    date.slots.map((slot) => ({
-      date: formatDate(date.eventDate, timezone.value),
-      label: slot.label?.trim() || (slot.isAllDay ? 'All day' : 'Untitled slot'),
-      time: slot.isAllDay
-        ? 'All day'
-        : [slot.startTime, slot.endTime].filter(Boolean).join('–') || 'No time set',
-    })),
-  ),
-)
 
 function isValid(): boolean {
   if (title.value.trim() === '') return false
@@ -300,9 +264,11 @@ async function submit(): Promise<void> {
         <p class="mt-1.5 text-dim">{{ subheadingLabel }}</p>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <!-- LEFT: form -->
-        <div class="space-y-6">
+      <div class="flex flex-col gap-6 lg:grid lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
+        <!-- LEFT: meta form → calendar → anchored action. `contents` on mobile dissolves this
+             wrapper so its children join the outer flex flow (letting the action be ordered AFTER
+             the list); `lg:block` restores it as a real sticky grid column on desktop. -->
+        <div class="contents lg:block lg:space-y-6 lg:self-start lg:sticky lg:top-24">
           <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
             <form class="space-y-5" novalidate @submit.prevent="submit">
               <Field label="Poll title" :error="titleError">
@@ -347,221 +313,17 @@ async function submit(): Promise<void> {
             </form>
           </section>
 
-          <div>
-            <div class="mb-3 flex justify-end">
-              <div
-                class="inline-flex rounded-lg border border-line bg-canvas p-0.5 text-xs font-medium"
-                role="group"
-                aria-label="Editor view"
-              >
-                <button
-                  type="button"
-                  :class="
-                    editorView === 'calendar'
-                      ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
-                      : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
-                  "
-                  :aria-pressed="editorView === 'calendar'"
-                  @click="editorView = 'calendar'"
-                >
-                  Calendar
-                </button>
-                <button
-                  type="button"
-                  :class="
-                    editorView === 'list'
-                      ? 'rounded-md bg-yes px-2.5 py-1 text-canvas shadow-glow'
-                      : 'rounded-md px-2.5 py-1 text-dim transition hover:text-moonlight'
-                  "
-                  :aria-pressed="editorView === 'list'"
-                  @click="editorView = 'list'"
-                >
-                  List
-                </button>
-              </div>
-            </div>
+          <CalendarDateEditor
+            v-model="dates"
+            :timezone="timezone"
+            :show-errors="submitted"
+            :edit-mode="isEdit"
+          />
 
-            <CalendarDateEditor
-              v-if="editorView === 'calendar'"
-              v-model="dates"
-              :timezone="timezone"
-              :show-errors="submitted"
-              :edit-mode="isEdit"
-            />
-            <DateSlotEditor
-              v-else
-              v-model="dates"
-              :timezone="timezone"
-              :show-errors="submitted"
-              :edit-mode="isEdit"
-            />
-          </div>
-
-          <!-- Phone-only: opens the preview bottom-sheet (the lg+ sidebar covers this otherwise). -->
-          <button
-            type="button"
-            class="touch-target inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-medium text-dim transition hover:text-moonlight lg:hidden"
-            @click="showPreview = true"
-          >
-            ⬇ Show preview
-          </button>
-        </div>
-
-        <!-- RIGHT: sticky preview (lg+ only; below lg it folds into the bottom-sheet) -->
-        <aside class="hidden lg:block lg:sticky lg:top-24 lg:self-start">
-          <section class="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
-            <div class="border-b border-line/70 px-5 py-3">
-              <p class="text-xs uppercase tracking-widest text-mute">Preview</p>
-            </div>
-            <div class="bloom-bg p-5">
-              <div class="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <h3 class="font-display text-xl font-semibold tracking-tight">
-                    {{ title.trim() || 'Untitled poll' }}
-                  </h3>
-                  <p v-if="description.trim()" class="mt-1 text-sm text-dim">
-                    {{ description.trim() }}
-                  </p>
-                </div>
-                <Pill tone="pollen">Open</Pill>
-              </div>
-
-              <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-mute">
-                <span>{{ timezone }}</span>
-                <template v-if="closesPreview">
-                  <span>·</span>
-                  <span
-                    >closes <span class="num text-dim">{{ closesPreview }}</span></span
-                  >
-                </template>
-              </div>
-
-              <p class="mb-2 text-xs uppercase tracking-widest text-mute">
-                How people will respond
-              </p>
-              <div v-if="previewRows.length" class="space-y-2">
-                <div
-                  v-for="(row, index) in previewRows"
-                  :key="index"
-                  class="flex items-center justify-between rounded-xl border border-line bg-canvas px-3 py-2.5"
-                >
-                  <div>
-                    <p class="num text-sm font-medium text-dim">{{ row.date }} · {{ row.label }}</p>
-                    <p class="num text-xs text-mute">{{ row.time }}</p>
-                  </div>
-                  <div
-                    class="inline-flex rounded-xl border border-line bg-surface p-1 text-xs font-medium"
-                  >
-                    <span class="rounded-lg px-2 py-1 text-dim">Yes</span>
-                    <span class="rounded-lg px-2 py-1 text-mute">Maybe</span>
-                    <span class="rounded-lg px-2 py-1 text-mute">No</span>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="text-sm text-mute">Add a date and slot to preview the poll.</p>
-
-              <p class="mt-4 text-xs text-mute">A shareable link is created once you publish.</p>
-            </div>
-
-            <div class="space-y-2 border-t border-line/70 p-5">
-              <button
-                type="button"
-                class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
-                :disabled="actionBusy"
-                :aria-busy="actionBusy || undefined"
-                @click="submit"
-              >
-                {{ actionLabel }}
-              </button>
-              <p v-if="allInvalidatedError" class="flex items-center gap-1.5 text-sm text-coral">
-                <span aria-hidden="true">⚠</span>{{ allInvalidatedError }}
-              </p>
-              <p v-if="actionError" class="flex items-center gap-1.5 text-sm text-coral">
-                <span aria-hidden="true">⚠</span>{{ actionError }}
-              </p>
-            </div>
-          </section>
-        </aside>
-      </div>
-    </template>
-
-    <!-- Phone-only preview bottom-sheet: same preview data + create action as the lg+ sidebar.
-         Teleported to <body> so it escapes the centered <main> stacking context. -->
-    <Teleport to="body">
-      <template v-if="isPhone && showPreview">
-        <div
-          class="fixed inset-0 z-40 bg-canvas/70 backdrop-blur-sm lg:hidden"
-          @click="showPreview = false"
-        ></div>
-        <div
-          class="safe-bottom animate-settle fixed inset-x-0 bottom-0 z-50 max-h-[90vh] overflow-y-auto rounded-t-2xl border-t border-line bg-surface shadow-card lg:hidden"
-          role="dialog"
-          aria-label="Poll preview"
-        >
-          <div class="flex justify-center pt-3">
-            <span class="h-1.5 w-10 rounded-full bg-line" aria-hidden="true"></span>
-          </div>
-          <div class="flex items-center justify-between px-5 py-3">
-            <p class="text-xs uppercase tracking-widest text-mute">Preview</p>
-            <button
-              type="button"
-              class="touch-target inline-flex items-center justify-center rounded-lg text-dim transition hover:text-moonlight"
-              aria-label="Close preview"
-              @click="showPreview = false"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div class="bloom-bg p-5">
-            <div class="mb-4 flex items-start justify-between gap-3">
-              <div>
-                <h3 class="font-display text-xl font-semibold tracking-tight">
-                  {{ title.trim() || 'Untitled poll' }}
-                </h3>
-                <p v-if="description.trim()" class="mt-1 text-sm text-dim">
-                  {{ description.trim() }}
-                </p>
-              </div>
-              <Pill tone="pollen">Open</Pill>
-            </div>
-
-            <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-mute">
-              <span>{{ timezone }}</span>
-              <template v-if="closesPreview">
-                <span>·</span>
-                <span
-                  >closes <span class="num text-dim">{{ closesPreview }}</span></span
-                >
-              </template>
-            </div>
-
-            <p class="mb-2 text-xs uppercase tracking-widest text-mute">How people will respond</p>
-            <div v-if="previewRows.length" class="space-y-2">
-              <div
-                v-for="(row, index) in previewRows"
-                :key="index"
-                class="flex items-center justify-between rounded-xl border border-line bg-canvas px-3 py-2.5"
-              >
-                <div>
-                  <p class="num text-sm font-medium text-dim">{{ row.date }} · {{ row.label }}</p>
-                  <p class="num text-xs text-mute">{{ row.time }}</p>
-                </div>
-                <div
-                  class="inline-flex rounded-xl border border-line bg-surface p-1 text-xs font-medium"
-                >
-                  <span class="rounded-lg px-2 py-1 text-dim">Yes</span>
-                  <span class="rounded-lg px-2 py-1 text-mute">Maybe</span>
-                  <span class="rounded-lg px-2 py-1 text-mute">No</span>
-                </div>
-              </div>
-            </div>
-            <p v-else class="text-sm text-mute">Add a date and slot to preview the poll.</p>
-
-            <p class="mt-4 text-xs text-mute">A shareable link is created once you publish.</p>
-          </div>
-
-          <div class="space-y-2 border-t border-line/70 p-5">
+          <!-- Primary action, anchored beneath the calendar. `order-last` drops it below the list on
+               mobile (so the list is customizable before the action reads); `lg:order-none` restores
+               its place in the sticky-left column on desktop. -->
+          <div class="order-last space-y-2 lg:order-none">
             <button
               type="button"
               class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pollen px-4 py-2.5 font-medium text-canvas shadow-glow transition hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
@@ -579,7 +341,15 @@ async function submit(): Promise<void> {
             </p>
           </div>
         </div>
-      </template>
-    </Teleport>
+
+        <!-- RIGHT: always-editable list — the surface for adding custom slots and labels. -->
+        <DateSlotEditor
+          v-model="dates"
+          :timezone="timezone"
+          :show-errors="submitted"
+          :edit-mode="isEdit"
+        />
+      </div>
+    </template>
   </div>
 </template>

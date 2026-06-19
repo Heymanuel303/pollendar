@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import SlotPresetChips from '@/components/SlotPresetChips.vue'
 import { useBreakpoint } from '@/composables/useBreakpoint'
 import type { PollDateInput, PollSlotInput } from '@/types/poll'
 
 /**
- * Calendar half of the redesigned candidate-times editor: a tap-to-multi-select month grid plus a
- * `SlotPresetChips` bulk-apply panel. Fully controlled over the same `PollDateInput[]` array
- * {@link DateSlotEditor} drives (byte-for-byte the same prop/emit contract), so the two are drop-in
- * interchangeable behind the Phase 3 `Calendar | List` toggle with no payload divergence.
+ * Pure calendar day-picker for the candidate-times editor: a tap-to-multi-select month grid that
+ * stamps a single fixed default slot (`18:00–20:00`) onto each tapped day. Fully controlled over the
+ * same `PollDateInput[]` array {@link DateSlotEditor} drives (byte-for-byte the same prop/emit
+ * contract), so both editors bind one shared `dates` ref with no payload divergence — per-date
+ * slot/label editing happens in the List editor on the right.
  *
  * Selection is derived from `modelValue` (never a parallel local ref). Month navigation is the only
  * local UI state and never emits. Every emitted `PollDateInput` is `{ eventDate: '<YYYY-MM-DD>',
@@ -22,8 +22,8 @@ const props = defineProps<{
   /**
    * Edit mode (`/polls/:id/edit`). The Calendar editor has no per-date controls, so the richest
    * invalidate/reactivate UX lives in the List editor (`DateCard`/`SlotRow`). The Calendar editor's
-   * only edit-mode job is to NOT destroy voted data: it refuses to remove a locked (voted) day on tap
-   * and skips locked days when bulk-applying a preset. New/zero-vote days behave as in create mode.
+   * only edit-mode job is to NOT destroy voted data: it refuses to remove a locked (voted) day on tap.
+   * New/zero-vote days behave as in create mode.
    */
   editMode?: boolean
 }>()
@@ -85,14 +85,9 @@ const cells = computed<{ iso: string | null; selected: boolean }[]>(() => {
   return out
 })
 
-// ── Bulk-apply preset (local; the slot set the calendar stamps onto dates) ──
-const activeSlots = ref<PollSlotInput[]>([
-  { startTime: '18:00', endTime: '20:00', isAllDay: false },
-])
-
-/** A fresh copy of the active preset's slots so each date owns its own slot objects. */
+/** The fixed default slot a tapped day receives — fresh objects so each date owns its own. */
 function defaultSlots(): PollSlotInput[] {
-  return activeSlots.value.map((s) => ({ ...s }))
+  return [{ startTime: '18:00', endTime: '20:00', isAllDay: false }]
 }
 
 /** Tap a day → toggle its membership, re-emitting the full immutable array (controlled round-trip). */
@@ -112,23 +107,6 @@ function toggleDate(iso: string): void {
     a.eventDate.localeCompare(b.eventDate),
   )
   emit('update:modelValue', next)
-}
-
-/**
- * Stamp the active preset's slots onto every currently selected date, immutably. In edit mode a
- * locked (voted) date is skipped so its persisted voted slots are never silently overwritten. Other
- * fields (`id`/`invalidatedAt`/`hasVotes`/`sortOrder`) are preserved via the spread.
- */
-function applyToSelected(): void {
-  if (selectedCount.value === 0) return
-  emit(
-    'update:modelValue',
-    props.modelValue.map((d) =>
-      props.editMode === true && d.id != null && d.hasVotes === true
-        ? d
-        : { ...d, slots: activeSlots.value.map((s) => ({ ...s })) },
-    ),
-  )
 }
 
 const dayBase =
@@ -195,23 +173,6 @@ const dayBase =
           <span class="num">{{ Number(cell.iso.slice(8, 10)) }}</span>
         </button>
       </template>
-    </div>
-
-    <!-- Bulk-apply panel -->
-    <div
-      class="mt-5 rounded-xl border border-line bg-canvas p-4"
-      :class="isPhone ? 'space-y-3' : 'space-y-4'"
-    >
-      <p class="text-sm font-medium text-moonlight">Apply a time block</p>
-      <SlotPresetChips v-model="activeSlots" :show-errors="showErrors" />
-      <button
-        type="button"
-        class="touch-target inline-flex w-full items-center justify-center gap-2 rounded-xl bg-pollen px-4 font-medium text-canvas transition hover:bg-pollen/90 disabled:cursor-not-allowed disabled:opacity-40"
-        :disabled="selectedCount === 0"
-        @click="applyToSelected"
-      >
-        Apply to <span class="num">{{ selectedCount }}</span> selected
-      </button>
     </div>
 
     <p v-if="noDates" class="mt-4 flex items-center gap-1.5 text-sm text-coral">

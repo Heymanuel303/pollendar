@@ -55,8 +55,8 @@ function addDate(): void {
   <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
     <div class="mb-5 flex items-center justify-between gap-4">
       <div>
-        <h2 class="font-display text-lg font-semibold">Candidate times</h2>
-        <p class="mt-0.5 text-sm text-dim">Add the dates and slots people can choose from.</p>
+        <h2 class="font-display text-lg font-semibold">Times & labels</h2>
+        <p class="mt-0.5 text-sm text-dim">Customize each date.</p>
       </div>
       <span
         class="shrink-0 rounded-full bg-surface2 px-2.5 py-1 text-xs font-medium text-dim ring-1 ring-line"
