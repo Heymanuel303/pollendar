@@ -19,6 +19,8 @@ const props = defineProps<{
   timezone: string
   /** When true, apply the bloom treatment (the current best slot from live results). */
   isBest?: boolean
+  /** When true (closed poll), render the toggle read-only so the Vote tab stays visible but inert. */
+  disabled?: boolean
   modelValue: Availability | null
 }>()
 
@@ -62,6 +64,7 @@ const timeLine = computed<string>(() => {
 
     <AvailabilityToggle
       :model-value="modelValue"
+      :disabled="disabled"
       :label="`Your availability for ${slotLabel}`"
       @update:model-value="emit('update:modelValue', $event)"
     />

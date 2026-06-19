@@ -33,8 +33,8 @@ Add a Vote|Results segmented toggle (persisted in localStorage), refactor the ex
 - Manual at phone width (~375px): confirm both tabs and the toggle are usable and not clipped.
 
 ## Acceptance
-- [ ] A Vote | Results segmented toggle renders on the public poll for both open and closed polls, and the active tab persists across reloads via `localStorage` key `pollendar:vm:<pollPublicToken>`.
-- [ ] The existing availability + About-you form is the **Vote** tab and is preserved (state is not lost when switching tabs, thanks to `v-show`).
-- [ ] A closed poll keeps the Vote surface visible with a "closed" banner; its tri-state toggles and name/email inputs are disabled and there is no submit bar.
-- [ ] The **Results** tab renders a placeholder (`Per-person results coming soon`) plus the existing leaning/best-slot summary, with no reference to `ParticipantMatrix`, `loadParticipants`, or the `participants-responses` endpoint.
-- [ ] `cd frontend && npm run build && npm run lint` both pass.
+- [x] A Vote | Results segmented toggle renders on the public poll for both open and closed polls, and the active tab persists across reloads via `localStorage` key `pollendar:vm:<pollPublicToken>`.
+- [x] The existing availability + About-you form is the **Vote** tab and is preserved (state is not lost when switching tabs, thanks to `v-show`).
+- [x] A closed poll keeps the Vote surface visible with a "closed" banner; its tri-state toggles and name/email inputs are disabled and there is no submit bar.
+- [x] The **Results** tab renders a placeholder (`Per-person results coming soon`) plus the existing leaning/best-slot summary, with no reference to `ParticipantMatrix`, `loadParticipants`, or the `participants-responses` endpoint.
+- [x] `cd frontend && npm run build && npm run lint` both pass.

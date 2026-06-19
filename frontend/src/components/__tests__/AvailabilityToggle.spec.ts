@@ -4,8 +4,8 @@ import AvailabilityToggle from '../AvailabilityToggle.vue'
 import type { Availability } from '@/lib/api/types'
 
 /** Mount the toggle with a given current value and return the wrapper + its three buttons by label. */
-function mountToggle(modelValue: Availability | null = null) {
-  const wrapper = mount(AvailabilityToggle, { props: { modelValue } })
+function mountToggle(modelValue: Availability | null = null, disabled = false) {
+  const wrapper = mount(AvailabilityToggle, { props: { modelValue, disabled } })
   const buttons = wrapper.findAll('button')
   const byLabel = (label: string) => buttons.find((b) => b.text() === label)!
   return { wrapper, yes: byLabel('Yes'), maybe: byLabel('Maybe'), no: byLabel('No') }
@@ -66,5 +66,26 @@ describe('AvailabilityToggle', () => {
         expect.arrayContaining(['min-h-11', 'flex-1', 'sm:flex-none']),
       )
     }
+  })
+
+  // Phase 1 closed-poll pass: a disabled toggle is read-only.
+  it('does not emit on click when disabled, and marks every button disabled', async () => {
+    const { wrapper, yes, no } = mountToggle(null, true)
+
+    expect(yes.attributes('disabled')).toBeDefined()
+    expect(no.attributes('disabled')).toBeDefined()
+    expect(yes.attributes('aria-disabled')).toBe('true')
+
+    await yes.trigger('click')
+    await no.trigger('click')
+
+    expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+  })
+
+  it('applies a muted, non-interactive treatment to the group when disabled', () => {
+    const group = mountToggle(null, true).wrapper.get('[role="group"]')
+    expect(group.classes()).toEqual(
+      expect.arrayContaining(['opacity-60', 'cursor-not-allowed']),
+    )
   })
 })

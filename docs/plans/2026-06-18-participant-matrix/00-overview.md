@@ -2,7 +2,7 @@
 
 **Slug:** `participant-matrix` (folder: `docs/plans/2026-06-18-participant-matrix/`)
 **Created:** 2026-06-18
-**Status:** planned
+**Status:** in-progress
 
 ## Goal
 Add a `Vote | Results` view to the public poll: keep tri-state voting, and add a per-participant matrix (desktop table / mobile card-stack) showing who voted and what they picked — visible to anyone holding the share link, for open and closed polls.
@@ -33,7 +33,7 @@ Add a `Vote | Results` view to the public poll: keep tri-state voting, and add a
 - [ ] build + lint green
 
 ## Phases
-1. [01-vote-results-toggle](01-vote-results-toggle.md) — toggle + Vote-tab refactor + closed-poll change (no backend dep) · _solo_
+1. [01-vote-results-toggle](01-vote-results-toggle.md) — toggle + Vote-tab refactor + closed-poll change (no backend dep) · _solo_ ✓
 2. [02-desktop-matrix-table](02-desktop-matrix-table.md) — `ParticipantMatrix` desktop table (consumes endpoint) · _solo_
 3. [03-mobile-card-stack](03-mobile-card-stack.md) — mobile per-slot card-stack + touch targets · _solo_
 

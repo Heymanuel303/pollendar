@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { usePublicPollStore } from '@/stores/publicPollStore'
 import PollSlotRow from '@/components/PollSlotRow.vue'
 import { formatDate } from '@/lib/utils/timezone'
+import { getViewMode, saveViewMode, type ViewMode } from '@/lib/viewMode'
 import type { Availability, ResponseAnswer, SubmitResponsesDto } from '@/lib/api/types'
 
 /**
@@ -23,11 +24,21 @@ const token = computed<string>(() => String(route.params.publicToken ?? ''))
 const answers = reactive<Record<string, Availability | null>>({})
 const form = reactive({ displayName: '', email: '' })
 
+/** Vote|Results tab; seeded from localStorage on mount, persisted per poll on every change. */
+const view = ref<ViewMode>('vote')
+function setView(mode: ViewMode): void {
+  view.value = mode
+}
+
 onMounted(async () => {
   await store.load(token.value)
+  // Restore the last-used tab for this poll (per-device), defaulting to Vote.
+  view.value = getViewMode(token.value) ?? 'vote'
   // Results drive which slot "blooms" + the footer's leaning label. Best-effort; non-fatal if absent.
   await store.loadResults(token.value)
 })
+
+watch(view, (mode) => saveViewMode(token.value, mode))
 
 const isOpen = computed<boolean>(() => poll.value?.status === 'open')
 
@@ -155,18 +166,48 @@ async function onSubmit(): Promise<void> {
           </div>
         </div>
 
-        <!-- Closed: read-only notice, no inputs -->
-        <section
-          v-if="!isOpen"
-          class="rounded-2xl border border-line bg-surface p-6 text-center shadow-card"
+        <!-- Vote | Results segmented toggle (renders for both open and closed polls) -->
+        <div
+          role="group"
+          aria-label="View"
+          class="mb-6 inline-flex rounded-xl border border-line bg-canvas p-1 text-sm font-medium"
         >
-          <p class="font-display text-lg font-semibold text-moonlight">This poll is closed</p>
-          <p class="mt-2 text-sm text-dim">
-            The organizer is no longer collecting availability for this poll.
-          </p>
-        </section>
+          <button
+            type="button"
+            :aria-pressed="view === 'vote'"
+            :class="[
+              'min-h-11 rounded-lg px-4 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-pollen/40',
+              view === 'vote' ? 'bg-pollen text-canvas shadow-glow' : 'text-dim hover:text-moonlight',
+            ]"
+            @click="setView('vote')"
+          >
+            Vote
+          </button>
+          <button
+            type="button"
+            :aria-pressed="view === 'results'"
+            :class="[
+              'min-h-11 rounded-lg px-4 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-pollen/40',
+              view === 'results'
+                ? 'bg-pollen text-canvas shadow-glow'
+                : 'text-dim hover:text-moonlight',
+            ]"
+            @click="setView('results')"
+          >
+            Results
+          </button>
+        </div>
 
-        <template v-else>
+        <!-- Vote panel (kept mounted via v-show so in-progress answers survive tab switches) -->
+        <div v-show="view === 'vote'">
+          <!-- Closed: inline banner; the form below stays visible but read-only. -->
+          <div
+            v-if="!isOpen"
+            class="mb-6 rounded-xl border border-line bg-surface2 px-4 py-3 text-sm text-dim"
+          >
+            This poll is closed — voting is no longer open, but you can still view results.
+          </div>
+
           <!-- Availability input -->
           <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
             <div class="mb-5 flex items-center justify-between">
@@ -188,6 +229,7 @@ async function onSubmit(): Promise<void> {
                   :event-date="date.eventDate"
                   :timezone="poll.timezone"
                   :is-best="slot.id === bestSlotId"
+                  :disabled="!isOpen"
                   :model-value="answers[slot.id] ?? null"
                   @update:model-value="answers[slot.id] = $event"
                 />
@@ -207,8 +249,9 @@ async function onSubmit(): Promise<void> {
                   id="participant-name"
                   v-model="form.displayName"
                   maxlength="120"
+                  :disabled="!isOpen"
                   placeholder="e.g. Aïcha"
-                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
+                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
                 />
               </div>
               <div>
@@ -220,8 +263,9 @@ async function onSubmit(): Promise<void> {
                   v-model="form.email"
                   type="email"
                   maxlength="255"
+                  :disabled="!isOpen"
                   placeholder="you@example.com"
-                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30"
+                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
                 />
                 <p class="mt-2 text-xs text-mute">Only to notify you of the final time.</p>
               </div>
@@ -229,7 +273,29 @@ async function onSubmit(): Promise<void> {
           </section>
 
           <p class="mt-6 text-center text-xs text-mute">Find the time everyone can make.</p>
-        </template>
+        </div>
+
+        <!-- Results panel (renders for both open and closed polls) -->
+        <div v-show="view === 'results'">
+          <section class="rounded-2xl border border-line bg-surface p-6 shadow-card">
+            <p class="text-xs uppercase tracking-widest text-mute">Leaning so far</p>
+            <p class="mt-1.5 flex items-center gap-2 text-base">
+              <template v-if="leaningLabel">
+                <span class="pollen-dot inline-block h-2.5 w-2.5" aria-hidden="true"></span>
+                <span class="num font-medium text-moonlight">{{ leaningLabel }}</span>
+                <span class="text-pollen">✦</span>
+              </template>
+              <span v-else class="text-mute">No responses yet.</span>
+            </p>
+          </section>
+
+          <!-- ParticipantMatrix mounts here in phase 2 -->
+          <div
+            class="mt-6 rounded-2xl border border-dashed border-line bg-surface p-6 text-center text-dim"
+          >
+            Per-person results coming soon
+          </div>
+        </div>
       </template>
     </main>
 
