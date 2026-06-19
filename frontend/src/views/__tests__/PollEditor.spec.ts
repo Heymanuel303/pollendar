@@ -113,9 +113,7 @@ describe('PollEditor — split layout', () => {
       .findAll('button')
       .find((b) => /^\d{4}-\d{2}-\d{2}$/.test(b.attributes('aria-label') ?? ''))
     await dayCell!.trigger('click')
-    expect(
-      document.body.querySelector('[role="dialog"][aria-label="Poll preview"]'),
-    ).toBeNull()
+    expect(document.body.querySelector('[role="dialog"][aria-label="Poll preview"]')).toBeNull()
   })
 })
 
@@ -180,11 +178,15 @@ describe('PollEditor — edit mode', () => {
     }
   }
 
-  /** Mount in edit mode with `pollStore.get`/`update` stubbed to swap in `poll`. */
+  /**
+   * Mount in edit mode with `pollStore.loadDetail`/`update` stubbed to swap in `poll`. The editor's
+   * `onMounted` calls the cold-load orchestrator `loadDetail` (not the bare `get`), so the spy lands
+   * on `loadDetail` — it hydrates `currentPoll` exactly as the real orchestrator would after its GET.
+   */
   async function mountEditMode(poll: OwnedPoll = makeOwnedPoll()) {
     routeState.params = { id: 'EDIT_ID' }
     const store = usePollStore()
-    const getSpy = vi.spyOn(store, 'get').mockImplementation(async () => {
+    const loadDetailSpy = vi.spyOn(store, 'loadDetail').mockImplementation(async () => {
       store.currentPoll = poll
     })
     const updateSpy = vi.spyOn(store, 'update').mockImplementation(async () => {
@@ -199,7 +201,7 @@ describe('PollEditor — edit mode', () => {
     })
     const wrapper = mountEditor()
     await flushPromises()
-    return { wrapper, store, getSpy, updateSpy, createSpy }
+    return { wrapper, store, loadDetailSpy, updateSpy, createSpy }
   }
 
   /** Current form `dates` as seen by the active List editor (the source of every payload). */
@@ -211,10 +213,10 @@ describe('PollEditor — edit mode', () => {
     return wrapper.findAll('button').find((b) => b.text() === text)
   }
 
-  it('loads the owned poll via pollStore.get and pre-populates the form', async () => {
-    const { wrapper, getSpy } = await mountEditMode()
+  it('loads the owned poll via pollStore.loadDetail and pre-populates the form', async () => {
+    const { wrapper, loadDetailSpy } = await mountEditMode()
 
-    expect(getSpy).toHaveBeenCalledWith('EDIT_ID')
+    expect(loadDetailSpy).toHaveBeenCalledWith('EDIT_ID')
     // Heading + breadcrumb + action button switch to edit copy.
     expect(wrapper.get('h1').text()).toBe('Edit poll')
     expect(buttonByText(wrapper, 'Save changes')).toBeTruthy()

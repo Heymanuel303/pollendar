@@ -100,7 +100,7 @@ onMounted(async () => {
     loaded.value = true
     return
   }
-  await pollStore.get(editId.value!)
+  await pollStore.loadDetail(editId.value!)
   if (pollStore.currentPoll) hydrateFromPoll(pollStore.currentPoll)
   loaded.value = true
 })

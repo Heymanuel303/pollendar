@@ -55,8 +55,25 @@ describe('pollStore.list', () => {
   })
 })
 
+/**
+ * Stub the three supplementary GETs that `hydrateDerived` fires after a shape-A mutation: the public
+ * `/results` GET and the `/invite-message` GET go through the raw `get` client; participants go through
+ * `getParticipantResponses`. Call before the mutation under test so the assign-then-`await hydrateDerived`
+ * flow resolves cleanly.
+ */
+function mockDerivedLoads(): void {
+  get.mockImplementation((path: string) =>
+    path.endsWith('/results')
+      ? Promise.resolve({ best: null, slots: [] })
+      : path.includes('invite-message')
+        ? Promise.resolve({ message: '', shareUrl: 'u' })
+        : Promise.resolve(null),
+  )
+  getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+}
+
 describe('pollStore.complete', () => {
-  it('POSTs { finalSlotId }, swaps in the completed poll, and re-fetches results', async () => {
+  it('POSTs { finalSlotId }, swaps in the completed poll, and re-hydrates results + participants + invite', async () => {
     const completed = {
       id: '42',
       publicToken: 'tok',
@@ -65,14 +82,17 @@ describe('pollStore.complete', () => {
       completedAt: '2026-06-18T12:00:00.000Z',
     }
     post.mockResolvedValueOnce(completed)
-    get.mockResolvedValueOnce({ best: null, slots: [] }) // the post-complete results refresh
+    mockDerivedLoads()
 
     const store = usePollStore()
     await store.complete('42', '7')
 
     expect(post).toHaveBeenCalledWith('/polls/42/complete', { finalSlotId: '7' })
     expect(store.currentPoll?.status).toBe('completed')
+    // hydrateDerived refetches the FULL derived set, not just results.
     expect(get).toHaveBeenCalledWith('/public/polls/tok/results')
+    expect(get).toHaveBeenCalledWith('/polls/42/invite-message')
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
     expect(store.completeError).toBeNull()
     expect(store.completing).toBe(false)
   })
@@ -121,6 +141,48 @@ describe('pollStore.get', () => {
   })
 })
 
+describe('pollStore.loadDetail', () => {
+  it('GETs the poll, sets currentPoll, then fires the three supplementary derived loads', async () => {
+    get.mockImplementation((path: string) =>
+      path === '/polls/42'
+        ? Promise.resolve({ id: '42', publicToken: 'tok', status: 'open', dates: [] })
+        : path.endsWith('/results')
+          ? Promise.resolve({ best: null, slots: [] })
+          : path.includes('invite-message')
+            ? Promise.resolve({ message: '', shareUrl: 'u' })
+            : Promise.resolve(null),
+    )
+    getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+    const store = usePollStore()
+
+    await store.loadDetail('42')
+
+    expect(get).toHaveBeenCalledWith('/polls/42')
+    expect(store.currentPoll?.id).toBe('42')
+    expect(get).toHaveBeenCalledWith('/public/polls/tok/results')
+    expect(get).toHaveBeenCalledWith('/polls/42/invite-message')
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
+    expect(store.detailError).toBeNull()
+  })
+
+  it('leaves currentPoll null on a 404 and does NOT attempt the supplementary loads (hydrateDerived no-ops)', async () => {
+    get.mockRejectedValueOnce(new ApiError(404, null))
+    getParticipantResponses.mockResolvedValue({ participants: [], total: 0, hasMore: false })
+    const store = usePollStore()
+
+    await store.loadDetail('999')
+
+    expect(store.currentPoll).toBeNull()
+    expect(store.detailError).toBe('Poll not found')
+    expect(getParticipantResponses).not.toHaveBeenCalled()
+  })
+
+  it('no longer exposes the removed ad-hoc refreshPoll refresher', () => {
+    const store = usePollStore()
+    expect((store as unknown as Record<string, unknown>).refreshPoll).toBeUndefined()
+  })
+})
+
 describe('pollStore.loadParticipants', () => {
   it('loads the per-participant rows via getParticipantResponses and records success', async () => {
     getParticipantResponses.mockResolvedValueOnce({
@@ -162,22 +224,34 @@ describe('pollStore.loadParticipants', () => {
 })
 
 describe('pollStore.update', () => {
-  it('PATCHes the payload, swaps in the updated poll, and re-fetches results', async () => {
+  it('PATCHes the payload, swaps in the updated poll, re-hydrates the derived set, and write-throughs the list row', async () => {
     patch.mockResolvedValueOnce({
       id: '42',
       publicToken: 'tok',
       status: 'open',
       title: 'New',
+      finalSlotId: null,
+      completedAt: null,
+      closesAt: null,
+      description: null,
+      updatedAt: '2026-06-19T00:00:00.000Z',
       dates: [],
     })
-    get.mockResolvedValueOnce({ best: null, slots: [] }) // the post-update results refresh
+    mockDerivedLoads()
     const store = usePollStore()
+    // Seed the dashboard list row so the write-through can patch it.
+    store.polls = [{ id: '42', status: 'open', title: 'Old' }] as unknown as typeof store.polls
 
     await store.update('42', { title: 'New' })
 
     expect(patch).toHaveBeenCalledWith('/polls/42', { title: 'New' })
     expect(store.currentPoll?.title).toBe('New')
     expect(get).toHaveBeenCalledWith('/public/polls/tok/results')
+    expect(get).toHaveBeenCalledWith('/polls/42/invite-message')
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
+    // Write-through: the dashboard row reflects the returned entity without a list refetch.
+    expect(store.polls[0]!.title).toBe('New')
+    expect(store.polls[0]!.status).toBe('open')
     expect(store.updateError).toBeNull()
     expect(store.updating).toBe(false)
   })
@@ -203,7 +277,7 @@ describe('pollStore.update', () => {
 
   it('expresses invalidation via the dates[].invalidatedAt marker in the PATCH body', async () => {
     patch.mockResolvedValueOnce({ id: '42', publicToken: 'tok', status: 'open', dates: [] })
-    get.mockResolvedValueOnce({ best: null, slots: [] })
+    mockDerivedLoads()
     const store = usePollStore()
 
     const payload = {
@@ -254,20 +328,39 @@ describe('pollStore.remove', () => {
 })
 
 describe('pollStore.cancel / reopen', () => {
-  it('cancel POSTs /polls/:id/cancel, swaps in the cancelled poll, and re-fetches results', async () => {
-    post.mockResolvedValueOnce({ id: '42', publicToken: 'tok', status: 'cancelled', dates: [] })
-    get.mockResolvedValueOnce({ best: null, slots: [] })
+  it('cancel POSTs /polls/:id/cancel, swaps in the cancelled poll, re-hydrates the derived set, and write-throughs the list row', async () => {
+    post.mockResolvedValueOnce({
+      id: '42',
+      publicToken: 'tok',
+      status: 'cancelled',
+      finalSlotId: null,
+      completedAt: null,
+      closesAt: null,
+      title: 'Team dinner',
+      description: null,
+      updatedAt: '2026-06-19T00:00:00.000Z',
+      dates: [],
+    })
+    mockDerivedLoads()
     const store = usePollStore()
+    // Seed the dashboard list row so the write-through can flip its status.
+    store.polls = [{ id: '42', status: 'open' }] as unknown as typeof store.polls
 
     await store.cancel('42')
 
     expect(post).toHaveBeenCalledWith('/polls/42/cancel')
     expect(store.currentPoll?.status).toBe('cancelled')
+    // Regression guard for the floating-promise + stale-invite bugs: the supplementary loads fire,
+    // and `cancel` resolves only after they do.
     expect(get).toHaveBeenCalledWith('/public/polls/tok/results')
+    expect(get).toHaveBeenCalledWith('/polls/42/invite-message')
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
+    // Write-through: the dashboard row flips to cancelled without a list refetch.
+    expect(store.polls[0]!.status).toBe('cancelled')
     expect(store.lifecycleTransitioning).toBe(false)
   })
 
-  it('reopen POSTs /polls/:id/reopen and reflects the cleared finalSlotId', async () => {
+  it('reopen POSTs /polls/:id/reopen, reflects the cleared finalSlotId, and re-hydrates the derived set', async () => {
     post.mockResolvedValueOnce({
       id: '42',
       publicToken: 'tok',
@@ -276,7 +369,7 @@ describe('pollStore.cancel / reopen', () => {
       completedAt: null,
       dates: [],
     })
-    get.mockResolvedValueOnce({ best: null, slots: [] })
+    mockDerivedLoads()
     const store = usePollStore()
 
     await store.reopen('42')
@@ -284,6 +377,9 @@ describe('pollStore.cancel / reopen', () => {
     expect(post).toHaveBeenCalledWith('/polls/42/reopen')
     expect(store.currentPoll?.status).toBe('open')
     expect(store.currentPoll?.finalSlotId).toBeNull()
+    expect(get).toHaveBeenCalledWith('/public/polls/tok/results')
+    expect(get).toHaveBeenCalledWith('/polls/42/invite-message')
+    expect(getParticipantResponses).toHaveBeenCalledWith('tok', undefined, undefined)
   })
 
   it('surfaces a 409 as a clean lifecycleError and rethrows', async () => {

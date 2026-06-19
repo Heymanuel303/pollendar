@@ -41,15 +41,9 @@ const {
 const id = computed<string>(() => String(route.params.id ?? ''))
 
 onMounted(async () => {
-  await store.get(id.value)
-  // Results + invite text are supplementary; load them in parallel once the poll resolved.
-  if (currentPoll.value) {
-    await Promise.all([
-      store.loadResults(currentPoll.value.publicToken),
-      store.loadParticipants(currentPoll.value.publicToken),
-      store.loadInviteMessage(id.value),
-    ])
-  }
+  // Single cold-load orchestrator (shape B): resets→fetches the poll, then hydrates results +
+  // participants + invite. The view never chains the supplementary loaders itself.
+  await store.loadDetail(id.value)
 })
 
 /** slotId → { slot, date } — derived once so the results components never re-walk dates[].slots[]. */

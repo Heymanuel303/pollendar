@@ -230,18 +230,63 @@ export const usePollStore = defineStore('poll', () => {
   }
 
   /**
+   * Re-hydrate the supplementary slices hanging off `currentPoll` — live results, participant rows,
+   * invite text — in parallel. Each loader swallows its own error (they are supplementary), so this
+   * never throws. No-op when `currentPoll` is null. Every in-place mutation (shape A) awaits this; the
+   * cold-load orchestrator (shape B) awaits it too. Add a slice once here and every refresh stays correct.
+   */
+  async function hydrateDerived(): Promise<void> {
+    const poll = currentPoll.value
+    if (!poll) return
+    await Promise.all([
+      loadResults(poll.publicToken),
+      loadParticipants(poll.publicToken),
+      loadInviteMessage(poll.id),
+    ])
+  }
+
+  /** Write-through: patch the matching dashboard `polls[]` row from a mutation's returned detail entity. */
+  function patchListRow(poll: OwnedPoll): void {
+    const row = polls.value.find((p) => p.id === poll.id)
+    if (!row) return
+    row.status = poll.status
+    row.finalSlotId = poll.finalSlotId
+    row.completedAt = poll.completedAt
+    row.closesAt = poll.closesAt
+    row.title = poll.title
+    row.description = poll.description
+    row.updatedAt = poll.updatedAt
+  }
+
+  /**
+   * Cold-load orchestrator for the manage/edit detail views (component mount / navigation). Resets the
+   * detail slice via `get()` (a skeleton is correct here — see `get`), then awaits `hydrateDerived` so
+   * results + participants + invite land before the caller proceeds. The ONLY detail-load entry point a
+   * view calls in `onMounted`; views never chain the individual loaders themselves.
+   */
+  async function loadDetail(id: string): Promise<void> {
+    await get(id)
+    await hydrateDerived()
+  }
+
+  /**
    * Finalize a poll: `POST /api/polls/:id/complete` with `{ finalSlotId }`. On 200 the returned
-   * updated poll (now `status:'completed'` + `finalSlotId` + `completedAt`) replaces `currentPoll`,
-   * and results are re-fetched so the bloom reflects the final state. A 409 (no longer open) and a
-   * 400 (slot not in this poll) are surfaced as readable `completeError`s; both are rethrown so the
-   * view can keep its confirm dialog reactive. Idempotent server-side on an already-completed poll.
+   * updated poll (now `status:'completed'` + `finalSlotId` + `completedAt`) replaces `currentPoll`; the
+   * dashboard `polls[]` row is written through and the full derived set (results + participants +
+   * invite) is re-hydrated so the bloom, matrix, and invite text all reflect the final state. A 409
+   * (no longer open) and a 400 (slot not in this poll) are surfaced as readable `completeError`s; both
+   * are rethrown so the view can keep its confirm dialog reactive. Idempotent server-side on an
+   * already-completed poll. `completing` clears only after `hydrateDerived` resolves (data is fresh).
    */
   async function complete(pollId: string, finalSlotId: string): Promise<void> {
     completing.value = true
     completeError.value = null
     try {
       currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/complete`, { finalSlotId })
-      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+      if (currentPoll.value) {
+        patchListRow(currentPoll.value)
+        await hydrateDerived()
+      }
     } catch (err) {
       completeError.value = completeMessageFor(err)
       throw err
@@ -253,17 +298,22 @@ export const usePollStore = defineStore('poll', () => {
   /**
    * Edit an open poll: `PATCH /api/polls/:id` with the changed scalar fields and/or the full desired
    * nested `dates` tree (each row carrying its `id` + `invalidatedAt` marker). On 200 the returned
-   * updated poll replaces `currentPoll` and results are re-fetched (a date/slot change can move the best
-   * slot). The backend rejects an edit of a poll that is no longer `open` (409) and validation failures
-   * (400); both are surfaced as a readable `updateError` and rethrown so the edit view stays reactive.
-   * Voted dates/slots are immutable in place server-side — the creator marks them invalidated + re-adds.
+   * updated poll replaces `currentPoll`; the dashboard `polls[]` row is written through and the full
+   * derived set (results + participants + invite) is re-hydrated (a date/slot change can move the best
+   * slot and the invite copy). The backend rejects an edit of a poll that is no longer `open` (409) and
+   * validation failures (400); both are surfaced as a readable `updateError` and rethrown so the edit
+   * view stays reactive. Voted dates/slots are immutable in place server-side — the creator marks them
+   * invalidated + re-adds.
    */
   async function update(pollId: string, payload: UpdatePollPayload): Promise<void> {
     updating.value = true
     updateError.value = null
     try {
       currentPoll.value = await apiPatch<OwnedPoll>(`/polls/${pollId}`, payload)
-      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+      if (currentPoll.value) {
+        patchListRow(currentPoll.value)
+        await hydrateDerived()
+      }
     } catch (err) {
       updateError.value = updateMessageFor(err)
       throw err
@@ -297,16 +347,21 @@ export const usePollStore = defineStore('poll', () => {
 
   /**
    * Cancel an open poll: `POST /api/polls/:id/cancel` (no body). Transitions status to `cancelled`,
-   * which blocks new submissions just like `completed`. On 200 the updated poll replaces `currentPoll`
-   * and results are re-fetched. A 409 (not open) is surfaced as `lifecycleError` and rethrown so the
-   * confirm dialog stays reactive.
+   * which blocks new submissions just like `completed`. On 200 the updated poll replaces `currentPoll`;
+   * the dashboard `polls[]` row is written through and the full derived set is re-hydrated. A 409 (not
+   * open) is surfaced as `lifecycleError` and rethrown so the confirm dialog stays reactive.
+   * `lifecycleTransitioning` clears only after `hydrateDerived` resolves (the button stops spinning once
+   * data is fresh — no floating refresh).
    */
   async function cancel(pollId: string): Promise<void> {
     lifecycleTransitioning.value = true
     lifecycleError.value = null
     try {
       currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/cancel`)
-      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+      if (currentPoll.value) {
+        patchListRow(currentPoll.value)
+        await hydrateDerived()
+      }
     } catch (err) {
       lifecycleError.value = lifecycleMessageFor(err)
       throw err
@@ -318,15 +373,19 @@ export const usePollStore = defineStore('poll', () => {
   /**
    * Reopen a cancelled OR completed poll: `POST /api/polls/:id/reopen` (no body). Transitions status
    * back to `open` and, from `completed`, clears `finalSlotId` + `completedAt` (the swapped poll
-   * reflects this). On 200 the updated poll replaces `currentPoll` and results are re-fetched. A 409
-   * (already open) is surfaced as `lifecycleError` and rethrown.
+   * reflects this). On 200 the updated poll replaces `currentPoll`; the dashboard `polls[]` row is
+   * written through and the full derived set is re-hydrated. A 409 (already open) is surfaced as
+   * `lifecycleError` and rethrown. `lifecycleTransitioning` clears only after `hydrateDerived` resolves.
    */
   async function reopen(pollId: string): Promise<void> {
     lifecycleTransitioning.value = true
     lifecycleError.value = null
     try {
       currentPoll.value = await apiPost<OwnedPoll>(`/polls/${pollId}/reopen`)
-      if (currentPoll.value) await loadResults(currentPoll.value.publicToken)
+      if (currentPoll.value) {
+        patchListRow(currentPoll.value)
+        await hydrateDerived()
+      }
     } catch (err) {
       lifecycleError.value = lifecycleMessageFor(err)
       throw err
@@ -358,6 +417,7 @@ export const usePollStore = defineStore('poll', () => {
     loadResults,
     loadParticipants,
     loadInviteMessage,
+    loadDetail,
     complete,
     updating,
     updateError,
