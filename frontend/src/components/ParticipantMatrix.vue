@@ -6,16 +6,22 @@ import { formatDate, formatSlotRange } from '@/lib/utils/timezone'
 import type { Availability, PollDate, ParticipantRow } from '@/lib/api/types'
 
 /**
- * Per-participant availability matrix, adaptive across breakpoints.
+ * Per-participant availability matrix, adaptive across breakpoints, with a dual contract:
  *
- * Desktop (`v-else`, `data-testid="matrix-table"`): rows = participants (plus a leading editable
- * "You" row driven by `v-model`-style `answers`), columns = slots grouped by date, cells =
- * yes/maybe/no glyphs. Sticky left name column; the winning slot's column carries the `bloom-bg`
- * wash and horizontal scroll handles overflow.
+ * - Voter mode (PublicPoll, default): renders the editable "You" row driven by `answers` +
+ *   `@update:answers`, so the voter edits the same map the Vote tab uses.
+ * - Owner mode (`owner` prop, the manager on PollManage): fully read-only — NO "You" row, no
+ *   `answers` map, no emit. Only the per-participant rows render. The manager is not a voter.
+ *
+ * Desktop (`v-else`, `data-testid="matrix-table"`): rows = participants (plus, in voter mode, a
+ * leading editable "You" row driven by `v-model`-style `answers`), columns = slots grouped by date,
+ * cells = yes/maybe/no glyphs. Sticky left name column; the winning slot's column carries the
+ * `bloom-bg` wash and horizontal scroll handles overflow.
  *
  * Mobile (`v-if="bp.isPhone"`, `data-testid="matrix-cards"`): one full-width card per slot (NO
- * horizontal scroll) grouped by date, the voter's tri-state `AvailabilityToggle` inline at the top,
- * then read-only name chips grouped under Yes / Maybe / No with a `+N more` overflow control.
+ * horizontal scroll) grouped by date, the voter's tri-state `AvailabilityToggle` inline at the top
+ * (voter mode only), then read-only name chips grouped under Yes / Maybe / No with a `+N more`
+ * overflow control.
  *
  * Purely presentational + an editable-row contract — it owns NO fetch (the parent calls
  * `store.loadParticipants`). PRIVACY: `ParticipantRow` carries `displayName` only (never `email`),
@@ -29,16 +35,19 @@ const props = withDefaults(
     participants: ParticipantRow[]
     /** Live results' winning slot id (string), or null — drives the bloom column. */
     winningSlotId: string | null
-    /** The current voter's display name for their own editable row label. */
+    /** The current voter's display name for their own editable row label (voter mode). */
     yourName?: string
-    /** The current voter's per-slot answers, keyed by slot id; v-model-style. null = unanswered. */
-    answers: Record<string, Availability | null>
+    /** The current voter's per-slot answers, keyed by slot id; v-model-style. null = unanswered. Omitted in owner mode. */
+    answers?: Record<string, Availability | null>
     /** When false, the "You" row renders read-only cells (closed-poll Vote-disabled state). */
     editable?: boolean
+    /** Read-only manager view: suppresses the "You" row + mobile "Your vote" toggle entirely. */
+    owner?: boolean
   }>(),
   {
     yourName: 'You',
     editable: true,
+    owner: false,
   },
 )
 
@@ -172,12 +181,12 @@ function overflowCount(slotId: string, kind: Availability): number {
             </span>
           </header>
 
-          <!-- The voter's own tri-state control, inline at the top of the card. -->
-          <div class="mb-4">
+          <!-- The voter's own tri-state control, inline at the top of the card (voter mode only). -->
+          <div v-if="!owner" class="mb-4">
             <p class="mb-2 text-xs uppercase tracking-widest text-mute">Your vote</p>
             <div class="touch-target flex items-center">
               <AvailabilityToggle
-                :model-value="answers[slot.id] ?? null"
+                :model-value="answers?.[slot.id] ?? null"
                 :disabled="!editable"
                 :label="`Your availability for ${formatSlotRange(slot, timezone)}`"
                 @update:model-value="emit('update:answers', slot.id, $event)"
@@ -274,8 +283,9 @@ function overflowCount(slotId: string, kind: Availability): number {
           </tr>
         </thead>
         <tbody>
-          <!-- Editable "You" row — the voter edits the same `answers` map the Vote tab uses. -->
-          <tr class="border-b border-line/70">
+          <!-- Editable "You" row — the voter edits the same `answers` map the Vote tab uses.
+               Suppressed entirely in owner mode (the manager is not a voter). -->
+          <tr v-if="!owner" class="border-b border-line/70">
             <td
               class="sticky left-0 z-10 bg-canvas px-4 py-3 text-left align-middle font-medium text-pollen"
             >
@@ -297,26 +307,26 @@ function overflowCount(slotId: string, kind: Availability): number {
               >
                 <AvailabilityToggle
                   v-if="editable"
-                  :model-value="answers[slot.id] ?? null"
+                  :model-value="answers?.[slot.id] ?? null"
                   :label="`Your availability for ${formatSlotRange(slot, timezone)}`"
                   @update:model-value="emit('update:answers', slot.id, $event)"
                 />
                 <span
                   v-else
                   class="inline-flex items-center justify-center"
-                  :data-availability="answers[slot.id] ?? 'none'"
-                  :aria-label="availabilityLabel(answers[slot.id] ?? null)"
+                  :data-availability="answers?.[slot.id] ?? 'none'"
+                  :aria-label="availabilityLabel(answers?.[slot.id] ?? null)"
                 >
                   <span
-                    v-if="answers[slot.id] === 'available'"
+                    v-if="answers?.[slot.id] === 'available'"
                     class="pollen-dot inline-block h-3 w-3"
                   ></span>
                   <span
-                    v-else-if="answers[slot.id] === 'maybe'"
+                    v-else-if="answers?.[slot.id] === 'maybe'"
                     class="inline-block h-3 w-3 rounded-full ring-1 ring-maybe/60"
                   ></span>
                   <span
-                    v-else-if="answers[slot.id] === 'unavailable'"
+                    v-else-if="answers?.[slot.id] === 'unavailable'"
                     class="inline-block h-3 w-3 rounded-full bg-no"
                   ></span>
                   <span v-else class="text-mute">—</span>

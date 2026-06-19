@@ -348,3 +348,66 @@ describe('ParticipantMatrix (mobile card stack)', () => {
     expect(wrapper.findAllComponents(AvailabilityToggle)).toHaveLength(3)
   })
 })
+
+describe('ParticipantMatrix (owner / read-only mode)', () => {
+  describe('desktop table', () => {
+    beforeEach(() => stubMatchMedia(true))
+
+    it('renders no "You" row — only the per-participant rows', () => {
+      // Omit `answers` entirely to prove owner mode tolerates a missing map.
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      const bodyRows = wrapper.findAll('tbody tr')
+      // No You row — exactly one row per participant.
+      expect(bodyRows).toHaveLength(PARTICIPANTS.length)
+
+      // The first body row is a participant (Aïcha), not the "you" tag.
+      const firstRow = bodyRows[0]!
+      expect(firstRow.text()).toContain('Aïcha')
+      expect(firstRow.text().toLowerCase()).not.toContain('you')
+    })
+
+    it('renders no AvailabilityToggle and emits nothing', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      expect(wrapper.findAllComponents(AvailabilityToggle)).toHaveLength(0)
+      expect(wrapper.emitted('update:answers')).toBeUndefined()
+    })
+
+    it('still renders per-participant glyphs and blooms the winning column', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      // Aïcha is Yes for s1 → an "available" glyph exists.
+      expect(wrapper.find('[data-availability="available"]').exists()).toBe(true)
+      // Bloom still applies to s1 — one cell per participant row (no You row).
+      const bloomed = wrapper.findAll('[data-testid="matrix-bloom"]')
+      expect(bloomed).toHaveLength(PARTICIPANTS.length)
+    })
+
+    it('shows the empty state and no rows for a manager with zero voters', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined, participants: [] })
+      expect(wrapper.text()).toContain('No responses yet')
+      expect(wrapper.findAll('tbody tr')).toHaveLength(0)
+    })
+  })
+
+  describe('mobile card stack', () => {
+    beforeEach(() => stubMatchMedia(false))
+
+    it('renders no "Your vote" toggle', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      expect(wrapper.findAllComponents(AvailabilityToggle)).toHaveLength(0)
+    })
+
+    it('still renders one card per slot with read-only name chips (privacy: no email)', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      const cards = wrapper.findAll('article')
+      expect(cards).toHaveLength(3)
+      expect(wrapper.text()).toContain('Aïcha')
+      expect(wrapper.text()).toContain('Bram')
+      expect(wrapper.text()).not.toMatch(/@/)
+    })
+
+    it('blooms only the winning slot card', () => {
+      const wrapper = mountMatrix({ owner: true, answers: undefined })
+      expect(wrapper.findAll('[data-testid="matrix-card-bloom"]')).toHaveLength(1)
+    })
+  })
+})
