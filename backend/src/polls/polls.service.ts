@@ -419,7 +419,6 @@ export class PollsService {
       endTime: Date | null;
       isAllDay: boolean;
       label: string | null;
-      sortOrder: number | null;
     },
     incoming: UpdatePollSlotDto,
   ): boolean {
@@ -428,8 +427,7 @@ export class PollsService {
       time(existing.startTime) === time(timeToDate(incoming.startTime)) &&
       time(existing.endTime) === time(timeToDate(incoming.endTime)) &&
       existing.isAllDay === (incoming.isAllDay ?? false) &&
-      (existing.label ?? null) === (incoming.label ?? null) &&
-      (existing.sortOrder ?? null) === (incoming.sortOrder ?? null)
+      (existing.label ?? null) === (incoming.label ?? null)
     );
   }
 

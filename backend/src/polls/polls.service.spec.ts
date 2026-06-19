@@ -495,6 +495,40 @@ describe('PollsService', () => {
         expect(pollDateDeleteMany).not.toHaveBeenCalled();
       });
 
+      it('succeeds when adding a NEW date while re-sending an UNTOUCHED voted slot verbatim (no sortOrder)', async () => {
+        pollDateFindMany.mockResolvedValue([existingDate()]);
+        const dto: UpdatePollDto = {
+          dates: [
+            {
+              id: '10',
+              eventDate: '2026-07-01',
+              // Re-sent byte-identical, WITHOUT any sortOrder key — must be a no-op.
+              slots: [{ id: '100', startTime: '09:00', endTime: '10:00' }],
+            },
+            {
+              // Brand-new date (no id) — the trigger that forces the diff path.
+              eventDate: '2026-07-08',
+              slots: [{ startTime: '14:00', endTime: '15:00' }],
+            },
+          ],
+        };
+
+        await expect(service.update(5n, dto)).resolves.not.toThrow();
+
+        // The untouched voted slot is a no-op: never updated, never deleted.
+        expect(pollSlotUpdate).not.toHaveBeenCalled();
+        expect(pollDateDeleteMany).not.toHaveBeenCalled();
+        // The brand-new date is created.
+        expect(pollDateCreate).toHaveBeenCalledTimes(1);
+        const created = (
+          pollDateCreate.mock.calls[0][0] as {
+            data: { eventDate: Date; slots: { create: unknown[] } };
+          }
+        ).data;
+        expect(created.eventDate).toBeInstanceOf(Date);
+        expect(created.slots.create).toHaveLength(1);
+      });
+
       it('edits a ZERO-vote slot in place via pollSlot.update of scalars', async () => {
         pollDateFindMany.mockResolvedValue([
           existingDate({
