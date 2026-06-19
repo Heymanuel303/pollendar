@@ -110,6 +110,7 @@ model PollDate {
   eventDate DateTime   @map("event_date") @db.Date
   sortOrder Int        @default(0) @map("sort_order") @db.SmallInt
   createdAt DateTime   @default(now()) @map("created_at")
+  invalidatedAt DateTime?  @map("invalidated_at")
   poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   slots     PollSlot[]
 
@@ -127,6 +128,7 @@ model PollSlot {
   label      String?      @db.VarChar(120)
   sortOrder  Int          @default(0) @map("sort_order") @db.SmallInt
   createdAt  DateTime     @default(now()) @map("created_at")
+  invalidatedAt DateTime?  @map("invalidated_at")
 
   date       PollDate     @relation(fields: [pollDateId], references: [id], onDelete: Cascade)
   responses  Response[]
