@@ -102,7 +102,7 @@ const previewRows: Cell[][] = [
           </div>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-            >✦ In bloom</span
+            >✦ Top pick</span
           >
         </div>
       </section>

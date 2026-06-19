@@ -146,7 +146,7 @@ exclamation spam, no dark-pattern urgency. Numbers and times stated honestly wit
 **Canonical strings:**
 
 - Tagline — **"Find the time everyone can make."**
-- Winner label — **"In bloom"** (rendered as "✦ In bloom").
+- Winner label — **"Top pick"** (rendered as "✦ Top pick").
 - Reassurance on the create flow — **"Takes about a minute."**
 - Poll status (open, accepting responses) — **"gathering responses"**.
 - Magic-link confirmation — **"We'll email you a magic link."**

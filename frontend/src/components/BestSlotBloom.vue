@@ -3,7 +3,7 @@ import { formatDate, formatSlotRange, formatCloseLabel } from '@/lib/utils/timez
 import type { BestSlot, SlotMeta, PollStatus } from '@/lib/api/types'
 
 /**
- * Large "best slot · in bloom" card with the complete-poll CTA. Ports the
+ * Large "best slot · top pick" card with the complete-poll CTA. Ports the
  * `best-slot-badge.html` Variant 1 bloom card + the bloom panel in `poll-manage.html`.
  *
  * The winning slot's glow (`bloom-bg`) lives on exactly one element, this root `<section>`, so the
@@ -25,13 +25,13 @@ const emit = defineEmits<{ complete: [] }>()
 </script>
 
 <template>
-  <!-- Empty hint: no responses yet, so nothing has bloomed and there is no slot to complete. -->
+  <!-- Empty hint: no responses yet, so there is no top pick and no slot to complete. -->
   <section
     v-if="best === null || meta === null"
     data-testid="best-slot-bloom"
     class="rounded-2xl border border-line bg-surface p-6 text-dim shadow-card"
   >
-    <p class="text-sm">No responses yet, the best slot will bloom here.</p>
+    <p class="text-sm">No responses yet. The top pick will appear here.</p>
   </section>
 
   <section
@@ -39,11 +39,11 @@ const emit = defineEmits<{ complete: [] }>()
     data-testid="best-slot-bloom"
     class="bloom bloom-bg relative overflow-hidden rounded-2xl border border-pollen/40 bg-surface p-4 sm:p-6 lg:p-8 shadow-card"
   >
-    <!-- Header: in-bloom pill + score -->
+    <!-- Header: top-pick pill + score -->
     <div class="flex items-start justify-between gap-4">
       <span
         class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-        >✦ In bloom</span
+        >✦ Top pick</span
       >
       <div class="text-right">
         <div class="font-display text-4xl sm:text-5xl font-bold leading-none text-pollen">

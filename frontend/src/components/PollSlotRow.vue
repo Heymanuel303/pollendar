@@ -6,7 +6,7 @@ import type { Availability, PollSlot } from '@/lib/api/types'
 
 /**
  * A single slot row in the participant flow: label + time range (rendered in the poll's timezone),
- * an optional "✦ In bloom" treatment for the current best slot, and the tri-state availability
+ * an optional "✦ Top pick" treatment for the current best slot, and the tri-state availability
  * toggle. Keeps `PublicPoll` thin, it owns no fetch/submit logic.
  */
 // Named `pollSlot` (not `slot`): a `:slot` template binding collides with Vue's deprecated
@@ -58,7 +58,7 @@ const timeLine = computed<string>(() => {
       <span
         v-if="isBest"
         class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-        >✦ In bloom</span
+        >✦ Top pick</span
       >
     </div>
 

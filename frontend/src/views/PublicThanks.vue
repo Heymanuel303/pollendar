@@ -94,7 +94,7 @@ const hasEditToken = computed<boolean>(() => getParticipantToken(token.value) !=
           <p class="text-xs uppercase tracking-widest text-mute">Leaning now</p>
           <span
             class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-            >✦ In bloom</span
+            >✦ Top pick</span
           >
         </div>
         <div class="mt-3 flex items-end justify-between gap-4">

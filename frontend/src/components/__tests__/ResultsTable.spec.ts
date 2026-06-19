@@ -48,18 +48,18 @@ function mountTable() {
 const norm = (text: string) => text.replace(/\s+/g, ' ')
 
 describe('ResultsTable', () => {
-  it('blooms exactly one row, the best slot, with the ✦ In bloom pill', () => {
+  it('blooms exactly one row, the best slot, with the ✦ Top pick pill', () => {
     const wrapper = mountTable()
 
     expect(wrapper.findAll('.bloom-bg')).toHaveLength(1)
     const winner = wrapper.get('[data-testid="result-row-s1"]')
     expect(winner.classes()).toContain('bloom-bg')
-    expect(winner.text()).toContain('✦ In bloom')
+    expect(winner.text()).toContain('✦ Top pick')
 
     // No other row carries the bloom or the pill.
     const loser = wrapper.get('[data-testid="result-row-s2"]')
     expect(loser.classes()).not.toContain('bloom-bg')
-    expect(loser.text()).not.toContain('In bloom')
+    expect(loser.text()).not.toContain('Top pick')
   })
 
   it('sizes the distribution bar to count/total per slot', () => {

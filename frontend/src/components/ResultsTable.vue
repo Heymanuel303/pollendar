@@ -5,7 +5,7 @@ import type { PollResults, SlotMeta, SlotTally } from '@/lib/api/types'
 
 /**
  * Per-slot tally list with a distribution bar + score. The winning slot
- * (`results.best.slotId`) blooms, and it is the ONLY element carrying `bloom-bg`.
+ * (`results.best.slotId`) is the top pick, and it is the ONLY element carrying `bloom-bg`.
  *
  * Ports docs/design/mockups/components/results-table.html. Rows are emitted in poll
  * DISPLAY order (`order`, the slotIds PollManage flattens out of dates -> slots); each
@@ -96,7 +96,7 @@ const participantCount = computed<number>(() => {
             <span
               v-if="row.isWinner"
               class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-              >✦ In bloom</span
+              >✦ Top pick</span
             >
           </div>
           <p class="mt-0.5 text-sm text-dim">{{ row.subLabel }}</p>
@@ -129,7 +129,7 @@ const participantCount = computed<number>(() => {
       </li>
     </ul>
 
-    <p class="mt-4 text-xs text-mute">Score = 2 × yes + maybe. The highest score blooms.</p>
+    <p class="mt-4 text-xs text-mute">Score = 2 × yes + maybe. The highest score is the top pick.</p>
     <p class="mt-1 text-xs text-mute">
       <span class="num font-display text-dim">{{ participantCount }}</span> participants · best
       recomputed on every response

@@ -92,7 +92,7 @@ test('creator signs in, builds a poll, a participant votes, and the poll complet
   // ── 5. Best slot updates / blooms on the creator's manage view ───────────────────────────────
   await creator.goto(manageUrl)
   const bloom = creator.getByTestId('best-slot-bloom')
-  await expect(bloom).toContainText('In bloom')
+  await expect(bloom).toContainText('Top pick')
   // The participant's single `available` answer shows in the results table (2×yes + maybe = score 2).
   await expect(creator.getByText(/1\s+yes/)).toBeVisible()
 

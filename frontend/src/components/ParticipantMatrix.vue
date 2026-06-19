@@ -180,7 +180,7 @@ function overflowCount(slotId: string, kind: Availability): number {
           ]"
           :data-testid="slot.id === winningSlotId ? 'matrix-card-bloom' : undefined"
         >
-          <!-- Card header: slot range + in-bloom pill for the winner. -->
+          <!-- Card header: slot range + top-pick pill for the winner. -->
           <header class="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h4 class="num text-base font-semibold text-moonlight">
               {{ formatSlotRange(slot, timezone) }}
@@ -189,7 +189,7 @@ function overflowCount(slotId: string, kind: Availability): number {
               v-if="slot.id === winningSlotId"
               class="inline-flex items-center gap-1 rounded-full bg-pollen/15 px-2 py-0.5 text-[11px] font-medium text-pollen ring-1 ring-pollen/40"
             >
-              ✦ In bloom
+              ✦ Top pick
             </span>
           </header>
 
@@ -292,7 +292,7 @@ function overflowCount(slotId: string, kind: Availability): number {
                   v-if="slot.id === winningSlotId"
                   class="mt-1 inline-flex items-center gap-1 rounded-full bg-pollen/15 px-2 py-0.5 text-[11px] font-medium text-pollen ring-1 ring-pollen/40"
                 >
-                  ✦ In bloom
+                  ✦ Top pick
                 </span>
               </th>
             </template>

@@ -74,13 +74,13 @@ describe('PublicThanks', () => {
 
   it('renders the bloom card with the best-slot heading when results have a best', async () => {
     const wrapper = await mountThanks(RESULTS)
-    expect(wrapper.text()).toContain('In bloom')
+    expect(wrapper.text()).toContain('Top pick')
     expect(wrapper.text()).toContain('Dinner')
   })
 
   it('hides the bloom section but keeps the share section when there is no best slot', async () => {
     const wrapper = await mountThanks({ best: null, slots: [] })
-    expect(wrapper.text()).not.toContain('In bloom')
+    expect(wrapper.text()).not.toContain('Top pick')
     // The share section's own heading renders even with `CopyButton` stubbed (its slot text does not).
     expect(wrapper.text()).toContain('Help find the time everyone can make')
   })

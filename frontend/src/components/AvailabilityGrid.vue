@@ -94,7 +94,7 @@ function times(count: number): number[] {
                   v-if="slot.id === winningSlotId"
                   class="mt-1 inline-flex items-center gap-1 rounded-full bg-pollen/15 px-2 py-0.5 text-[11px] font-medium text-pollen ring-1 ring-pollen/40"
                 >
-                  ✦ In bloom
+                  ✦ Top pick
                 </span>
               </th>
             </template>
@@ -153,6 +153,6 @@ function times(count: number): number[] {
       </table>
     </div>
 
-    <p class="mt-4 text-xs text-mute">Score = 2 × yes + maybe. The highest score blooms.</p>
+    <p class="mt-4 text-xs text-mute">Score = 2 × yes + maybe. The highest score is the top pick.</p>
   </section>
 </template>

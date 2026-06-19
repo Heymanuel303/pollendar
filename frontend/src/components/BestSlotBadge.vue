@@ -3,7 +3,7 @@ import { formatDate } from '@/lib/utils/timezone'
 import type { BestSlot, SlotMeta } from '@/lib/api/types'
 
 /**
- * Compact inline "in bloom" badge for the ShareBox footer / completed header. Ports
+ * Compact inline "top pick" badge for the ShareBox footer / completed header. Ports
  * `best-slot-badge.html` Variant 2. Renders nothing until a winner exists.
  */
 defineProps<{
@@ -21,7 +21,7 @@ defineProps<{
   >
     <span
       class="inline-flex items-center gap-1.5 rounded-full bg-pollen/15 px-3 py-1 text-sm font-medium text-pollen ring-1 ring-pollen/40"
-      >✦ In bloom</span
+      >✦ Top pick</span
     >
     <span
       class="inline-flex items-center gap-2 rounded-full border border-pollen/30 bg-pollen/10 px-3 py-1 text-sm font-medium text-moonlight"

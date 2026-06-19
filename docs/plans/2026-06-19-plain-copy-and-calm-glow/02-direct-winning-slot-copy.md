@@ -49,7 +49,7 @@ Replace the user-facing winning-slot label "In bloom" with "Top pick" while keep
 - e2e: `happy-path.spec.ts` line 95 now asserts `'Top pick'` (run the e2e suite per the harness only if a DB is available; not required for this copy-only phase, but the assertion must read `'Top pick'`)
 
 ## Acceptance
-- [ ] No occurrence of the literal user-facing string "In bloom" remains anywhere in `frontend/src` or `docs/design/DESIGN-UI.md`; the winning-slot pill reads "✦ Top pick" (sparkle kept) in BestSlotBloom, BestSlotBadge, PollSlotRow, ResultsTable, AvailabilityGrid, ParticipantMatrix (both mobile + desktop), Landing best-slot card, and PublicThanks
-- [ ] The BestSlotBloom empty hint reads "No responses yet. The top pick will appear here." and both score captions read "Score = 2 × yes + maybe. The highest score is the top pick."
-- [ ] `cd frontend && npm run lint`, `npm run type-check`, and `npm run test:unit` all pass with the updated assertions
-- [ ] No CSS class (`.bloom`, `.bloom-bg`), component name (`BestSlotBloom`, `BestSlotBadge`), or `data-testid` (`best-slot-bloom`, `best-slot-badge`, `matrix-bloom`, `matrix-card-bloom`) was renamed; the Landing eyebrow/tagline, PublicThanks "Leaning now"/status copy, and all emails are untouched
+- [x] No occurrence of the literal user-facing string "In bloom" remains anywhere in `frontend/src` or `docs/design/DESIGN-UI.md`; the winning-slot pill reads "✦ Top pick" (sparkle kept) in BestSlotBloom, BestSlotBadge, PollSlotRow, ResultsTable, AvailabilityGrid, ParticipantMatrix (both mobile + desktop), Landing best-slot card, and PublicThanks
+- [x] The BestSlotBloom empty hint reads "No responses yet. The top pick will appear here." and both score captions read "Score = 2 × yes + maybe. The highest score is the top pick."
+- [x] `cd frontend && npm run lint`, `npm run type-check`, and `npm run test:unit` all pass with the updated assertions
+- [x] No CSS class (`.bloom`, `.bloom-bg`), component name (`BestSlotBloom`, `BestSlotBadge`), or `data-testid` (`best-slot-bloom`, `best-slot-badge`, `matrix-bloom`, `matrix-card-bloom`) was renamed; the Landing eyebrow/tagline, PublicThanks "Leaning now"/status copy, and all emails are untouched
