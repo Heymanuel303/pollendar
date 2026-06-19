@@ -181,7 +181,9 @@ async function onSubmit(): Promise<void> {
             :aria-pressed="view === 'vote'"
             :class="[
               'min-h-11 rounded-lg px-4 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-pollen/40',
-              view === 'vote' ? 'bg-pollen text-canvas shadow-glow' : 'text-dim hover:text-moonlight',
+              view === 'vote'
+                ? 'bg-pollen text-canvas shadow-glow'
+                : 'text-dim hover:text-moonlight',
             ]"
             @click="setView('vote')"
           >
@@ -241,41 +243,6 @@ async function onSubmit(): Promise<void> {
             </div>
           </section>
 
-          <!-- About you -->
-          <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
-            <h2 class="mb-5 font-display text-lg font-semibold">About you</h2>
-            <div class="grid gap-5 sm:grid-cols-2">
-              <div>
-                <label for="participant-name" class="mb-2 block text-sm font-medium text-dim">
-                  Your name <span class="text-pollen">*</span>
-                </label>
-                <input
-                  id="participant-name"
-                  v-model="form.displayName"
-                  maxlength="120"
-                  :disabled="!isOpen"
-                  placeholder="e.g. Aïcha"
-                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </div>
-              <div>
-                <label for="participant-email" class="mb-2 block text-sm font-medium text-dim">
-                  Email <span class="text-mute">— optional</span>
-                </label>
-                <input
-                  id="participant-email"
-                  v-model="form.email"
-                  type="email"
-                  maxlength="255"
-                  :disabled="!isOpen"
-                  placeholder="you@example.com"
-                  class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
-                />
-                <p class="mt-2 text-xs text-mute">Only to notify you of the final time.</p>
-              </div>
-            </div>
-          </section>
-
           <p class="mt-6 text-center text-xs text-mute">Find the time everyone can make.</p>
         </div>
 
@@ -306,6 +273,41 @@ async function onSubmit(): Promise<void> {
             />
           </div>
         </div>
+
+        <!-- About you -->
+        <section class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-card">
+          <h2 class="mb-5 font-display text-lg font-semibold">About you</h2>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="participant-name" class="mb-2 block text-sm font-medium text-dim">
+                Your name <span class="text-pollen">*</span>
+              </label>
+              <input
+                id="participant-name"
+                v-model="form.displayName"
+                maxlength="120"
+                :disabled="!isOpen"
+                placeholder="e.g. Aïcha"
+                class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </div>
+            <div>
+              <label for="participant-email" class="mb-2 block text-sm font-medium text-dim">
+                Email <span class="text-mute">— optional</span>
+              </label>
+              <input
+                id="participant-email"
+                v-model="form.email"
+                type="email"
+                maxlength="255"
+                :disabled="!isOpen"
+                placeholder="you@example.com"
+                class="w-full rounded-xl border border-line bg-canvas px-4 py-3 text-moonlight placeholder:text-mute focus:border-pollen focus:outline-none focus:ring-2 focus:ring-pollen/30 disabled:cursor-not-allowed disabled:opacity-60"
+              />
+              <p class="mt-2 text-xs text-mute">Only to notify you of the final time.</p>
+            </div>
+          </div>
+        </section>
       </template>
     </main>
 
