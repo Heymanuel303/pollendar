@@ -70,6 +70,31 @@ function setAllDay(value: boolean): void {
   }
 }
 
+/** Quick-fill presets shown in set-times mode. Clicking one sets the range and seeds the label. */
+const TIME_PRESETS = [
+  { label: 'Morning', startTime: '09:00', endTime: '13:00' },
+  { label: 'Afternoon', startTime: '13:00', endTime: '18:00' },
+  { label: 'Evening', startTime: '18:00', endTime: '22:00' },
+] as const
+
+// Apply a preset: set the times AND the label (all three stay editable afterwards).
+function applyPreset(preset: (typeof TIME_PRESETS)[number]): void {
+  patch({
+    isAllDay: false,
+    startTime: preset.startTime,
+    endTime: preset.endTime,
+    label: preset.label,
+  })
+}
+
+/** Label of the preset whose range matches the current times (for active styling), or `null`. */
+const activePreset = computed<string | null>(
+  () =>
+    TIME_PRESETS.find(
+      (p) => p.startTime === props.modelValue.startTime && p.endTime === props.modelValue.endTime,
+    )?.label ?? null,
+)
+
 // A time-range slot is incomplete until it has both ends. A locked slot always has valid persisted
 // times, so it never runs this visual.
 const invalid = computed<boolean>(
@@ -158,6 +183,24 @@ const timeStateClass = computed<string>(() =>
       </div>
 
       <template v-if="!isAllDay">
+        <!-- Quick-fill presets: their own full-width row (basis-full forces a wrap) above the inputs. -->
+        <div class="flex basis-full flex-wrap items-center gap-1.5">
+          <button
+            v-for="preset in TIME_PRESETS"
+            :key="preset.label"
+            type="button"
+            class="touch-target rounded-full border px-3 py-1.5 text-xs font-medium transition"
+            :class="
+              activePreset === preset.label
+                ? 'border-pollen bg-pollen/10 text-pollen'
+                : 'border-line bg-canvas text-dim hover:border-pollen hover:text-pollen'
+            "
+            @click="applyPreset(preset)"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+
         <input
           v-model="startTime"
           type="time"
