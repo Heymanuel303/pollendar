@@ -24,14 +24,18 @@ export const DUSK = {
 } as const;
 
 /**
- * Display font chain for headings/numerals. Space Grotesk leads, but it will not
- * load in most email clients, so the web-safe fallbacks carry the look on their own.
+ * Display font chain for headings/numerals. Space Grotesk (a geometric *sans*-serif)
+ * leads to match the browser app, but it will not load in most email clients, so the
+ * fallbacks are the same system-sans stack the frontend resolves to (`ui-sans-serif,
+ * sans-serif`) — NEVER a serif. Mirrors `--font-display` in frontend/src/assets/main.css.
  */
 export const FONT_DISPLAY =
-  "'Space Grotesk', Georgia, 'Times New Roman', Arial, sans-serif";
+  "'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
 /**
- * Body font chain for prose. Inter leads, with web-safe fallbacks that stand alone
- * when the webfont does not load.
+ * Body font chain for prose. Inter leads to match the browser app, with the same
+ * system-sans fallbacks that stand alone when the webfont does not load. Mirrors
+ * `--font-sans` in frontend/src/assets/main.css.
  */
-export const FONT_BODY = "'Inter', Arial, Helvetica, sans-serif";
+export const FONT_BODY =
+  "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
